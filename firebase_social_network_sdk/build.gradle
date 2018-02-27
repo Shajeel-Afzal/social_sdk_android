@@ -4,6 +4,7 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        maven { url "https://jitpack.io" }
         maven {
             url "https://maven.google.com" // Google's Maven repository
         }
@@ -20,8 +21,18 @@ android {
     defaultConfig {
         minSdkVersion Integer.parseInt(project.MIN_SDK)
         targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+        resConfigs "auto"
+        multiDexEnabled true
     }
-
+    packagingOptions {
+        exclude 'META-INF/ASL2.0'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'META-INF/LGPL2.1'
+    }
 }
 
 dependencies {
@@ -41,9 +52,13 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.android.gms:play-services-auth:' + project.GOOGLE_SERVICES_VERSION
-    compile 'com.google.firebase:firebase-messaging:'+ project.GOOGLE_SERVICES_VERSION
+    compile 'com.google.firebase:firebase-messaging:' + project.GOOGLE_SERVICES_VERSION
+
+    // FirebaseUI for Firebase Auth
+    compile 'com.firebaseui:firebase-ui-auth:' + project.FIREBASE_UI_VERSION
 
     //utils
+    compile 'com.android.support:multidex:1.0.2'
     compile 'com.mobsandgeeks:android-saripaar:2.0.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
@@ -53,6 +68,7 @@ dependencies {
     compile 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
     compile 'io.reactivex.rxjava2:rxjava:2.1.9'
     compile 'com.android.volley:volley:1.0.0'
+    compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
 
 }
 // Bintray upload properties

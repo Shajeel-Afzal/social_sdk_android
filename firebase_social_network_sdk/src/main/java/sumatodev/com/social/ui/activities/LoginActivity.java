@@ -31,7 +31,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -46,8 +45,6 @@ import sumatodev.com.social.utils.GoogleApiHelper;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.PreferencesUtil;
-
-import java.util.Arrays;
 
 public class LoginActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = LoginActivity.class.getSimpleName();
@@ -220,6 +217,5 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
             showSnackBar(R.string.internet_connection_failed);
         }
     }
-
 }
 

@@ -69,9 +69,9 @@ public class CreateProfileActivity extends PickImageActivity implements OnProfil
         }
 
         // Set up the login form.
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        imageView = (ImageView) findViewById(R.id.imageView);
-        nameEditText = (EditText) findViewById(R.id.nameEditText);
+        progressBar = findViewById(R.id.progressBar);
+        imageView = findViewById(R.id.imageView);
+        nameEditText = findViewById(R.id.nameEditText);
 
         largeAvatarURL = getIntent().getStringExtra(LARGE_IMAGE_URL_EXTRA_KEY);
 

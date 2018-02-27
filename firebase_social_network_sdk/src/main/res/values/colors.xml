@@ -9,6 +9,9 @@
     <color name="secondary_text">#434343</color>
     <color name="secondary_light">#979797</color>
 
+    <color name="light">#FFEEEEEE</color>
+    <color name="blue">#00adef</color>
+
     <color name="icons">#FFFFFF</color>
     <color name="divider">#BDBDBD</color>
 

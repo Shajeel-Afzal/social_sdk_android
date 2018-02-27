@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="sumatodev.com.social">
 
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
@@ -58,7 +57,6 @@
             android:name=".ui.activities.EditProfileActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_edit_profile" />
-
         <activity
             android:name=".ui.activities.EditPostActivity"
             android:configChanges="orientation|screenSize"
@@ -73,12 +71,13 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
         <service android:name=".services.MyFirebaseInstanceIDService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
+
+        <activity android:name=".ui.activities.Login"></activity>
     </application>
 
 </manifest>
