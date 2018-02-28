@@ -21,8 +21,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -32,14 +36,20 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import sumatodev.com.social.Constants;
-import sumatodev.com.social.R;
-import sumatodev.com.social.utils.LogUtil;
-import sumatodev.com.social.utils.ValidationUtil;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+
+import id.zelory.compressor.Compressor;
+import sumatodev.com.social.Constants;
+import sumatodev.com.social.R;
+import sumatodev.com.social.utils.FileUtil;
+import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.ValidationUtil;
 
 public abstract class PickImageActivity extends BaseActivity {
     private static final String TAG = PickImageActivity.class.getSimpleName();
@@ -155,7 +165,7 @@ public abstract class PickImageActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         if (requestCode == CropImage.CAMERA_CAPTURE_PERMISSIONS_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 LogUtil.logDebug(TAG, "CAMERA_CAPTURE_PERMISSIONS granted");

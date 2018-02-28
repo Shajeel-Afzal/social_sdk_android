@@ -16,6 +16,7 @@
 
 package sumatodev.com.social.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -34,6 +35,7 @@ import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.NotificationView;
 import sumatodev.com.social.utils.ValidationUtil;
 
 public class CreatePostActivity extends PickImageActivity implements OnPostCreatedListener {
@@ -47,7 +49,9 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
+    private NotificationView notificationView;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +85,8 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
                 return false;
             }
         });
+
+        notificationView = new NotificationView(this);
     }
 
     @Override
@@ -141,13 +147,18 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     }
 
     protected void savePost(String title, String description) {
-        showProgress(R.string.message_creating_post);
+        //showProgress(R.string.message_creating_post);
         Post post = new Post();
         post.setTitle(title);
         post.setDescription(description);
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        postManager.createOrUpdatePostWithImage(imageUri, CreatePostActivity.this, post);
+        //postManager.createOrUpdatePostWithImage(imageUri, CreatePostActivity.this, post);
+        postManager.createPostDraftWithImage(imageUri, post);
+
+        setResult(RESULT_OK);
+        CreatePostActivity.this.finish();
     }
+
 
     @Override
     public void onPostSaved(boolean success) {

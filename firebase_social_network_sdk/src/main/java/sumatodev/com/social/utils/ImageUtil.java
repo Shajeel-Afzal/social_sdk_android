@@ -16,9 +16,18 @@
 
 package sumatodev.com.social.utils;
 
+import android.graphics.Bitmap;
+
 import sumatodev.com.social.enums.UploadImagePrefix;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
+
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.support.media.ExifInterface;
 
 
 public class ImageUtil {
@@ -30,4 +39,5 @@ public class ImageUtil {
 
         return prefix.toString() + new Date().getTime();
     }
+
 }

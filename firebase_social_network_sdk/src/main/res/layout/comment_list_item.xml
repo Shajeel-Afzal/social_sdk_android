@@ -7,7 +7,7 @@
     android:paddingBottom="@dimen/large_intrinsic_padding"
     android:paddingTop="@dimen/large_intrinsic_padding">
 
-    <com.rozdoum.socialcomponents.views.CircularImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/avatarImageView"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -16,7 +16,7 @@
         app:border="true"
         app:border_width="0dp" />
 
-    <com.rozdoum.socialcomponents.views.ExpandableTextView
+    <sumatodev.com.social.views.ExpandableTextView
         android:id="@+id/commentText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,6 +60,6 @@
 
         </RelativeLayout>
 
-    </com.rozdoum.socialcomponents.views.ExpandableTextView>
+    </sumatodev.com.social.views.ExpandableTextView>
 
 </RelativeLayout>

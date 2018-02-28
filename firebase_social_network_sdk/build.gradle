@@ -48,6 +48,7 @@ dependencies {
     implementation 'com.android.support:customtabs:' + project.ANDROID_SUPPORT_VERSION
     implementation 'com.android.support:appcompat-v7:' + project.ANDROID_SUPPORT_VERSION
 
+    implementation 'com.android.support:support-v4:27.0.2'
     compile 'com.google.firebase:firebase-database:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-storage:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-auth:' + project.GOOGLE_SERVICES_VERSION
@@ -69,6 +70,7 @@ dependencies {
     compile 'io.reactivex.rxjava2:rxjava:2.1.9'
     compile 'com.android.volley:volley:1.0.0'
     compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
+    compile 'id.zelory:compressor:2.1.0'
 
 }
 // Bintray upload properties

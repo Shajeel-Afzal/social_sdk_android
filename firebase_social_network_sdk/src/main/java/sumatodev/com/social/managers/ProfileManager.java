@@ -17,6 +17,7 @@
 package sumatodev.com.social.managers;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 

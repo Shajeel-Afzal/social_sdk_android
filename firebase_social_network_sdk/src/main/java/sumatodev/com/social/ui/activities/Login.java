@@ -144,6 +144,7 @@ public class Login extends BaseActivity implements View.OnClickListener, GoogleA
         if (resultCode == RESULT_OK) {
             if (response != null) {
                 //successful
+                showSnackBar("success");
             }
         } else {
             if (response == null) {

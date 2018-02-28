@@ -90,6 +90,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
@@ -235,7 +236,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         contentString.append("\n");
         int start = contentString.length();
         contentString.append(label);
-        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Second_Light), start, contentString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Second_Light),
+                start, contentString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return contentString;
     }
 

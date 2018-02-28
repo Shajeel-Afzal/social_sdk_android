@@ -5,7 +5,7 @@
     android:id="@+id/image_detail_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.rozdoum.socialcomponents.activities.ImageDetailActivity">
+    tools:context="ui.activities.ImageDetailActivity">
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -14,7 +14,7 @@
         android:layout_gravity="center"
         android:visibility="visible" />
 
-    <com.rozdoum.socialcomponents.views.TouchImageView
+    <sumatodev.com.social.views.TouchImageView
         android:id="@+id/touchImageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -29,6 +29,6 @@
         app:titleTextColor="@android:color/white"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:background="@color/dart_transparent"></android.support.v7.widget.Toolbar>
+        android:background="@color/dart_transparent"/>
 
 </FrameLayout>

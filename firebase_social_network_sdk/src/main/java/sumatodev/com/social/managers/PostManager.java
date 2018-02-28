@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.UploadTask;
+
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.enums.UploadImagePrefix;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
@@ -68,6 +69,14 @@ public class PostManager extends FirebaseListenersManager {
     public void createOrUpdatePost(Post post) {
         try {
             ApplicationHelper.getDatabaseHelper().createOrUpdatePost(post);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public void createDraftPost(Post post) {
+        try {
+            ApplicationHelper.getDatabaseHelper().createDraftPost(post);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -123,6 +132,46 @@ public class PostManager extends FirebaseListenersManager {
                 }
             });
         }
+    }
+
+    public void createPostDraftWithImage(Uri imageUrl, final Post post) {
+
+        // Register observers to listen for when the download is done or if it fails
+        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+        if (post.getId() == null) {
+            post.setId(databaseHelper.generatePostId());
+        }
+
+        final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.POST, post.getId());
+        UploadTask uploadTask = databaseHelper.uploadImage(imageUrl, imageTitle);
+
+        if (uploadTask != null) {
+            uploadTask.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    //onPostCreatedListener.onPostSaved(false);
+
+                }
+            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    LogUtil.logDebug(TAG, "successful upload image, image url: " + String.valueOf(downloadUrl));
+
+                    post.setImagePath(String.valueOf(downloadUrl));
+                    post.setImageTitle(imageTitle);
+                    createDraftPost(post);
+
+                    //onPostCreatedListener.onPostSaved(true);
+                }
+            });
+        }
+    }
+
+    public void savePostToDraft() {
+
     }
 
     public Task<Void> removeImage(String imageTitle) {

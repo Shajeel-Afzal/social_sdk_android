@@ -139,8 +139,7 @@ public class MainActivity extends BaseActivity {
                     refreshPostList();
                     break;
                 case CreatePostActivity.CREATE_NEW_POST_REQUEST:
-                    refreshPostList();
-                    showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
+                    checkNewPost();
                     break;
 
                 case PostDetailsActivity.UPDATE_POST_REQUEST:
@@ -156,6 +155,13 @@ public class MainActivity extends BaseActivity {
                     break;
             }
         }
+    }
+
+    private void checkNewPost() {
+        showSnackBar("check new post");
+        
+        refreshPostList();
+        showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
     }
 
     private void refreshPostList() {

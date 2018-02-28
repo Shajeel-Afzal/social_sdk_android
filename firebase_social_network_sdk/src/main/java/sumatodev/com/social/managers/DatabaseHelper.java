@@ -18,7 +18,9 @@
 package sumatodev.com.social.managers;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -43,6 +45,19 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import id.zelory.compressor.Compressor;
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
@@ -58,14 +73,8 @@ import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.utils.FileUtil;
 import sumatodev.com.social.utils.LogUtil;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -150,7 +159,7 @@ public class DatabaseHelper {
             getProfileSingleValue(currentUserId, new OnObjectChangedListener<Profile>() {
                 @Override
                 public void onObjectChanged(Profile obj) {
-                    if(obj != null) {
+                    if (obj != null) {
                         addRegistrationToken(token, currentUserId);
                     } else {
                         LogUtil.logError(TAG, "updateRegistrationToken",
@@ -189,6 +198,7 @@ public class DatabaseHelper {
         return databaseReference.child("posts").push().getKey();
     }
 
+
     public void createOrUpdatePost(Post post) {
         try {
             DatabaseReference databaseReference = database.getReference();
@@ -196,6 +206,20 @@ public class DatabaseHelper {
             Map<String, Object> postValues = post.toMap();
             Map<String, Object> childUpdates = new HashMap<>();
             childUpdates.put("/posts/" + post.getId(), postValues);
+
+            databaseReference.updateChildren(childUpdates);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public void createDraftPost(Post post) {
+        try {
+            DatabaseReference databaseReference = database.getReference();
+
+            Map<String, Object> postValues = post.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("/draft/" + post.getAuthorId() + "/" + post.getId(), postValues);
 
             databaseReference.updateChildren(childUpdates);
         } catch (Exception e) {
@@ -331,7 +355,7 @@ public class DatabaseHelper {
         });
     }
 
-    public Task<Void> removeComment(String commentId,  String postId) {
+    public Task<Void> removeComment(String commentId, String postId) {
         DatabaseReference databaseReference = database.getReference();
         DatabaseReference postRef = databaseReference.child("post-comments").child(postId).child(commentId);
         return postRef.removeValue();
@@ -455,7 +479,7 @@ public class DatabaseHelper {
         });
     }
 
-    public UploadTask uploadImage(Uri uri, String imageTitle) {
+    public UploadTask uploadImage(Uri imageUri, String imageTitle) {
         StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
         StorageReference riversRef = storageRef.child("images/" + imageTitle);
         // Create file metadata including the content type
@@ -463,7 +487,31 @@ public class DatabaseHelper {
                 .setCacheControl("max-age=7776000, Expires=7776000, public, must-revalidate")
                 .build();
 
-        return riversRef.putFile(uri, metadata);
+        Log.d(TAG, "compressedImage: " + Arrays.toString(getCompressedImage(imageUri)));
+
+        return riversRef.putBytes(getCompressedImage(imageUri), metadata);
+    }
+
+    public byte[] getCompressedImage(Uri imageUri) {
+
+        try {
+            File mImageFile = FileUtil.from(context, imageUri);
+
+            Bitmap bitmap = new Compressor(context)
+                    .setQuality(75)
+                    .setCompressFormat(Bitmap.CompressFormat.WEBP)
+                    .setDestinationDirectoryPath(Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_PICTURES).getAbsolutePath())
+                    .compressToBitmap(mImageFile);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, e.getMessage());
+        }
+        return null;
     }
 
     public void getPostList(final OnPostListChangedListener<Post> onDataChangedListener, long date) {

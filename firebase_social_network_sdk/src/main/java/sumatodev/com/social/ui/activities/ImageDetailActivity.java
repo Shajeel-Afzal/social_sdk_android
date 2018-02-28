@@ -45,13 +45,13 @@ public class ImageDetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_detail);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         actionBar = getSupportActionBar();
-        final TouchImageView touchImageView = (TouchImageView) findViewById(R.id.touchImageView);
-        final ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        final ViewGroup viewGroup = (ViewGroup) findViewById(R.id.image_detail_container);
+        final TouchImageView touchImageView = findViewById(R.id.touchImageView);
+        final ProgressBar progressBar = findViewById(R.id.progressBar);
+        final ViewGroup viewGroup = findViewById(R.id.image_detail_container);
 
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
