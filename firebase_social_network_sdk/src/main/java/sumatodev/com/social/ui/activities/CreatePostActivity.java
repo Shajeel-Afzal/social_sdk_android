@@ -17,6 +17,7 @@
 package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
@@ -41,6 +42,7 @@ import sumatodev.com.social.utils.ValidationUtil;
 public class CreatePostActivity extends PickImageActivity implements OnPostCreatedListener {
     private static final String TAG = CreatePostActivity.class.getSimpleName();
     public static final int CREATE_NEW_POST_REQUEST = 11;
+    public static final String POST_DATA_KEY = "CreatePostActivity.POST_DATA_KEY";
 
     protected ImageView imageView;
     protected ProgressBar progressBar;
@@ -147,18 +149,21 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     }
 
     protected void savePost(String title, String description) {
-        //showProgress(R.string.message_creating_post);
+        showProgress(R.string.message_creating_post);
         Post post = new Post();
         post.setTitle(title);
         post.setDescription(description);
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        post.setImagePath(String.valueOf(imageUri));
+
         //postManager.createOrUpdatePostWithImage(imageUri, CreatePostActivity.this, post);
-        postManager.createPostDraftWithImage(imageUri, post);
 
-        setResult(RESULT_OK);
+        Intent intent = new Intent();
+        intent.putExtra(POST_DATA_KEY, post);
+        setResult(RESULT_OK, intent);
         CreatePostActivity.this.finish();
+        hideProgress();
     }
-
 
     @Override
     public void onPostSaved(boolean success) {

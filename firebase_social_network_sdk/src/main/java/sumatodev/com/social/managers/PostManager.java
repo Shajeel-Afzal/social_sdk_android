@@ -170,10 +170,6 @@ public class PostManager extends FirebaseListenersManager {
         }
     }
 
-    public void savePostToDraft() {
-
-    }
-
     public Task<Void> removeImage(String imageTitle) {
         final DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         return databaseHelper.removeImage(imageTitle);

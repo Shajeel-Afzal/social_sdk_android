@@ -19,6 +19,7 @@ package sumatodev.com.social.ui.activities;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,6 +50,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsByUserAdapter;
 import sumatodev.com.social.enums.PostStatus;
@@ -56,13 +58,14 @@ import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
+import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
-import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
+import sumatodev.com.social.utils.NotificationView;
 
-public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
+public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, OnPostCreatedListener {
     private static final String TAG = ProfileActivity.class.getSimpleName();
     public static final int CREATE_POST_FROM_PROFILE_REQUEST = 22;
     public static final String USER_ID_EXTRA_KEY = "ProfileActivity.USER_ID_EXTRA_KEY";
@@ -85,6 +88,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private SwipeRefreshLayout swipeContainer;
     private TextView likesCountersTextView;
     private ProfileManager profileManager;
+    private PostManager postManager;
+    private NotificationView notificationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +112,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             currentUserId = firebaseUser.getUid();
         }
 
+        postManager = PostManager.getInstance(this);
+        notificationView = new NotificationView(this);
         // Set up the login form.
         progressBar = findViewById(R.id.progressBar);
         imageView = findViewById(R.id.imageView);
@@ -156,11 +163,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case CreatePostActivity.CREATE_NEW_POST_REQUEST:
-                    postsAdapter.loadPosts();
-                    showSnackBar(R.string.message_post_was_created);
-                    setResult(RESULT_OK);
+                    if (data != null) {
+                        createNewPost(data);
+                    }
                     break;
-
                 case PostDetailsActivity.UPDATE_POST_REQUEST:
                     if (data != null) {
                         PostStatus postStatus = (PostStatus) data.getSerializableExtra(PostDetailsActivity.POST_STATUS_EXTRA_KEY);
@@ -173,6 +179,31 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                     }
                     break;
             }
+        }
+    }
+
+    private void createNewPost(Intent data) {
+        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+        if (post != null) {
+            postManager.createOrUpdatePostWithImage(Uri.parse(post.getImagePath()),
+                    ProfileActivity.this, post);
+            notificationView.setNotification(true, "Uploading Post");
+        }
+
+    }
+
+    @Override
+    public void onPostSaved(boolean success) {
+        hideProgress();
+        if (success) {
+            notificationView.setNotification(false, "Uploading Post Successful");
+            postsAdapter.loadPosts();
+            setResult(RESULT_OK);
+            //showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
+            LogUtil.logDebug(TAG, "Post was created");
+        } else {
+            showSnackBar(R.string.error_fail_create_post);
+            LogUtil.logDebug(TAG, "Failed to create a post");
         }
     }
 
@@ -388,4 +419,5 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             return super.onOptionsItemSelected(item);
         }
     }
+
 }

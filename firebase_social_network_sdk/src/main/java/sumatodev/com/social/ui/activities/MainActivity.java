@@ -20,6 +20,7 @@ package sumatodev.com.social.ui.activities;
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,10 +53,13 @@ import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
+import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.utils.AnimationUtils;
+import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.NotificationView;
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements OnPostCreatedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PostsAdapter postsAdapter;
@@ -68,6 +72,7 @@ public class MainActivity extends BaseActivity {
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
+    private NotificationView notificationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,7 @@ public class MainActivity extends BaseActivity {
 
         profileManager = ProfileManager.getInstance(this);
         postManager = PostManager.getInstance(this);
+        notificationView = new NotificationView(this);
         initContentView();
 
         postCounterWatcher = new PostManager.PostCounterWatcher() {
@@ -136,10 +142,14 @@ public class MainActivity extends BaseActivity {
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST:
-                    refreshPostList();
+                    if (data != null) {
+                        createNewPost(data);
+                    }
                     break;
                 case CreatePostActivity.CREATE_NEW_POST_REQUEST:
-                    checkNewPost();
+                    if (data != null) {
+                        createNewPost(data);
+                    }
                     break;
 
                 case PostDetailsActivity.UPDATE_POST_REQUEST:
@@ -157,11 +167,28 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void checkNewPost() {
-        showSnackBar("check new post");
-        
-        refreshPostList();
-        showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
+    private void createNewPost(Intent data) {
+        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+        if (post != null) {
+            postManager.createOrUpdatePostWithImage(Uri.parse(post.getImagePath()),
+                    MainActivity.this, post);
+            notificationView.setNotification(true, "Uploading Post");
+        }
+
+    }
+
+    @Override
+    public void onPostSaved(boolean success) {
+        hideProgress();
+        if (success) {
+            notificationView.setNotification(false, "Uploading Post Successful");
+            refreshPostList();
+            //showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
+            LogUtil.logDebug(TAG, "Post was created");
+        } else {
+            showSnackBar(R.string.error_fail_create_post);
+            LogUtil.logDebug(TAG, "Failed to create a post");
+        }
     }
 
     private void refreshPostList() {
@@ -386,5 +413,24 @@ public class MainActivity extends BaseActivity {
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 }
