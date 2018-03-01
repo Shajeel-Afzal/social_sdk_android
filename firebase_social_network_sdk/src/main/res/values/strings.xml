@@ -114,13 +114,23 @@
     <string name="posted_by_label">Posted by:</string>
 
     <plurals name="posts_counter_format">
-        <item quantity="one">post</item>
-        <item quantity="other">posts</item>
+        <item quantity="one">Post</item>
+        <item quantity="other">Posts</item>
     </plurals>
 
     <plurals name="likes_counter_format">
         <item quantity="one">like</item>
         <item quantity="other">likes</item>
+    </plurals>
+
+    <plurals name="user_follower_format">
+        <item quantity="one">Follower</item>
+        <item quantity="other">Followers</item>
+    </plurals>
+
+    <plurals name="user_following_format">
+        <item quantity="one">Following</item>
+        <item quantity="other">Following</item>
     </plurals>
 
     <string name="posts_label">Posts:</string>

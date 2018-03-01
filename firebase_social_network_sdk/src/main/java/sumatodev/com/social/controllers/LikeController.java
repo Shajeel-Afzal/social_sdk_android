@@ -212,7 +212,8 @@ public class LikeController {
     }
 
     public void handleLikeClickAction(final BaseActivity baseActivity, final Post post) {
-        PostManager.getInstance(baseActivity.getApplicationContext()).isPostExistSingleValue(post.getId(), new OnObjectExistListener<Post>() {
+        PostManager.getInstance(baseActivity.getApplicationContext()).isPostExistSingleValue(post.getId(),
+                new OnObjectExistListener<Post>() {
             @Override
             public void onDataChanged(boolean exist) {
                 if (exist) {

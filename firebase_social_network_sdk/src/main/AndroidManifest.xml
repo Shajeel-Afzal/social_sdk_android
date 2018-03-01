@@ -77,8 +77,6 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".ui.activities.Login" />
-        <activity android:name=".ui.activities.Profile" />
         <activity android:name=".utils.ResultActivity" />
     </application>
 

@@ -32,14 +32,17 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.TextAppearanceSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -50,10 +53,20 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
+import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsByUserAdapter;
+import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.enums.PostStatus;
+import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
@@ -65,7 +78,7 @@ import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.NotificationView;
 
-public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, OnPostCreatedListener {
+public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, OnPostCreatedListener, View.OnClickListener {
     private static final String TAG = ProfileActivity.class.getSimpleName();
     public static final int CREATE_POST_FROM_PROFILE_REQUEST = 22;
     public static final String USER_ID_EXTRA_KEY = "ProfileActivity.USER_ID_EXTRA_KEY";
@@ -77,7 +90,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private ProgressBar progressBar;
     private TextView postsCounterTextView;
     private TextView postsLabelTextView;
-    private ProgressBar postsProgressBar;
+    private SimpleStatefulLayout statefulLayout;
+    private Button followBtn;
 
     private FirebaseAuth mAuth;
     private GoogleApiClient mGoogleApiClient;
@@ -86,15 +100,19 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private PostsByUserAdapter postsAdapter;
     private SwipeRefreshLayout swipeContainer;
-    private TextView likesCountersTextView;
+    //private TextView likesCountersTextView;
     private ProfileManager profileManager;
     private PostManager postManager;
     private NotificationView notificationView;
 
+    private DatabaseReference mFriendsRef;
+    private DatabaseReference mMyDatabaseRef;
+    private boolean mProcessClick = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.fragment_profile);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -112,6 +130,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             currentUserId = firebaseUser.getUid();
         }
 
+        mFriendsRef = FirebaseUtils.getFriendsRef().child(userID);
+        mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(currentUserId);
+
         postManager = PostManager.getInstance(this);
         notificationView = new NotificationView(this);
         // Set up the login form.
@@ -119,17 +140,20 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         imageView = findViewById(R.id.imageView);
         nameEditText = findViewById(R.id.nameEditText);
         postsCounterTextView = findViewById(R.id.postsCounterTextView);
-        likesCountersTextView = findViewById(R.id.likesCountersTextView);
+        followBtn = findViewById(R.id.followBtn);
+        //likesCountersTextView = findViewById(R.id.likesCountersTextView);
         postsLabelTextView = findViewById(R.id.postsLabelTextView);
-        postsProgressBar = findViewById(R.id.postsProgressBar);
-
+        statefulLayout = findViewById(R.id.statefulLayout);
         swipeContainer = findViewById(R.id.swipeContainer);
+
+        followBtn.setOnClickListener(this);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 onRefreshAction();
             }
         });
+
 
         loadPostsList();
         supportPostponeEnterTransition();
@@ -153,6 +177,13 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.stopAutoManage(this);
             mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == followBtn) {
+            sendFollowRequest();
         }
     }
 
@@ -213,6 +244,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private void loadPostsList() {
         if (recyclerView == null) {
+            statefulLayout.showProgress();
 
             recyclerView = findViewById(R.id.recycler_view);
             postsAdapter = new PostsByUserAdapter(this, userID);
@@ -235,22 +267,25 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 public void onPostsListChanged(int postsCount) {
                     String postsLabel = getResources().getQuantityString(R.plurals.posts_counter_format, postsCount, postsCount);
                     postsCounterTextView.setText(buildCounterSpannable(postsLabel, postsCount));
-
-                    likesCountersTextView.setVisibility(View.VISIBLE);
+                    //likesCountersTextView.setVisibility(View.VISIBLE);
                     postsCounterTextView.setVisibility(View.VISIBLE);
 
                     if (postsCount > 0) {
                         postsLabelTextView.setVisibility(View.VISIBLE);
+                        statefulLayout.showContent();
+                    } else if (postsCount < 0) {
+                        statefulLayout.setEmptyText("no posts to show");
+                        statefulLayout.showEmpty();
                     }
 
                     swipeContainer.setRefreshing(false);
-                    hideLoadingPostsProgressBar();
                 }
 
                 @Override
                 public void onPostLoadingCanceled() {
                     swipeContainer.setRefreshing(false);
-                    hideLoadingPostsProgressBar();
+                    statefulLayout.setEmptyText("loading canceled");
+                    statefulLayout.showEmpty();
                 }
             });
 
@@ -267,7 +302,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         contentString.append("\n");
         int start = contentString.length();
         contentString.append(label);
-        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Second_Light),
+        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Follow),
                 start, contentString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return contentString;
     }
@@ -308,6 +343,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private void fillUIFields(Profile profile) {
         if (profile != null) {
+            if (actionBar != null) {
+                actionBar.setTitle(profile.getUsername());
+            }
             nameEditText.setText(profile.getUsername());
 
             if (profile.getPhotoUrl() != null) {
@@ -339,15 +377,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
             int likesCount = (int) profile.getLikesCount();
             String likesLabel = getResources().getQuantityString(R.plurals.likes_counter_format, likesCount, likesCount);
-            likesCountersTextView.setText(buildCounterSpannable(likesLabel, likesCount));
+            //likesCountersTextView.setText(buildCounterSpannable(likesLabel, likesCount));
         }
     }
 
-    private void hideLoadingPostsProgressBar() {
-        if (postsProgressBar.getVisibility() != View.GONE) {
-            postsProgressBar.setVisibility(View.GONE);
-        }
-    }
 
     private void scheduleStartPostponedTransition(final ImageView imageView) {
         imageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
@@ -420,4 +453,88 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         }
     }
 
+    private void sendFollowRequest() {
+        mProcessClick = true;
+        mFriendsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (mProcessClick) {
+                    if (dataSnapshot.child(Consts.REQUEST_LIST_REF).hasChild(currentUserId)) {
+                        mFriendsRef.child(Consts.REQUEST_LIST_REF).child(currentUserId)
+                                .removeValue(new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if (databaseError == null) {
+                                            Log.d(TAG, "request removed");
+                                        } else {
+                                            switch (databaseError.getCode()) {
+                                                case DatabaseError.PERMISSION_DENIED:
+                                                    Log.d("TAG", "permission denied");
+                                                    Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                case DatabaseError.NETWORK_ERROR:
+                                                    Log.d("TAG", "network error");
+                                                    Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                default:
+                                                    Log.d("TAG", "request failed");
+                                                    Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }
+                                });
+                        mProcessClick = false;
+                    } else {
+
+                        HashMap<String, Object> hashMap = new HashMap<>();
+                        hashMap.put("timestamp", ServerValue.TIMESTAMP);
+                        hashMap.put("uid", currentUserId);
+
+                        mFriendsRef.child(Consts.REQUEST_LIST_REF).child(currentUserId)
+                                .setValue(hashMap, new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if (databaseError == null) {
+                                            Log.d(TAG, "request send");
+                                        } else {
+                                            switch (databaseError.getCode()) {
+                                                case DatabaseError.PERMISSION_DENIED:
+                                                    Log.d("TAG", "permission denied");
+                                                    Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                case DatabaseError.NETWORK_ERROR:
+                                                    Log.d("TAG", "network error");
+                                                    Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
+                                                    break;
+                                                default:
+                                                    Log.d("TAG", "request failed");
+                                                    Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    }
+                                });
+                        mProcessClick = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                switch (databaseError.getCode()) {
+                    case DatabaseError.PERMISSION_DENIED:
+                        Log.d("TAG", "permission denied");
+                        Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
+                        break;
+                    case DatabaseError.NETWORK_ERROR:
+                        Log.d("TAG", "network error");
+                        Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Log.d("TAG", "request failed");
+                        Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
+                }
+                mProcessClick = false;
+            }
+        });
+    }
 }

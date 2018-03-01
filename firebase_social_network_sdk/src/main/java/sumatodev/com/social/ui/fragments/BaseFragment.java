@@ -18,7 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
-import sumatodev.com.social.ui.activities.Login;
+import sumatodev.com.social.ui.activities.LoginActivity;
 
 /**
  * Created by Ali on 27/02/2018.
@@ -46,7 +46,7 @@ public class BaseFragment extends Fragment {
     }
 
     private void startLoginActivity() {
-        Intent intent = new Intent(activity, Login.class);
+        Intent intent = new Intent(activity, LoginActivity.class);
         startActivity(intent);
     }
 

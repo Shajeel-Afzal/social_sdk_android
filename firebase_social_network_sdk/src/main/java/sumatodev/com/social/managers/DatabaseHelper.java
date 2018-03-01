@@ -213,19 +213,6 @@ public class DatabaseHelper {
         }
     }
 
-    public void createDraftPost(Post post) {
-        try {
-            DatabaseReference databaseReference = database.getReference();
-
-            Map<String, Object> postValues = post.toMap();
-            Map<String, Object> childUpdates = new HashMap<>();
-            childUpdates.put("/draft/" + post.getAuthorId() + "/" + post.getId(), postValues);
-
-            databaseReference.updateChildren(childUpdates);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
 
     public Task<Void> removePost(Post post) {
         DatabaseReference databaseReference = database.getReference();
