@@ -83,6 +83,7 @@ import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.ui.activities.EditPostActivity;
 import sumatodev.com.social.ui.activities.ImageDetailActivity;
 import sumatodev.com.social.ui.activities.ProfileActivity;
+import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
 
@@ -187,7 +188,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                     //disable execution for exit transition
                     if (!isEnterTransitionFinished) {
                         isEnterTransitionFinished = true;
-                        sumatodev.com.social.utils.AnimationUtils.showViewByScale(authorImageView)
+                        AnimationUtils.showViewByScale(authorImageView)
                                 .setListener(authorAnimatorListener)
                                 .start();
                     }
@@ -629,7 +630,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         View view = this.getCurrentFocus();
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
         }
     }
 

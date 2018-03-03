@@ -62,9 +62,9 @@ public class EditProfileActivity extends PickImageActivity implements OnProfileC
         }
 
         // Set up the login form.
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        imageView = (ImageView) findViewById(R.id.imageView);
-        nameEditText = (EditText) findViewById(R.id.nameEditText);
+        progressBar = findViewById(R.id.progressBar);
+        imageView = findViewById(R.id.imageView);
+        nameEditText = findViewById(R.id.nameEditText);
 
         showProgress();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();

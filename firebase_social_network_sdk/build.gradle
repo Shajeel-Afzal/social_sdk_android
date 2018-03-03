@@ -55,8 +55,9 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-messaging:' + project.GOOGLE_SERVICES_VERSION
 
-    // FirebaseUI for Firebase Auth
+    // FirebaseUI
     compile 'com.firebaseui:firebase-ui-auth:' + project.FIREBASE_UI_VERSION
+    compile 'com.firebaseui:firebase-ui-database:' + project.FIREBASE_UI_VERSION
 
     //utils
     compile 'com.android.support:multidex:1.0.2'

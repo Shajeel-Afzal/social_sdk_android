@@ -18,12 +18,14 @@ package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
@@ -56,10 +58,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.HashMap;
+import java.util.Calendar;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
@@ -74,6 +75,7 @@ import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.model.UsersThread;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.NotificationView;
@@ -88,7 +90,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private ImageView imageView;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
-    private TextView postsCounterTextView;
+    private TextView postsCounterTextView, userFollowers, userFollowings;
     private TextView postsLabelTextView;
     private SimpleStatefulLayout statefulLayout;
     private Button followBtn;
@@ -113,6 +115,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_profile);
+        findViews();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -122,7 +125,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        userID = getIntent().getStringExtra(USER_ID_EXTRA_KEY);
+        if (getIntent() != null) {
+            userID = getIntent().getStringExtra(USER_ID_EXTRA_KEY);
+            Log.d(TAG, "profileKey " + userID);
+        }
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -130,12 +136,27 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             currentUserId = firebaseUser.getUid();
         }
 
-        mFriendsRef = FirebaseUtils.getFriendsRef().child(userID);
-        mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(currentUserId);
+        if (userID != null && currentUserId != null) {
+            mFriendsRef = FirebaseUtils.getFriendsRef().child(userID);
+            mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(currentUserId);
+        }
 
         postManager = PostManager.getInstance(this);
         notificationView = new NotificationView(this);
         // Set up the login form.
+
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onRefreshAction();
+            }
+        });
+
+        loadPostsList();
+        supportPostponeEnterTransition();
+    }
+
+    private void findViews() {
         progressBar = findViewById(R.id.progressBar);
         imageView = findViewById(R.id.imageView);
         nameEditText = findViewById(R.id.nameEditText);
@@ -145,23 +166,41 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         postsLabelTextView = findViewById(R.id.postsLabelTextView);
         statefulLayout = findViewById(R.id.statefulLayout);
         swipeContainer = findViewById(R.id.swipeContainer);
+        userFollowers = findViewById(R.id.userFollowers);
+        userFollowings = findViewById(R.id.userFollowings);
 
-        followBtn.setOnClickListener(this);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                onRefreshAction();
-            }
-        });
-
-
-        loadPostsList();
-        supportPostponeEnterTransition();
+        userFollowers.setOnClickListener(this);
+        userFollowings.setOnClickListener(this);
     }
+
+    @Override
+    public void onClick(View v) {
+        if (v == userFollowers) {
+            if (userID != null) {
+                Intent intent = new Intent(ProfileActivity.this, FollowersActivity.class);
+                intent.putExtra(FollowersActivity.USER_ID_EXTRA_KEY, userID);
+                startActivity(intent);
+            }
+        } else if (v == userFollowings) {
+            if (userID != null) {
+                Intent intent = new Intent(ProfileActivity.this, FollowingActivity.class);
+                intent.putExtra(FollowingActivity.USER_ID_EXTRA_KEY, userID);
+                startActivity(intent);
+            }
+        }
+    }
+
 
     @Override
     public void onStart() {
         super.onStart();
+        if (userID != null) {
+            if (userID.equalsIgnoreCase(currentUserId)) {
+                followBtn.setVisibility(View.GONE);
+            }
+            checkFriendsStatus();
+        }
+
         loadProfile();
 
         if (mGoogleApiClient != null) {
@@ -177,13 +216,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.stopAutoManage(this);
             mGoogleApiClient.disconnect();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v == followBtn) {
-            sendFollowRequest();
         }
     }
 
@@ -343,9 +375,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private void fillUIFields(Profile profile) {
         if (profile != null) {
-            if (actionBar != null) {
-                actionBar.setTitle(profile.getUsername());
-            }
             nameEditText.setText(profile.getUsername());
 
             if (profile.getPhotoUrl() != null) {
@@ -378,6 +407,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             int likesCount = (int) profile.getLikesCount();
             String likesLabel = getResources().getQuantityString(R.plurals.likes_counter_format, likesCount, likesCount);
             //likesCountersTextView.setText(buildCounterSpannable(likesLabel, likesCount));
+
         }
     }
 
@@ -448,10 +478,74 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             }
 
             return super.onOptionsItemSelected(item);
+        } else if (i == R.id.follow_requests) {
+            startActivity(new Intent(ProfileActivity.this, RequestsActivity.class));
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
     }
+
+
+    private void checkFriendsStatus() {
+        statefulLayout.showProgress();
+        FirebaseUtils.getFriendsRef()
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.child(userID).child(Consts.REQUEST_LIST_REF).hasChild(currentUserId)) {
+                            followBtn.setText("Requested");
+                        } else if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
+                            followBtn.setText("Following");
+                        } else {
+                            followBtn.setText("Follow");
+                        }
+
+                        if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
+                            followBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    openRemoveFollowing();
+                                }
+                            });
+                        } else {
+                            followBtn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    sendFollowRequest();
+                                }
+                            });
+                        }
+
+                        long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
+                        long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
+
+                        String followers = getResources().getQuantityString(R.plurals.user_follower_format,
+                                (int) totalFollowers, totalFollowers);
+                        userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
+
+                        String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
+                                (int) totalFollowings);
+                        userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
+
+                        statefulLayout.showContent();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError error) {
+                        switch (error.getCode()) {
+                            case DatabaseError.PERMISSION_DENIED:
+                                statefulLayout.setEmptyText("No Permission");
+                                statefulLayout.showEmpty();
+                                break;
+                            default:
+                                statefulLayout.showEmpty();
+                                statefulLayout.setEmptyText("failed to load user profile...");
+                        }
+                    }
+                });
+    }
+
 
     private void sendFollowRequest() {
         mProcessClick = true;
@@ -467,49 +561,24 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                         if (databaseError == null) {
                                             Log.d(TAG, "request removed");
                                         } else {
-                                            switch (databaseError.getCode()) {
-                                                case DatabaseError.PERMISSION_DENIED:
-                                                    Log.d("TAG", "permission denied");
-                                                    Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                case DatabaseError.NETWORK_ERROR:
-                                                    Log.d("TAG", "network error");
-                                                    Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                default:
-                                                    Log.d("TAG", "request failed");
-                                                    Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
-                                            }
+                                            showError(databaseError);
                                         }
                                     }
                                 });
                         mProcessClick = false;
                     } else {
-
-                        HashMap<String, Object> hashMap = new HashMap<>();
-                        hashMap.put("timestamp", ServerValue.TIMESTAMP);
-                        hashMap.put("uid", currentUserId);
+                        UsersThread thread = new UsersThread();
+                        thread.setId(currentUserId);
+                        thread.setCreatedDate(Calendar.getInstance().getTimeInMillis());
 
                         mFriendsRef.child(Consts.REQUEST_LIST_REF).child(currentUserId)
-                                .setValue(hashMap, new DatabaseReference.CompletionListener() {
+                                .setValue(thread, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                         if (databaseError == null) {
                                             Log.d(TAG, "request send");
                                         } else {
-                                            switch (databaseError.getCode()) {
-                                                case DatabaseError.PERMISSION_DENIED:
-                                                    Log.d("TAG", "permission denied");
-                                                    Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                case DatabaseError.NETWORK_ERROR:
-                                                    Log.d("TAG", "network error");
-                                                    Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
-                                                    break;
-                                                default:
-                                                    Log.d("TAG", "request failed");
-                                                    Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
-                                            }
+                                            showError(databaseError);
                                         }
                                     }
                                 });
@@ -520,21 +589,71 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                switch (databaseError.getCode()) {
-                    case DatabaseError.PERMISSION_DENIED:
-                        Log.d("TAG", "permission denied");
-                        Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
-                        break;
-                    case DatabaseError.NETWORK_ERROR:
-                        Log.d("TAG", "network error");
-                        Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        Log.d("TAG", "request failed");
-                        Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
-                }
-                mProcessClick = false;
+                showError(databaseError);
             }
         });
+    }
+
+
+    private void openRemoveFollowing() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Remove Following?")
+                .setNegativeButton(R.string.button_title_cancel, null)
+                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        removeFollowing();
+                    }
+                });
+
+        builder.create().show();
+    }
+
+    private void removeFollowing() {
+        mProcessClick = true;
+        mFriendsRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (mProcessClick) {
+                    if (dataSnapshot.child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
+                        mFriendsRef.child(Consts.FOLLOWERS_LIST_REF).child(currentUserId)
+                                .removeValue(new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if (databaseError == null) {
+                                            Log.d(TAG, "request removed");
+                                        } else {
+                                            showError(databaseError);
+                                        }
+                                    }
+                                });
+                        mProcessClick = false;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                showError(databaseError);
+            }
+        });
+    }
+
+
+    private void showError(DatabaseError databaseError) {
+        mProcessClick = false;
+        switch (databaseError.getCode()) {
+            case DatabaseError.PERMISSION_DENIED:
+                Log.d("TAG", "permission denied");
+                Toast.makeText(ProfileActivity.this, "permission denied", Toast.LENGTH_SHORT).show();
+                break;
+            case DatabaseError.NETWORK_ERROR:
+                Log.d("TAG", "network error");
+                Toast.makeText(ProfileActivity.this, "network error", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Log.d("TAG", "request failed");
+                Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -24,44 +24,37 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleEnabled="false">
 
-
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="?attr/actionBarSize"
-                android:background="@color/primary"
                 android:orientation="vertical"
                 app:layout_collapseMode="parallax"
                 app:layout_scrollFlags="scroll|enterAlways">
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:alpha=".7"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/timeline_thumb"
-                    tools:ignore="ContentDescription" />
 
-                <LinearLayout
+                <FrameLayout
+                    android:id="@+id/head"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:gravity="center"
+                    android:layout_height="wrap_content"
+                    android:background="@color/primary"
                     android:orientation="vertical">
 
-                    <LinearLayout
+                    <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="horizontal">
+                        android:layout_height="200dp"
+                        android:alpha=".7"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/timeline_thumb"
+                        tools:ignore="ContentDescription" />
 
-                        <Button
-                            android:id="@+id/messageBtn"
-                            android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:background="@drawable/message_button"
-                            android:text="Message"
-                            android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
 
                         <FrameLayout
@@ -94,87 +87,81 @@
                                 android:visibility="visible" />
                         </FrameLayout>
 
-                        <Button
-                            android:id="@+id/followBtn"
+                        <TextView
+                            android:id="@+id/nameEditText"
                             android:layout_width="wrap_content"
-                            android:layout_height="30dp"
-                            android:background="@drawable/follow_button"
-                            android:text="Follow"
-                            android:textSize="12sp" />
-
+                            android:layout_height="wrap_content"
+                            android:textAppearance="@style/TextAppearance.Title"
+                            android:textColor="@android:color/white"
+                            android:textStyle="bold" />
                     </LinearLayout>
+                </FrameLayout>
 
-                    <TextView
-                        android:id="@+id/nameEditText"
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="-20dp"
+                    android:padding="5dp">
+
+                    <Button
+                        android:id="@+id/followBtn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ali raza"
-                        android:textAppearance="@style/TextAppearance.Title"
+                        android:background="@drawable/follow_button"
+                        android:text="Follow"
                         android:textColor="@android:color/white"
-                        android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:textSize="12sp" />
+                </FrameLayout>
 
-                    <LinearLayout
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/border_top_bottom"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="3">
+
+                    <TextView
+                        android:id="@+id/postsCounterTextView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:gravity="center|center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_weight="1"
+                        android:background="@drawable/border_right"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:textColor="@color/follow_color"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/userFollowers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/border_right"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:textColor="@color/follow_color"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/userFollowings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:textColor="@color/follow_color"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
 
-                        <LinearLayout
-                            android:layout_width="@dimen/detail_width"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/postsCounterTextView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:textSize="20sp"
-                                android:textStyle="bold"
-                                android:visibility="invisible" />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="@dimen/detail_width"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp"
-                            android:layout_marginRight="10dp"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/userFollowers"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:textSize="20sp"
-                                android:textStyle="bold"
-                                android:visibility="invisible" />
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="@dimen/detail_width"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:id="@+id/userFollowings"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="20sp"
-                                android:textStyle="bold"
-                                android:gravity="center"
-                                android:visibility="invisible" />
-                        </LinearLayout>
-                    </LinearLayout>
                 </LinearLayout>
-            </FrameLayout>
+            </LinearLayout>
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -204,7 +191,8 @@
                 android:id="@+id/heading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/primary">
+                android:background="@color/primary"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/postsLabelTextView"
@@ -216,6 +204,7 @@
                     android:textAllCaps="true"
                     android:textColor="@android:color/white" />
             </FrameLayout>
+
 
             <android.support.v4.widget.SwipeRefreshLayout
                 android:id="@+id/swipeContainer"
@@ -233,6 +222,5 @@
             </android.support.v4.widget.SwipeRefreshLayout>
 
         </RelativeLayout>
-
     </cz.kinst.jakub.view.SimpleStatefulLayout>
 </android.support.design.widget.CoordinatorLayout>

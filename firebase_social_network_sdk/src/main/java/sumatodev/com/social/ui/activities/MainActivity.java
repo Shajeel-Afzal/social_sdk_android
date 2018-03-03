@@ -410,6 +410,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             }
 
             return true;
+        } else if (i == R.id.users) {
+            startActivity(new Intent(MainActivity.this, UsersActivity.class));
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }

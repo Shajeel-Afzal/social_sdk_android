@@ -4,20 +4,25 @@
 
     <item
         android:id="@+id/signOut"
+        android:orderInCategory="30"
         android:title="@string/sign_out_menu_label"
-        app:showAsAction="never"
-        android:orderInCategory="30" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/editProfile"
+        android:orderInCategory="20"
         android:title="@string/edit_profile_menu_label"
-        app:showAsAction="never"
-        android:orderInCategory="20" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/createPost"
+        android:orderInCategory="10"
         android:title="@string/create_post_full_menu_label"
-        app:showAsAction="never"
-        android:orderInCategory="10" />
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/follow_requests"
+        android:title="Requests"
+        app:showAsAction="ifRoom" />
 </menu>
 

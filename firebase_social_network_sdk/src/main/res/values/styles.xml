@@ -45,8 +45,9 @@
     </style>
 
     <style name="TextAppearance.Follow" parent="@android:style/TextAppearance.Small">
-        <item name="android:textColor">@color/light</item>
+        <item name="android:textColor">@color/follow_color</item>
         <item name="android:textStyle">normal</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="TextAppearance.Highlight" parent="@android:style/TextAppearance">
@@ -63,5 +64,14 @@
         <item name="android:textSize">32sp</item>
         <item name="android:textColor">@android:color/white</item>
     </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
 </resources>

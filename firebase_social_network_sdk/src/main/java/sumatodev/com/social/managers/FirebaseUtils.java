@@ -1,8 +1,8 @@
 package sumatodev.com.social.managers;
 
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
+import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.enums.Consts;
 
 /**
@@ -11,9 +11,16 @@ import sumatodev.com.social.enums.Consts;
 
 public class FirebaseUtils {
 
+    public static DatabaseReference getDatabaseRef() {
+        return ApplicationHelper.getDatabaseHelper()
+                .getDatabaseReference();
+    }
 
     public static DatabaseReference getFriendsRef() {
-        return FirebaseDatabase.getInstance()
-                .getReference(Consts.FRIENDS_REF);
+        return getDatabaseRef().child(Consts.FRIENDS_REF);
+    }
+
+    public static DatabaseReference getUserPublicInfoRef() {
+        return getDatabaseRef().child(Consts.FIREBASE_PUBLIC_USERS);
     }
 }

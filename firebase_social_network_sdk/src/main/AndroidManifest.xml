@@ -78,6 +78,10 @@
         </service>
 
         <activity android:name=".utils.ResultActivity" />
+        <activity android:name=".ui.activities.RequestsActivity" />
+        <activity android:name=".ui.activities.UsersActivity" />
+        <activity android:name=".ui.activities.FollowersActivity" />
+        <activity android:name=".ui.activities.FollowingActivity"></activity>
     </application>
 
 </manifest>

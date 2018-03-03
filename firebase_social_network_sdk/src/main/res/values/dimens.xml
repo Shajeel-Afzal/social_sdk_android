@@ -17,7 +17,8 @@
 
     <dimen name="post_detail_image_height">250dp</dimen>
     <dimen name="post_author_image_side">80dp</dimen>
-    <dimen name="post_author_image_margin">210dp</dimen> <!-- (post_detail_image_height - post_author_image_side / 2), for centering by post image bottom line-->
+    <dimen name="post_author_image_margin">210dp
+    </dimen> <!-- (post_detail_image_height - post_author_image_side / 2), for centering by post image bottom line-->
 
     <dimen name="post_list_item_image_height">200dp</dimen>
     <dimen name="post_list_item_author_image_side">80dp</dimen>
@@ -52,4 +53,5 @@
     <dimen name="post_counter_radius">16dp</dimen>
     <dimen name="buttons_radius">20dp</dimen>
     <dimen name="detail_width">80dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 </resources>

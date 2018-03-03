@@ -46,7 +46,7 @@
             android:background="@drawable/message_button"
             android:text="Delete"
             android:textAllCaps="false"
-            android:textColor="@color/blue"
+            android:textColor="@color/secondary_text"
             tools:ignore="ButtonStyle" />
     </LinearLayout>
 </LinearLayout>

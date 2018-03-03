@@ -24,6 +24,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -61,6 +62,7 @@ import id.zelory.compressor.Compressor;
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
+import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
@@ -139,8 +141,59 @@ public class DatabaseHelper {
     }
 
     public void createOrUpdateProfile(final Profile profile, final OnProfileCreatedListener onProfileCreatedListener) {
+
+        HashMap<String, Object> userPublicMap = new HashMap<>();
+        userPublicMap.put("id", profile.getId());
+        userPublicMap.put("username", profile.getUsername());
+        if (profile.getPhotoUrl() != null) {
+            userPublicMap.put("photoUrl", profile.getPhotoUrl());
+        }
+
+        Map userPrivateMap = new ObjectMapper().convertValue(profile, Map.class);
+        Map<String, Object> result = new HashMap<>();
+
+        result.put(Consts.FIREBASE_LOCATION_USERS + "/" + profile.getId(), userPrivateMap);
+        result.put(Consts.FIREBASE_PUBLIC_USERS + "/" + profile.getId(), userPublicMap);
+
+        Task<Void> task = FirebaseUtils.getDatabaseRef().updateChildren(result);
+        task.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onProfileCreatedListener.onProfileCreated(task.isSuccessful());
+                addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), profile.getId());
+                LogUtil.logDebug(TAG, "createOrUpdateProfile, success: " + task.isSuccessful());
+            }
+        });
+
+
+
+        /*
         DatabaseReference databaseReference = ApplicationHelper.getDatabaseHelper().getDatabaseReference();
         Task<Void> task = databaseReference.child("profiles").child(profile.getId()).setValue(profile);
+        task.addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onProfileCreatedListener.onProfileCreated(task.isSuccessful());
+                addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), profile.getId());
+                LogUtil.logDebug(TAG, "createOrUpdateProfile, success: " + task.isSuccessful());
+            }
+        });
+        */
+    }
+
+    public void createProfile(final Profile profile, final OnProfileCreatedListener onProfileCreatedListener) {
+
+        HashMap<String, Object> userPublicMap = new HashMap<>();
+        userPublicMap.put("username", profile.getUsername());
+        userPublicMap.put("photoUrl", profile.getPhotoUrl());
+
+        Map userPrivateMap = new ObjectMapper().convertValue(profile, Map.class);
+        Map<String, Object> result = new HashMap<>();
+
+        result.put(Consts.FIREBASE_LOCATION_USERS + "/" + profile.getId(), userPrivateMap);
+        result.put(Consts.FIREBASE_PUBLIC_USERS + "/" + profile.getId(), userPublicMap);
+
+        Task<Void> task = FirebaseUtils.getDatabaseRef().setValue(result);
         task.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
