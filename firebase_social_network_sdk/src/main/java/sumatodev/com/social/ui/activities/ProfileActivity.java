@@ -61,6 +61,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
@@ -299,11 +300,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 public void onPostsListChanged(int postsCount) {
                     String postsLabel = getResources().getQuantityString(R.plurals.posts_counter_format, postsCount, postsCount);
                     postsCounterTextView.setText(buildCounterSpannable(postsLabel, postsCount));
-                    //likesCountersTextView.setVisibility(View.VISIBLE);
-                    postsCounterTextView.setVisibility(View.VISIBLE);
 
                     if (postsCount > 0) {
-                        postsLabelTextView.setVisibility(View.VISIBLE);
                         statefulLayout.showContent();
                     } else if (postsCount < 0) {
                         statefulLayout.setEmptyText("no posts to show");
@@ -527,7 +525,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                         String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
                                 (int) totalFollowings);
                         userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
-
+                        
                         statefulLayout.showContent();
                     }
 
@@ -570,6 +568,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                         UsersThread thread = new UsersThread();
                         thread.setId(currentUserId);
                         thread.setCreatedDate(Calendar.getInstance().getTimeInMillis());
+                        thread.setType("following");
 
                         mFriendsRef.child(Consts.REQUEST_LIST_REF).child(currentUserId)
                                 .setValue(thread, new DatabaseReference.CompletionListener() {
@@ -611,32 +610,42 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private void removeFollowing() {
         mProcessClick = true;
-        mFriendsRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (mProcessClick) {
-                    if (dataSnapshot.child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
-                        mFriendsRef.child(Consts.FOLLOWERS_LIST_REF).child(currentUserId)
-                                .removeValue(new DatabaseReference.CompletionListener() {
-                                    @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                        if (databaseError == null) {
-                                            Log.d(TAG, "request removed");
-                                        } else {
-                                            showError(databaseError);
-                                        }
-                                    }
-                                });
-                        mProcessClick = false;
-                    }
-                }
-            }
+        FirebaseUtils.getFriendsRef()
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (mProcessClick) {
+                            if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)
+                                    && dataSnapshot.child(currentUserId).child(Consts.FOLLOWING_LIST_REF).hasChild(userID)) {
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                showError(databaseError);
-            }
-        });
+                                String myRef = currentUserId + "/" + Consts.FOLLOWING_LIST_REF;
+                                String userRef = userID + "/" + Consts.FOLLOWERS_LIST_REF;
+
+                                HashMap<String, Object> removeMap = new HashMap<>();
+                                removeMap.put(myRef + "/" + userID, null);
+                                removeMap.put(userRef + "/" + currentUserId, null);
+
+                                FirebaseUtils.getFriendsRef()
+                                        .updateChildren(removeMap, new DatabaseReference.CompletionListener() {
+                                            @Override
+                                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                                if (databaseError == null) {
+                                                    Log.d(TAG, "request removed");
+                                                } else {
+                                                    showError(databaseError);
+                                                }
+                                            }
+                                        });
+                                mProcessClick = false;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        showError(databaseError);
+                    }
+                });
     }
 
 

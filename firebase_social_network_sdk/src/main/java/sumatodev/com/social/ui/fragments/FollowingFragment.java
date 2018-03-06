@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,7 +20,6 @@ import android.view.ViewGroup;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -35,7 +35,7 @@ import sumatodev.com.social.ui.activities.ProfileActivity;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FollowingFragment extends Fragment implements OnRequestItemListener {
+public class FollowingFragment extends BaseFragment implements OnRequestItemListener {
 
 
     private static final String TAG = FollowingFragment.class.getSimpleName();
@@ -44,9 +44,8 @@ public class FollowingFragment extends Fragment implements OnRequestItemListener
 
     private String userKey;
     private LinearLayoutManager layoutManager;
-    private boolean mProcessClick = false;
-    private DatabaseReference mMyDatabaseRef;
     private FollowAdapter followAdapter;
+    private ActionBar actionBar;
 
 
     public FollowingFragment() {
@@ -68,8 +67,8 @@ public class FollowingFragment extends Fragment implements OnRequestItemListener
         if (getArguments() != null) {
             userKey = getArguments().getString(Consts.USER_KEY);
             Log.d(TAG, "followingKey: " + userKey);
-            //mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(userKey);
         }
+        actionBar = getActionBar();
     }
 
     @Override
@@ -77,6 +76,10 @@ public class FollowingFragment extends Fragment implements OnRequestItemListener
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_request_list, container, false);
         findViews(view);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Following");
+        }
         return view;
     }
 
@@ -89,7 +92,7 @@ public class FollowingFragment extends Fragment implements OnRequestItemListener
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupLinearLayout();
-        if (userKey != null) {
+        if (userKey != null && checkInternetConnection()) {
             loadFollowingList();
         }
     }
@@ -145,7 +148,9 @@ public class FollowingFragment extends Fragment implements OnRequestItemListener
     @Override
     public void onStart() {
         super.onStart();
-        followAdapter.startListening();
+        if (checkInternetConnection()) {
+            followAdapter.startListening();
+        }
     }
 
     @Override

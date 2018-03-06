@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -43,7 +44,7 @@ import sumatodev.com.social.ui.activities.ProfileActivity;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class RequestListFragment extends Fragment implements OnRequestItemListener {
+public class RequestListFragment extends BaseFragment implements OnRequestItemListener {
 
     private static final String TAG = RequestListFragment.class.getSimpleName();
     private SimpleStatefulLayout mStatefulLayout;
@@ -54,6 +55,7 @@ public class RequestListFragment extends Fragment implements OnRequestItemListen
     private boolean mProcessClick = false;
     private RequestListAdapter listAdapter;
     private DatabaseReference mMyDatabaseRef;
+    private ActionBar actionBar;
 
     public RequestListFragment() {
         // Required empty public constructor
@@ -75,6 +77,7 @@ public class RequestListFragment extends Fragment implements OnRequestItemListen
             currentUid = firebaseUser.getUid();
             mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(currentUid);
         }
+        actionBar = getActionBar();
     }
 
     @Override
@@ -83,6 +86,10 @@ public class RequestListFragment extends Fragment implements OnRequestItemListen
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_request_list, container, false);
         findViews(view);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Requests");
+        }
         return view;
     }
 
@@ -166,15 +173,17 @@ public class RequestListFragment extends Fragment implements OnRequestItemListen
 
                                 userModel.setId(userKey);
                                 userModel.setCreatedDate(Calendar.getInstance().getTimeInMillis());
+                                userModel.setType("follower");
 
 
                                 UsersThread forFollowing = new UsersThread();
                                 forFollowing.setId(currentUid);
                                 forFollowing.setCreatedDate(Calendar.getInstance().getTimeInMillis());
+                                forFollowing.setType("following");
 
 
                                 Map userMap = new ObjectMapper().convertValue(userModel, Map.class);
-                                Map followingMap  = new ObjectMapper().convertValue(forFollowing, Map.class);
+                                Map followingMap = new ObjectMapper().convertValue(forFollowing, Map.class);
 
                                 HashMap<String, Object> hashMap = new HashMap<>();
                                 hashMap.put(currentUid + "/" + Consts.REQUEST_LIST_REF + "/" + userKey, null);

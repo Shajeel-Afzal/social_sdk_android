@@ -8,13 +8,15 @@ public class UsersThread {
 
     private String id;
     private Long createdDate;
+    private String type;
 
     public UsersThread() {
     }
 
-    public UsersThread(String id, Long createdDate) {
+    public UsersThread(String id, Long createdDate, String type) {
         this.id = id;
         this.createdDate = createdDate;
+        this.type = type;
     }
 
     public String getId() {
@@ -31,5 +33,13 @@ public class UsersThread {
 
     public void setCreatedDate(Long createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

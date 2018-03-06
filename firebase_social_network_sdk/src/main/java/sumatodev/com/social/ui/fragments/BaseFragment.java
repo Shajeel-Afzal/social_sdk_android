@@ -13,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
@@ -33,10 +34,15 @@ public class BaseFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         if (getActivity() != null) {
             actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
             activity = getActivity();
         }
+    }
+
+    public ActionBar getActionBar() {
+        return actionBar;
     }
 
     public void doAuthorization(ProfileStatus status) {
@@ -129,4 +135,13 @@ public class BaseFragment extends Fragment {
         return hasInternetConnection;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                activity.onBackPressed();
+
+        }
+        return (super.onOptionsItemSelected(item));
+    }
 }

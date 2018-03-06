@@ -1,12 +1,13 @@
 package sumatodev.com.social.ui.fragments;
 
+
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +19,6 @@ import android.view.ViewGroup;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
@@ -31,7 +31,7 @@ import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.model.UsersThread;
 import sumatodev.com.social.ui.activities.ProfileActivity;
 
-public class FollowersFragment extends Fragment implements OnRequestItemListener {
+public class FollowersFragment extends BaseFragment implements OnRequestItemListener {
 
     private static final String TAG = FollowersFragment.class.getSimpleName();
     private SimpleStatefulLayout mStatefulLayout;
@@ -39,9 +39,8 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
 
     private String userKey;
     private LinearLayoutManager layoutManager;
-    private boolean mProcessClick = false;
-    private DatabaseReference mMyDatabaseRef;
     private FollowAdapter followAdapter;
+    private ActionBar actionBar;
 
     public FollowersFragment() {
     }
@@ -61,8 +60,8 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
         if (getArguments() != null) {
             userKey = getArguments().getString(Consts.USER_KEY);
             Log.d(TAG, "followersKey" + userKey);
-            //mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(userKey);
         }
+        actionBar = getActionBar();
     }
 
     @Override
@@ -70,6 +69,10 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_request_list, container, false);
         findViews(view);
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Followers");
+        }
         return view;
     }
 
@@ -82,7 +85,7 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupLinearLayout();
-        if (userKey != null) {
+        if (userKey != null && checkInternetConnection()) {
             loadFollowersList();
         }
     }
@@ -131,7 +134,7 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
         layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setReverseLayout(true);
         layoutManager.setStackFromEnd(true);
-        recycleView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        recycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         recycleView.setLayoutManager(layoutManager);
     }
 
@@ -139,7 +142,9 @@ public class FollowersFragment extends Fragment implements OnRequestItemListener
     @Override
     public void onStart() {
         super.onStart();
-        followAdapter.startListening();
+        if (checkInternetConnection()){
+            followAdapter.startListening();
+        }
     }
 
     @Override
