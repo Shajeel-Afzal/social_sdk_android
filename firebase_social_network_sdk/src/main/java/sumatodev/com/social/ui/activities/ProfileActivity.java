@@ -201,7 +201,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         super.onStart();
         if (hasInternetConnection()) {
             dataLayout.setVisibility(View.VISIBLE);
-            if (userID != null) {
+            if (userID != null && currentUserId != null) {
                 if (userID.equalsIgnoreCase(currentUserId)) {
                     followBtn.setVisibility(View.GONE);
                 }
@@ -213,7 +213,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             if (mGoogleApiClient != null) {
                 mGoogleApiClient.connect();
             }
-        }else{
+        } else {
             dataLayout.setVisibility(View.GONE);
         }
     }
@@ -293,16 +293,17 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             postsAdapter.setCallBack(new PostsByUserAdapter.CallBack() {
                 @Override
                 public void onItemClick(final Post post, final View view) {
-                    PostManager.getInstance(ProfileActivity.this).isPostExistSingleValue(post.getId(), new OnObjectExistListener<Post>() {
-                        @Override
-                        public void onDataChanged(boolean exist) {
-                            if (exist) {
-                                openPostDetailsActivity(post, view);
-                            } else {
-                                showSnackBar(R.string.error_post_was_removed);
-                            }
-                        }
-                    });
+                    PostManager.getInstance(ProfileActivity.this).isPostExistSingleValue(post.getId(),
+                            new OnObjectExistListener<Post>() {
+                                @Override
+                                public void onDataChanged(boolean exist) {
+                                    if (exist) {
+                                        openPostDetailsActivity(post, view);
+                                    } else {
+                                        showSnackBar(R.string.error_post_was_removed);
+                                    }
+                                }
+                            });
                 }
 
                 @Override
@@ -406,6 +407,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             }
                         })
                         .into(imageView);
+
+                checkFollowStatus();
             } else {
                 progressBar.setVisibility(View.GONE);
                 imageView.setImageResource(R.drawable.ic_stub);
@@ -527,18 +530,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                 }
                             });
                         }
-
-                        long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
-                        long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
-
-                        String followers = getResources().getQuantityString(R.plurals.user_follower_format,
-                                (int) totalFollowers, totalFollowers);
-                        userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
-
-                        String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
-                                (int) totalFollowings);
-                        userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
-
                         statefulLayout.showContent();
                     }
 
@@ -557,6 +548,31 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 });
     }
 
+    private void checkFollowStatus() {
+        FirebaseUtils.getFriendsRef()
+                .addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
+                    long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
+
+                    String followers = getResources().getQuantityString(R.plurals.user_follower_format,
+                            (int) totalFollowers, totalFollowers);
+                    userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
+
+                    String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
+                            (int) totalFollowings);
+                    userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                showError(databaseError);
+            }
+        });
+    }
 
     private void sendFollowRequest() {
         mProcessClick = true;
