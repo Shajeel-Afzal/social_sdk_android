@@ -221,7 +221,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     @Override
     public void onStop() {
         super.onStop();
-        // profileManager.closeListeners(this);
+        if (hasInternetConnection()) {
+            profileManager.closeListeners(this);
+        }
 
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.stopAutoManage(this);
@@ -551,27 +553,27 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void checkFollowStatus() {
         FirebaseUtils.getFriendsRef()
                 .addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
-                    long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
+                            long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
 
-                    String followers = getResources().getQuantityString(R.plurals.user_follower_format,
-                            (int) totalFollowers, totalFollowers);
-                    userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
+                            String followers = getResources().getQuantityString(R.plurals.user_follower_format,
+                                    (int) totalFollowers, totalFollowers);
+                            userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
 
-                    String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
-                            (int) totalFollowings);
-                    userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
-                }
-            }
+                            String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
+                                    (int) totalFollowings);
+                            userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
+                        }
+                    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                showError(databaseError);
-            }
-        });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        showError(databaseError);
+                    }
+                });
     }
 
     private void sendFollowRequest() {
