@@ -42,6 +42,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,7 +82,8 @@ import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.NotificationView;
 
-public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, OnPostCreatedListener, View.OnClickListener {
+public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener,
+        OnPostCreatedListener, View.OnClickListener {
     private static final String TAG = ProfileActivity.class.getSimpleName();
     public static final int CREATE_POST_FROM_PROFILE_REQUEST = 22;
     public static final String USER_ID_EXTRA_KEY = "ProfileActivity.USER_ID_EXTRA_KEY";
@@ -95,6 +97,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private TextView postsLabelTextView;
     private SimpleStatefulLayout statefulLayout;
     private Button followBtn;
+    private LinearLayout dataLayout;
 
     private FirebaseAuth mAuth;
     private GoogleApiClient mGoogleApiClient;
@@ -169,6 +172,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         swipeContainer = findViewById(R.id.swipeContainer);
         userFollowers = findViewById(R.id.userFollowers);
         userFollowings = findViewById(R.id.userFollowings);
+        dataLayout = findViewById(R.id.dataLayout);
 
         userFollowers.setOnClickListener(this);
         userFollowings.setOnClickListener(this);
@@ -195,24 +199,29 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     @Override
     public void onStart() {
         super.onStart();
-        if (userID != null) {
-            if (userID.equalsIgnoreCase(currentUserId)) {
-                followBtn.setVisibility(View.GONE);
+        if (hasInternetConnection()) {
+            dataLayout.setVisibility(View.VISIBLE);
+            if (userID != null) {
+                if (userID.equalsIgnoreCase(currentUserId)) {
+                    followBtn.setVisibility(View.GONE);
+                }
+                checkFriendsStatus();
             }
-            checkFriendsStatus();
-        }
 
-        loadProfile();
+            loadProfile();
 
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
+            if (mGoogleApiClient != null) {
+                mGoogleApiClient.connect();
+            }
+        }else{
+            dataLayout.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        profileManager.closeListeners(this);
+        // profileManager.closeListeners(this);
 
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.stopAutoManage(this);
@@ -503,14 +512,18 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             followBtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    openRemoveFollowing();
+                                    if (checkInternetConnection()) {
+                                        openRemoveFollowing();
+                                    }
                                 }
                             });
                         } else {
                             followBtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    sendFollowRequest();
+                                    if (checkInternetConnection()) {
+                                        sendFollowRequest();
+                                    }
                                 }
                             });
                         }
@@ -525,7 +538,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                         String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
                                 (int) totalFollowings);
                         userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
-                        
+
                         statefulLayout.showContent();
                     }
 

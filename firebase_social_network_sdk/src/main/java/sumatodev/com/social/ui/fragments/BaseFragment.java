@@ -129,7 +129,7 @@ public class BaseFragment extends Fragment {
     public boolean checkInternetConnection() {
         boolean hasInternetConnection = hasInternetConnection();
         if (!hasInternetConnection) {
-            showWarningDialog(R.string.internet_connection_failed);
+            showSnackBar(R.string.internet_connection_failed);
         }
 
         return hasInternetConnection;
