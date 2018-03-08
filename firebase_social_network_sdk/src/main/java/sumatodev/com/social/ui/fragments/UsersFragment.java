@@ -2,9 +2,6 @@ package sumatodev.com.social.ui.fragments;
 
 
 import android.annotation.SuppressLint;
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,12 +23,11 @@ import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.UsersHolder;
 import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.model.UsersPublic;
-import sumatodev.com.social.ui.activities.ProfileActivity;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class UsersFragment extends Fragment {
+public class UsersFragment extends BaseFragment {
 
 
     private static final String TAG = UsersFragment.class.getSimpleName();
@@ -88,7 +84,7 @@ public class UsersFragment extends Fragment {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        openProfileActivity(model.getId(), v);
+                        openProfile(model.getId(), v);
                     }
                 });
             }
@@ -116,20 +112,6 @@ public class UsersFragment extends Fragment {
         recycleView.setLayoutManager(layoutManager);
     }
 
-    private void openProfileActivity(String userId, View view) {
-        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
-
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(getActivity(),
-                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
-            startActivity(intent, options.toBundle());
-        } else {
-            startActivity(intent);
-        }
-    }
 
     @Override
     public void onStart() {

@@ -163,7 +163,7 @@ public class FollowingFragment extends BaseFragment implements OnRequestItemList
 
     @Override
     public void onItemClick(View view, String userKey) {
-        openProfileActivity(userKey, view);
+        openProfile(userKey, view);
     }
 
     @Override
@@ -174,19 +174,5 @@ public class FollowingFragment extends BaseFragment implements OnRequestItemList
     public void onRejectClick(String userKey) {
     }
 
-    private void openProfileActivity(String userId, View view) {
-        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
-
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(getActivity(),
-                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
-            startActivity(intent, options.toBundle());
-        } else {
-            startActivity(intent);
-        }
-    }
 
 }

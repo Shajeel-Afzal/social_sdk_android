@@ -249,7 +249,15 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
                 @Override
                 public void onAuthorClick(String authorId, View view) {
-                    openProfileActivity(authorId, view);
+                    if (checkInternetConnection()) {
+                        ProfileStatus status = profileManager.checkProfile();
+                        if (status.equals(ProfileStatus.PROFILE_CREATED)) {
+                            openProfileActivity(authorId, view);
+
+                        } else {
+                            doAuthorization(status);
+                        }
+                    }
                 }
 
                 @Override
@@ -351,27 +359,23 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
     @SuppressLint("RestrictedApi")
     private void openProfileActivity(String userId, View view) {
-        ProfileStatus profileStatus = profileManager.checkProfile();
 
-        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED) && checkInternetConnection()) {
 
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-            intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
 
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
 
-                View authorImageView = view.findViewById(R.id.authorImageView);
+            View authorImageView = view.findViewById(R.id.authorImageView);
 
-                ActivityOptions options = ActivityOptions.
-                        makeSceneTransitionAnimation(MainActivity.this,
-                                new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name)));
-                startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST, options.toBundle());
-            } else {
-                startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST);
-            }
+            ActivityOptions options = ActivityOptions.
+                    makeSceneTransitionAnimation(MainActivity.this,
+                            new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name)));
+            startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST, options.toBundle());
         } else {
-            doAuthorization(profileStatus);
+            startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST);
         }
+
     }
 
     private void updateNewPostCounter() {
@@ -408,12 +412,20 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         int i = item.getItemId();
         if (i == R.id.profile) {
 
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            openProfileActivity(userId);
-
+            if (checkInternetConnection()) {
+                ProfileStatus profileStatus = profileManager.checkProfile();
+                if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
+                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    openProfileActivity(userId);
+                } else {
+                    doAuthorization(profileStatus);
+                }
+            }
             return true;
         } else if (i == R.id.users) {
-            startActivity(new Intent(MainActivity.this, UsersActivity.class));
+            if (checkInternetConnection()) {
+                startActivity(new Intent(MainActivity.this, UsersActivity.class));
+            }
             return true;
         } else {
             return super.onOptionsItemSelected(item);

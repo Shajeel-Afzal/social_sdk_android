@@ -33,6 +33,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
+import sumatodev.com.social.managers.ProfileManager;
 
 /**
  * Created by alexey on 05.12.16.
@@ -50,7 +51,7 @@ public class BaseActivity extends AppCompatActivity {
         actionBar = getSupportActionBar();
     }
 
-    protected boolean isActive(){
+    protected boolean isActive() {
         return mIsActive;
     }
 

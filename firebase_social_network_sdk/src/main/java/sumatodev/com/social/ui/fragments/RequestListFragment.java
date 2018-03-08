@@ -1,9 +1,6 @@
 package sumatodev.com.social.ui.fragments;
 
 
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -39,7 +36,6 @@ import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.listeners.OnRequestItemListener;
 import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.model.Follow;
-import sumatodev.com.social.ui.activities.ProfileActivity;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -155,7 +151,7 @@ public class RequestListFragment extends BaseFragment implements OnRequestItemLi
 
     @Override
     public void onItemClick(View view, String userKey) {
-        openProfileActivity(userKey, view);
+        openProfile(userKey, view);
     }
 
     @Override
@@ -247,21 +243,6 @@ public class RequestListFragment extends BaseFragment implements OnRequestItemLi
         });
     }
 
-
-    private void openProfileActivity(String userId, View view) {
-        Intent intent = new Intent(getActivity(), ProfileActivity.class);
-        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
-
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
-
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(getActivity(),
-                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
-            startActivity(intent, options.toBundle());
-        } else {
-            startActivity(intent);
-        }
-    }
 
     @Override
     public void onStart() {

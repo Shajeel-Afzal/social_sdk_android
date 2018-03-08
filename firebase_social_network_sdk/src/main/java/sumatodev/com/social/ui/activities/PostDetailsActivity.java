@@ -252,7 +252,14 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             @Override
             public void onClick(View v) {
                 if (post != null) {
-                    openProfileActivity(post.getAuthorId(), v);
+                    if (checkInternetConnection()) {
+                        ProfileStatus profileStatus = profileManager.checkProfile();
+                        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
+                            openProfileActivity(post.getAuthorId(), v);
+                        } else {
+                            doAuthorization(profileStatus);
+                        }
+                    }
                 }
             }
         };
@@ -540,25 +547,20 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void openProfileActivity(String userId, View view) {
-        ProfileStatus profileStatus = profileManager.checkProfile();
 
-        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED) && checkInternetConnection()) {
+        Intent intent = new Intent(PostDetailsActivity.this, ProfileActivity.class);
+        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
 
-            Intent intent = new Intent(PostDetailsActivity.this, ProfileActivity.class);
-            intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
 
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
-
-                ActivityOptions options = ActivityOptions.
-                        makeSceneTransitionAnimation(PostDetailsActivity.this,
-                                new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
-                startActivity(intent, options.toBundle());
-            } else {
-                startActivity(intent);
-            }
+            ActivityOptions options = ActivityOptions.
+                    makeSceneTransitionAnimation(PostDetailsActivity.this,
+                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
+            startActivity(intent, options.toBundle());
         } else {
-            doAuthorization(profileStatus);
+            startActivity(intent);
         }
+
     }
 
     private OnObjectExistListener<Like> createOnLikeObjectExistListener() {
@@ -704,12 +706,14 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void doComplainAction() {
-        ProfileStatus profileStatus = profileManager.checkProfile();
+        if (checkInternetConnection()) {
+            ProfileStatus profileStatus = profileManager.checkProfile();
 
-        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
-            openComplainDialog();
-        } else {
-            doAuthorization(profileStatus);
+            if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
+                openComplainDialog();
+            } else {
+                doAuthorization(profileStatus);
+            }
         }
     }
 

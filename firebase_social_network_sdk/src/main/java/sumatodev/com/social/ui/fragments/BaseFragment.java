@@ -1,11 +1,13 @@
 package sumatodev.com.social.ui.fragments;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -19,7 +21,9 @@ import android.view.inputmethod.InputMethodManager;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
+import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.ui.activities.LoginActivity;
+import sumatodev.com.social.ui.activities.ProfileActivity;
 
 /**
  * Created by Ali on 27/02/2018.
@@ -72,6 +76,32 @@ public class BaseFragment extends Fragment {
         if (progressDialog != null) {
             progressDialog.dismiss();
             progressDialog = null;
+        }
+    }
+
+    public void openProfile(String userId, View view) {
+        if (checkInternetConnection()) {
+            ProfileStatus profileStatus = ProfileManager.getInstance(getActivity()).checkProfile();
+            if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
+                openProfileActivity(userId, view);
+            } else {
+                doAuthorization(profileStatus);
+            }
+        }
+    }
+
+    private void openProfileActivity(String userId, View view) {
+        Intent intent = new Intent(getActivity(), ProfileActivity.class);
+        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+
+            ActivityOptions options = ActivityOptions.
+                    makeSceneTransitionAnimation(getActivity(),
+                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
+            startActivity(intent, options.toBundle());
+        } else {
+            startActivity(intent);
         }
     }
 
