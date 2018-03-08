@@ -351,19 +351,26 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
     @SuppressLint("RestrictedApi")
     private void openProfileActivity(String userId, View view) {
-        Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
-        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+        ProfileStatus profileStatus = profileManager.checkProfile();
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED) && checkInternetConnection()) {
 
-            View authorImageView = view.findViewById(R.id.authorImageView);
+            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
 
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(MainActivity.this,
-                            new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name)));
-            startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST, options.toBundle());
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+
+                View authorImageView = view.findViewById(R.id.authorImageView);
+
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(MainActivity.this,
+                                new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name)));
+                startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST, options.toBundle());
+            } else {
+                startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST);
+            }
         } else {
-            startActivityForResult(intent, ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST);
+            doAuthorization(profileStatus);
         }
     }
 
@@ -400,14 +407,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         // Handle item selection
         int i = item.getItemId();
         if (i == R.id.profile) {
-            ProfileStatus profileStatus = profileManager.checkProfile();
 
-            if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
-                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                openProfileActivity(userId);
-            } else {
-                doAuthorization(profileStatus);
-            }
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            openProfileActivity(userId);
 
             return true;
         } else if (i == R.id.users) {

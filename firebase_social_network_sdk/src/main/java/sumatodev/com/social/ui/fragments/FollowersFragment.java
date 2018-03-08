@@ -28,7 +28,7 @@ import sumatodev.com.social.adapters.FollowAdapter;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.listeners.OnRequestItemListener;
 import sumatodev.com.social.managers.FirebaseUtils;
-import sumatodev.com.social.model.UsersThread;
+import sumatodev.com.social.model.Follow;
 import sumatodev.com.social.ui.activities.ProfileActivity;
 
 public class FollowersFragment extends BaseFragment implements OnRequestItemListener {
@@ -96,8 +96,8 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
 
         Query query = FirebaseUtils.getFriendsRef().child(userKey).child(Consts.FOLLOWERS_LIST_REF);
 
-        FirebaseRecyclerOptions<UsersThread> options = new FirebaseRecyclerOptions.Builder<UsersThread>()
-                .setQuery(query, UsersThread.class)
+        FirebaseRecyclerOptions<Follow> options = new FirebaseRecyclerOptions.Builder<Follow>()
+                .setQuery(query, Follow.class)
                 .build();
 
         followAdapter = new FollowAdapter(options);

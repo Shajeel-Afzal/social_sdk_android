@@ -42,12 +42,28 @@ public class BaseActivity extends AppCompatActivity {
 
     public ProgressDialog progressDialog;
     public ActionBar actionBar;
+    private boolean mIsActive = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         actionBar = getSupportActionBar();
+    }
 
+    protected boolean isActive(){
+        return mIsActive;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mIsActive = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mIsActive = false;
     }
 
     public void doAuthorization(ProfileStatus status) {
@@ -132,7 +148,7 @@ public class BaseActivity extends AppCompatActivity {
     public boolean checkInternetConnection() {
         boolean hasInternetConnection = hasInternetConnection();
         if (!hasInternetConnection) {
-            showWarningDialog(R.string.internet_connection_failed);
+            showSnackBar(R.string.internet_connection_failed);
         }
 
         return hasInternetConnection;

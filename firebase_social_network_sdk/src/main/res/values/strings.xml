@@ -173,5 +173,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_followers">FollowersActivity</string>
     <string name="action_settings">Settings</string>
+    <string name="following">following</string>
+    <string name="login_required">login required to follow someone</string>
 
 </resources>

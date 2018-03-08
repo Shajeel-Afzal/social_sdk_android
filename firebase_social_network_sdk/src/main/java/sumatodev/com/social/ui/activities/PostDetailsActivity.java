@@ -60,6 +60,9 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
 import sumatodev.com.social.controllers.LikeController;
@@ -79,15 +82,9 @@ import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
-import sumatodev.com.social.ui.activities.BaseActivity;
-import sumatodev.com.social.ui.activities.EditPostActivity;
-import sumatodev.com.social.ui.activities.ImageDetailActivity;
-import sumatodev.com.social.ui.activities.ProfileActivity;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
-
-import java.util.List;
 
 public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback {
 
@@ -320,6 +317,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             @Override
             public void onAuthorClick(String authorId, View view) {
                 openProfileActivity(authorId, view);
+
             }
         });
         commentsRecyclerView.setAdapter(commentsAdapter);
@@ -542,17 +540,24 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void openProfileActivity(String userId, View view) {
-        Intent intent = new Intent(PostDetailsActivity.this, ProfileActivity.class);
-        intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+        ProfileStatus profileStatus = profileManager.checkProfile();
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+        if (profileStatus.equals(ProfileStatus.PROFILE_CREATED) && checkInternetConnection()) {
 
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(PostDetailsActivity.this,
-                            new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
-            startActivity(intent, options.toBundle());
+            Intent intent = new Intent(PostDetailsActivity.this, ProfileActivity.class);
+            intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
+
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && view != null) {
+
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(PostDetailsActivity.this,
+                                new android.util.Pair<>(view, getString(R.string.post_author_image_transition_name)));
+                startActivity(intent, options.toBundle());
+            } else {
+                startActivity(intent);
+            }
         } else {
-            startActivity(intent);
+            doAuthorization(profileStatus);
         }
     }
 
@@ -568,7 +573,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private void initLikeButtonState() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null && post != null) {
-            postManager.hasCurrentUserLike(this, post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+            postManager.hasCurrentUserLike(this, post.getId(),
+                    firebaseUser.getUid(), createOnLikeObjectExistListener());
         }
     }
 
@@ -869,6 +875,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             mActionMode = null;
         }
     }
+
     Animator.AnimatorListener authorAnimatorListener = new Animator.AnimatorListener() {
         @Override
         public void onAnimationStart(Animator animation) {

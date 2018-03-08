@@ -12,25 +12,25 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.RequestsHolder;
 import sumatodev.com.social.listeners.OnRequestItemListener;
-import sumatodev.com.social.model.UsersThread;
+import sumatodev.com.social.model.Follow;
 import sumatodev.com.social.utils.InternetStatus;
 
 /**
  * Created by Ali on 17/02/2018.
  */
 
-public class RequestListAdapter extends FirebaseRecyclerAdapter<UsersThread, RequestsHolder> {
+public class RequestListAdapter extends FirebaseRecyclerAdapter<Follow, RequestsHolder> {
 
     private static final String TAG = RequestListAdapter.class.getName();
     private OnRequestItemListener onRequestItemListener;
 
-    public RequestListAdapter(@NonNull FirebaseRecyclerOptions<UsersThread> options) {
+    public RequestListAdapter(@NonNull FirebaseRecyclerOptions<Follow> options) {
         super(options);
     }
 
 
     @Override
-    protected void onBindViewHolder(@NonNull RequestsHolder holder, int position, @NonNull final UsersThread model) {
+    protected void onBindViewHolder(@NonNull RequestsHolder holder, int position, @NonNull final Follow model) {
         if (model.getId() != null) {
             holder.setData(model.getId());
 

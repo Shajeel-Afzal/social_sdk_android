@@ -75,9 +75,9 @@ import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
+import sumatodev.com.social.model.Follow;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
-import sumatodev.com.social.model.UsersThread;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.NotificationView;
@@ -110,7 +110,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private ProfileManager profileManager;
     private PostManager postManager;
     private NotificationView notificationView;
-
     private DatabaseReference mFriendsRef;
     private DatabaseReference mMyDatabaseRef;
     private boolean mProcessClick = false;
@@ -201,7 +200,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         super.onStart();
         if (hasInternetConnection()) {
             dataLayout.setVisibility(View.VISIBLE);
-            if (userID != null && currentUserId != null) {
+            if (userID != null) {
                 if (userID.equalsIgnoreCase(currentUserId)) {
                     followBtn.setVisibility(View.GONE);
                 }
@@ -221,9 +220,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     @Override
     public void onStop() {
         super.onStop();
-        if (hasInternetConnection()) {
-            profileManager.closeListeners(this);
-        }
+        profileManager.closeListeners(this);
+
 
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             mGoogleApiClient.stopAutoManage(this);
@@ -505,15 +503,16 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (dataSnapshot.child(userID).child(Consts.REQUEST_LIST_REF).hasChild(currentUserId)) {
-                            followBtn.setText("Requested");
-                        } else if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
-                            followBtn.setText("Following");
-                        } else {
-                            followBtn.setText("Follow");
+                        if (currentUserId != null) {
+                            if (dataSnapshot.child(userID).child(Consts.REQUEST_LIST_REF).hasChild(currentUserId)) {
+                                followBtn.setText("Requested");
+                            } else if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
+                                followBtn.setText("Following");
+                            } else {
+                                followBtn.setText("Follow");
+                            }
                         }
-
-                        if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
+                        if (currentUserId != null && dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
                             followBtn.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -527,7 +526,11 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                 @Override
                                 public void onClick(View v) {
                                     if (checkInternetConnection()) {
-                                        sendFollowRequest();
+                                        if (currentUserId != null) {
+                                            sendFollowRequest();
+                                        } else {
+                                            showSnackBar(R.string.login_required);
+                                        }
                                     }
                                 }
                             });
@@ -596,7 +599,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                 });
                         mProcessClick = false;
                     } else {
-                        UsersThread thread = new UsersThread();
+                        Follow thread = new Follow();
                         thread.setId(currentUserId);
                         thread.setCreatedDate(Calendar.getInstance().getTimeInMillis());
                         thread.setType("following");
@@ -695,5 +698,12 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 Log.d("TAG", "request failed");
                 Toast.makeText(ProfileActivity.this, "request failed", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        profileManager.closeListeners(this);
     }
 }

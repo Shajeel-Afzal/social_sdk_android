@@ -90,9 +90,10 @@ public class DatabaseHelper {
 
     private Context context;
     private FirebaseDatabase database;
-    FirebaseStorage storage;
-    FirebaseAuth firebaseAuth;
+    private FirebaseStorage storage;
+    private FirebaseAuth firebaseAuth;
     private Map<ValueEventListener, DatabaseReference> activeListeners = new HashMap<>();
+
 
     public static DatabaseHelper getInstance(Context context) {
         if (instance == null) {
@@ -250,7 +251,6 @@ public class DatabaseHelper {
         DatabaseReference databaseReference = database.getReference();
         return databaseReference.child("posts").push().getKey();
     }
-
 
     public void createOrUpdatePost(Post post) {
         try {
@@ -763,6 +763,7 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
+
     public ValueEventListener getCommentsList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
         ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
@@ -812,6 +813,7 @@ public class DatabaseHelper {
         activeListeners.put(valueEventListener, databaseReference);
         return valueEventListener;
     }
+
 
     public void hasCurrentUserLikeSingleValue(String postId, String userId, final OnObjectExistListener<Like> onObjectExistListener) {
         DatabaseReference databaseReference = database.getReference("post-likes").child(postId).child(userId);

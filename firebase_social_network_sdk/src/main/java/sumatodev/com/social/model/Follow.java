@@ -4,16 +4,16 @@ package sumatodev.com.social.model;
  * Created by Ali on 01/03/2018.
  */
 
-public class UsersThread {
+public class Follow {
 
     private String id;
     private Long createdDate;
     private String type;
 
-    public UsersThread() {
+    public Follow() {
     }
 
-    public UsersThread(String id, Long createdDate, String type) {
+    public Follow(String id, Long createdDate, String type) {
         this.id = id;
         this.createdDate = createdDate;
         this.type = type;

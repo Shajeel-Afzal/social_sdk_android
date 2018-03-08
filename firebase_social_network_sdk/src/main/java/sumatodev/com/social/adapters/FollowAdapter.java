@@ -11,22 +11,22 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.FollowHolder;
 import sumatodev.com.social.listeners.OnRequestItemListener;
-import sumatodev.com.social.model.UsersThread;
+import sumatodev.com.social.model.Follow;
 
 /**
  * Created by Ali on 03/03/2018.
  */
 
-public class FollowAdapter extends FirebaseRecyclerAdapter<UsersThread, FollowHolder> {
+public class FollowAdapter extends FirebaseRecyclerAdapter<Follow, FollowHolder> {
 
     private OnRequestItemListener onRequestItemListener;
 
-    public FollowAdapter(@NonNull FirebaseRecyclerOptions<UsersThread> options) {
+    public FollowAdapter(@NonNull FirebaseRecyclerOptions<Follow> options) {
         super(options);
     }
 
     @Override
-    protected void onBindViewHolder(@NonNull FollowHolder holder, int position, @NonNull final UsersThread model) {
+    protected void onBindViewHolder(@NonNull FollowHolder holder, int position, @NonNull final Follow model) {
         if (model.getId() != null) {
             holder.setData(model.getId());
 
