@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
@@ -55,8 +56,7 @@ public class BaseFragment extends Fragment {
     }
 
     private void startLoginActivity() {
-        Intent intent = new Intent(activity, LoginActivity.class);
-        startActivity(intent);
+        Toast.makeText(getActivity(), R.string.login_required_for_this_action, Toast.LENGTH_SHORT).show();
     }
 
     public void showProgress() {

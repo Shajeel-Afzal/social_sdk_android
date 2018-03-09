@@ -175,5 +175,6 @@
     <string name="action_settings">Settings</string>
     <string name="following">following</string>
     <string name="login_required">login required to follow someone</string>
+    <string name="login_required_for_this_action">Login Required for this action!</string>
 
 </resources>
