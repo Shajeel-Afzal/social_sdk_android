@@ -19,6 +19,7 @@ package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -73,6 +74,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
     private NotificationView notificationView;
+
+    public static void start(Context context) {
+        Intent starter = new Intent(context, MainActivity.class);
+        context.startActivity(starter);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
