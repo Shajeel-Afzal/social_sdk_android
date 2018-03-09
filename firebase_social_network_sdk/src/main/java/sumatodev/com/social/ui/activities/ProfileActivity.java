@@ -60,6 +60,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.sumatodev.social_chat_sdk.views.activities.MessageActivity;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -490,6 +491,12 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             return super.onOptionsItemSelected(item);
         } else if (i == R.id.follow_requests) {
             startActivity(new Intent(ProfileActivity.this, RequestsActivity.class));
+            return true;
+        } else if (i == R.id.messageBtn) {
+
+            Intent intent = new Intent(ProfileActivity.this, MessageActivity.class);
+            intent.putExtra(MessageActivity.USER_KEY, userID);
+            startActivity(intent);
             return true;
         } else {
             return super.onOptionsItemSelected(item);
