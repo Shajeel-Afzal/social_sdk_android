@@ -37,10 +37,6 @@
             android:label="@string/label_image_detail_activity"
             android:theme="@style/AppCompat.Black.NoActionBar" />
         <activity
-            android:name=".ui.activities.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:theme="@style/AppCompat.NoActionBar" />
-        <activity
             android:name=".ui.activities.CreateProfileActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_create_profile" />

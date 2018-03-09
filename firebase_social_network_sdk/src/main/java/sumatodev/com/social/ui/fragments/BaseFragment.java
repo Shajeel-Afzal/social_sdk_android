@@ -22,7 +22,6 @@ import android.view.inputmethod.InputMethodManager;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.ProfileManager;
-import sumatodev.com.social.ui.activities.LoginActivity;
 import sumatodev.com.social.ui.activities.ProfileActivity;
 
 /**

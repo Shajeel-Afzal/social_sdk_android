@@ -33,6 +33,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
+import sumatodev.com.social.listeners.LoginRequiredListener;
 import sumatodev.com.social.managers.ProfileManager;
 
 /**
@@ -44,6 +45,7 @@ public class BaseActivity extends AppCompatActivity {
     public ProgressDialog progressDialog;
     public ActionBar actionBar;
     private boolean mIsActive = false;
+    private LoginRequiredListener loginRequiredListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +55,10 @@ public class BaseActivity extends AppCompatActivity {
 
     protected boolean isActive() {
         return mIsActive;
+    }
+
+    public void setLoginRequiredListener(LoginRequiredListener loginRequiredListener) {
+        this.loginRequiredListener = loginRequiredListener;
     }
 
     @Override
@@ -74,8 +80,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void startLoginActivity() {
-        Intent intent = new Intent(BaseActivity.this, LoginActivity.class);
-        startActivity(intent);
+        if (loginRequiredListener != null)
+            loginRequiredListener.loginRequired();
     }
 
     public void showProgress() {
