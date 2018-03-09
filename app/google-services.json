@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "629145749564-beqeitu05vimar52uupd3j53acp1kgbm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ali.notyet.bitcoinconverter",
+            "certificate_hash": "0fbc8e4ac81be01aa63b3593d231a60ac1cfed92"
+          }
+        },
+        {
           "client_id": "629145749564-qvjpn15t09si2pfc3a6c4khj54ve6ppl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
