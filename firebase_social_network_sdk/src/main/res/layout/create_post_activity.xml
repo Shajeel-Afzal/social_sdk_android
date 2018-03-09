@@ -10,23 +10,23 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:focusableInTouchMode="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:focusableInTouchMode="true">
 
         <RelativeLayout
             android:id="@+id/imageContainer"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:layout_marginBottom="@dimen/intrinsic_padding"
-            android:layout_alignParentTop="true">
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="@dimen/intrinsic_padding">
 
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/ic_stub"
+                android:focusable="true"
                 android:focusableInTouchMode="true"
-                android:focusable="true" />
+                android:src="@drawable/ic_stub" />
 
             <ProgressBar
                 android:id="@+id/progressBar"
@@ -60,16 +60,18 @@
             android:id="@+id/input_layout_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/input_layout_title"
+            android:hint="@string/hint_description"
+            android.support.design:hintAnimationEnabled="true"
 
-            android:layout_below="@+id/input_layout_title">
+            android.support.design:hintEnabled="true">
 
             <EditText
                 android:id="@+id/descriptionEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start"
-                android:hint="@string/hint_description"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine|textCapSentences" />
 
         </android.support.design.widget.TextInputLayout>
 
