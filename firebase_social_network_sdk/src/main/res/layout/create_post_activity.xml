@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:android.support.design="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -41,15 +42,17 @@
             android:id="@+id/input_layout_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/imageContainer"
             android:layout_marginBottom="@dimen/intrinsic_padding"
-            android:layout_below="@+id/imageContainer">
+            android:hint="@string/hint_title"
+            android.support.design:hintAnimationEnabled="true"
+            android.support.design:hintEnabled="true">
 
             <EditText
                 android:id="@+id/titleEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_title"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine|textCapSentences" />
 
         </android.support.design.widget.TextInputLayout>
 
