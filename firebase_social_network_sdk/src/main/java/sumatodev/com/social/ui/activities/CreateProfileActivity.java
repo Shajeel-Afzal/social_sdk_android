@@ -20,17 +20,14 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -40,6 +37,7 @@ import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.ProfileManager;
@@ -176,6 +174,7 @@ public class CreateProfileActivity extends PickImageActivity implements OnProfil
 
         if (success) {
             finish();
+            MainActivity.start(this);
             PreferencesUtil.setProfileCreated(this, success);
             DatabaseHelper.getInstance(CreateProfileActivity.this.getApplicationContext())
                     .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), profile.getId());

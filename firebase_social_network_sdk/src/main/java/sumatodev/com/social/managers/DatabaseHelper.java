@@ -520,7 +520,7 @@ public class DatabaseHelper {
     }
 
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
-        StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
+        StorageReference storageRef = storage.getReferenceFromUrl(ApplicationHelper.storageBucketLink);
         StorageReference riversRef = storageRef.child("images/" + imageTitle);
         // Create file metadata including the content type
         StorageMetadata metadata = new StorageMetadata.Builder()
