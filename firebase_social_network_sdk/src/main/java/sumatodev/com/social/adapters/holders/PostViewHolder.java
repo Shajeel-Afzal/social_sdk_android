@@ -86,9 +86,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         detailsTextView = view.findViewById(R.id.detailsTextView);
         authorImageView = view.findViewById(R.id.authorImageView);
         likeViewGroup = view.findViewById(R.id.likesContainer);
-
-        authorImageView.setVisibility(isAuthorNeeded ? View.VISIBLE : View.GONE);
-
+        
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
 
