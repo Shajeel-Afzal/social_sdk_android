@@ -43,6 +43,7 @@
                     app:shadow_radius="@dimen/circle_image_shadow_radius" />
 
                 <TextView
+                    android:id="@+id/author_mame_tv"
                     style="@style/TextAppearance.Title"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"

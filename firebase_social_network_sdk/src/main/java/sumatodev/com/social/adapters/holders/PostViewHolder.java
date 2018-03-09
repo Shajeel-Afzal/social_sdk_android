@@ -28,6 +28,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.controllers.LikeController;
@@ -59,6 +60,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private TextView dateTextView;
     private ImageView authorImageView;
     private ViewGroup likeViewGroup;
+    private final TextView authorName;
 
     private ProfileManager profileManager;
     private PostManager postManager;
@@ -73,6 +75,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         super(view);
         this.context = view.getContext();
 
+        authorName = view.findViewById(R.id.author_mame_tv);
         postImageView = view.findViewById(R.id.postImageView);
         likeCounterTextView = view.findViewById(R.id.likeCounterTextView);
         likesImageView = view.findViewById(R.id.likesImageView);
@@ -150,7 +153,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                 .into(postImageView);
 
         if (post.getAuthorId() != null) {
-            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView));
+            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
         }
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -165,7 +168,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         return text.substring(0, decoratedTextLength).replaceAll("\n", " ").trim();
     }
 
-    private OnObjectChangedListener<Profile> createProfileChangeListener(final ImageView authorImageView) {
+    private OnObjectChangedListener<Profile> createProfileChangeListener(final ImageView authorImageView, final TextView authorName) {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(final Profile obj) {
@@ -178,6 +181,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                             .crossFade()
                             .into(authorImageView);
                 }
+
+                authorName.setText(obj.getUsername());
             }
         };
     }
