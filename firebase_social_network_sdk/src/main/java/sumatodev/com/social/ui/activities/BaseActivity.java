@@ -18,7 +18,6 @@ package sumatodev.com.social.ui.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -30,11 +29,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
+import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
-import sumatodev.com.social.listeners.LoginRequiredListener;
-import sumatodev.com.social.managers.ProfileManager;
 
 /**
  * Created by alexey on 05.12.16.
@@ -45,7 +44,6 @@ public class BaseActivity extends AppCompatActivity {
     public ProgressDialog progressDialog;
     public ActionBar actionBar;
     private boolean mIsActive = false;
-    private LoginRequiredListener loginRequiredListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,10 +53,6 @@ public class BaseActivity extends AppCompatActivity {
 
     protected boolean isActive() {
         return mIsActive;
-    }
-
-    public void setLoginRequiredListener(LoginRequiredListener loginRequiredListener) {
-        this.loginRequiredListener = loginRequiredListener;
     }
 
     @Override
@@ -80,8 +74,10 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     private void startLoginActivity() {
-        if (loginRequiredListener != null)
-            loginRequiredListener.loginRequired();
+        if (ApplicationHelper.mLoginRequiredListener != null) {
+            Toast.makeText(this, R.string.login_required_for_this_action, Toast.LENGTH_SHORT).show();
+            ApplicationHelper.mLoginRequiredListener.loginRequired();
+        }
     }
 
     public void showProgress() {

@@ -16,6 +16,7 @@
 
 package sumatodev.com.social;
 
+import sumatodev.com.social.listeners.LoginRequiredListener;
 import sumatodev.com.social.managers.DatabaseHelper;
 
 /**
@@ -27,14 +28,16 @@ public class ApplicationHelper {
     private static final String TAG = ApplicationHelper.class.getSimpleName();
     private static DatabaseHelper databaseHelper;
     public static String storageBucketLink;
+    public static LoginRequiredListener mLoginRequiredListener;
 
     public static DatabaseHelper getDatabaseHelper() {
         return databaseHelper;
     }
 
-    public static void initDatabaseHelper(android.app.Application application, String storageLink) {
+    public static void initDatabaseHelper(android.app.Application application, String storageLink, LoginRequiredListener loginRequiredListener) {
         databaseHelper = DatabaseHelper.getInstance(application);
         databaseHelper.init();
         storageBucketLink = storageLink;
+        mLoginRequiredListener = loginRequiredListener;
     }
 }

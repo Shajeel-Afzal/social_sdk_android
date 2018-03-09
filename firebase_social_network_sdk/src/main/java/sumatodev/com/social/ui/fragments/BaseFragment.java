@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.ProfileManager;
@@ -56,7 +57,10 @@ public class BaseFragment extends Fragment {
     }
 
     private void startLoginActivity() {
-        Toast.makeText(getActivity(), R.string.login_required_for_this_action, Toast.LENGTH_SHORT).show();
+        if (ApplicationHelper.mLoginRequiredListener != null) {
+            Toast.makeText(getActivity(), R.string.login_required_for_this_action, Toast.LENGTH_SHORT).show();
+            ApplicationHelper.mLoginRequiredListener.loginRequired();
+        }
     }
 
     public void showProgress() {
