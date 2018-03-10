@@ -72,6 +72,8 @@ public class CreateProfileActivity extends PickImageActivity implements OnProfil
         nameEditText = findViewById(R.id.nameEditText);
 
         largeAvatarURL = getIntent().getStringExtra(LARGE_IMAGE_URL_EXTRA_KEY);
+        if (largeAvatarURL == null)
+            largeAvatarURL = "";
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         profile = ProfileManager.getInstance(this).buildProfile(firebaseUser, largeAvatarURL);
