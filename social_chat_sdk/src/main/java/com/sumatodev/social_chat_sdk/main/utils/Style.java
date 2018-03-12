@@ -14,7 +14,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package com.sumatodev.social_chat_sdk.chat_ui.commons;
+package com.sumatodev.social_chat_sdk.main.utils;
 
 import android.content.Context;
 import android.content.res.Resources;

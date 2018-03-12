@@ -555,6 +555,7 @@ public class DatabaseHelper {
         postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "datasnapshot post: " + dataSnapshot.getValue());
                 Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
                 PostListResult result = parsePostList(objectMap);
 
@@ -646,7 +647,7 @@ public class DatabaseHelper {
 
     private PostListResult parsePostList(Map<String, Object> objectMap) {
         PostListResult result = new PostListResult();
-        List<Post> list = new ArrayList<Post>();
+        List<Post> list = new ArrayList<>();
         boolean isMoreDataAvailable = true;
         long lastItemCreatedDate = 0;
 

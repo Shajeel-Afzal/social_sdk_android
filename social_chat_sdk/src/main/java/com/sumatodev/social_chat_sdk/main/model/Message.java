@@ -1,62 +1,46 @@
 package com.sumatodev.social_chat_sdk.main.model;
 
-import com.sumatodev.social_chat_sdk.chat_ui.commons.models.IMessage;
-import com.sumatodev.social_chat_sdk.chat_ui.commons.models.MessageContentType;
+import com.google.firebase.database.Exclude;
+import com.sumatodev.social_chat_sdk.main.enums.ItemType;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * Created by troy379 on 04.04.17.
  */
-public class Message implements IMessage,
-        MessageContentType.Image, /*this is for default image messages implementation*/
-        MessageContentType /*and this one is for custom content type (in this case - voice message)*/ {
+public class Message implements Serializable, LazyLoading {
 
     private String id;
     private String text;
-    private Date createdAt;
-    private User user;
-    private Image image;
-    private Voice voice;
+    private long createdAt;
+    private String fromUserId;
+    private String toUserId;
+    private ItemType itemType;
 
-    public Message(String id, User user, String text) {
-        this(id, user, text, new Date());
+
+    public Message() {
+        this.createdAt = new Date().getTime();
+        itemType = ItemType.ITEM;
     }
 
-    public Message(String id, User user, String text, Date createdAt) {
-        this.id = id;
+    public Message(String fromUserId, String toUserId, String text) {
+        this(fromUserId, toUserId, text, new Date().getTime());
+    }
+
+    public Message(ItemType itemType) {
+        this.itemType = itemType;
+        setId(itemType.toString());
+
+    }
+
+    public Message(String fromUserId, String toUserId, String text, long createdAt) {
         this.text = text;
-        this.user = user;
+        this.fromUserId = fromUserId;
+        this.toUserId = toUserId;
         this.createdAt = createdAt;
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getText() {
-        return text;
-    }
-
-    @Override
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    @Override
-    public User getUser() {
-        return this.user;
-    }
-
-    @Override
-    public String getImageUrl() {
-        return image == null ? null : image.url;
-    }
-
-    public Voice getVoice() {
-        return voice;
     }
 
     public String getStatus() {
@@ -67,43 +51,62 @@ public class Message implements IMessage,
         this.text = text;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(long createdAt) {
         this.createdAt = createdAt;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public void setVoice(Voice voice) {
-        this.voice = voice;
+    public String getFromUserId() {
+        return fromUserId;
     }
 
-    public static class Image {
-
-        private String url;
-
-        public Image(String url) {
-            this.url = url;
-        }
+    public void setFromUserId(String fromUserId) {
+        this.fromUserId = fromUserId;
     }
 
-    public static class Voice {
+    public String getToUserId() {
+        return toUserId;
+    }
 
-        private String url;
-        private int duration;
+    public void setToUserId(String toUserId) {
+        this.toUserId = toUserId;
+    }
 
-        public Voice(String url, int duration) {
-            this.url = url;
-            this.duration = duration;
-        }
+    public String getId() {
+        return id;
+    }
 
-        public String getUrl() {
-            return url;
-        }
+    public String getText() {
+        return text;
+    }
 
-        public int getDuration() {
-            return duration;
-        }
+    public Object getCreatedAt() {
+        return createdAt;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+
+        result.put("id", id);
+        result.put("text", text);
+        result.put("createdAt", createdAt);
+        result.put("fromUserId", fromUserId);
+        result.put("toUserId", toUserId);
+
+        return result;
+    }
+
+    @Override
+    public ItemType getItemType() {
+        return itemType;
+    }
+
+    @Override
+    public void setItemType(ItemType itemType) {
+
     }
 }

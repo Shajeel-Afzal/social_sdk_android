@@ -2,15 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sumatodev.social_chat_sdk">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:name=".Application"
         android:allowBackup="true"
         android:supportsRtl="true">
 
         <activity android:name=".views.activities.MainActivity" />
         <activity android:name=".views.activities.MessageActivity" />
-        <activity android:name=".views.activities.BaseMessagesActivity" />
+        <activity android:name=".views.activities.BaseActivity"/>
     </application>
 
 </manifest>

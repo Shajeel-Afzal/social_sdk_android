@@ -29,5 +29,6 @@ public class Application extends android.app.Application {
 
         ApplicationHelper.initDatabaseHelper(this);
         DatabaseHelper.getInstance(this).subscribeToNewPosts();
+        com.sumatodev.social_chat_sdk.ApplicationHelper.initDatabaseHelper(this);
     }
 }

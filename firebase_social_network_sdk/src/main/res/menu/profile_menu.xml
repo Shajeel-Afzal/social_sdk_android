@@ -25,9 +25,5 @@
         android:title="Requests"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/messageBtn"
-        android:title="Chat"
-        app:showAsAction="always" />
 </menu>
 

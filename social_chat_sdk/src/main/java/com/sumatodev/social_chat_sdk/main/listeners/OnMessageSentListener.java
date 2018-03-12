@@ -6,5 +6,5 @@ package com.sumatodev.social_chat_sdk.main.listeners;
 
 public interface OnMessageSentListener {
 
-    public void onMessageSent(boolean seccess);
+    public void onMessageSent(boolean success,String message);
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package com.sumatodev.social_chat_sdk.chat_ui.messages;
+package com.sumatodev.social_chat_sdk.main.utils;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -26,7 +26,6 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.chat_ui.commons.Style;
 
 /**
  * Style for MessageInputStyle customization by xml attributes

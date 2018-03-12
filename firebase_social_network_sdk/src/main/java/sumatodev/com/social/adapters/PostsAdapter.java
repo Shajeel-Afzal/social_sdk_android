@@ -23,6 +23,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.List;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.LoadViewHolder;
 import sumatodev.com.social.adapters.holders.PostViewHolder;
@@ -34,8 +36,6 @@ import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
 import sumatodev.com.social.ui.activities.MainActivity;
 import sumatodev.com.social.utils.PreferencesUtil;
-
-import java.util.List;
 
 /**
  * Created by Kristina on 10/31/16.

@@ -18,14 +18,14 @@ package sumatodev.com.social.adapters;
 
 import android.support.v7.widget.RecyclerView;
 
-import sumatodev.com.social.ui.activities.BaseActivity;
+import java.util.LinkedList;
+import java.util.List;
+
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.utils.LogUtil;
-
-import java.util.LinkedList;
-import java.util.List;
 
 public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final String TAG = BasePostsAdapter.class.getSimpleName();
@@ -74,7 +74,8 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public void updateSelectedPost() {
         if (selectedPostPosition != -1) {
             Post selectedPost = getItemByPosition(selectedPostPosition);
-            PostManager.getInstance(activity).getSinglePostValue(selectedPost.getId(), createOnPostChangeListener(selectedPostPosition));
+            PostManager.getInstance(activity).getSinglePostValue(selectedPost.getId(),
+                    createOnPostChangeListener(selectedPostPosition));
         }
     }
 }

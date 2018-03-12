@@ -6,6 +6,13 @@
     <string name="app_name">ChatKit</string>
     <string name="sample_title">ChatKit for Android</string>
 
+    <string name="now_time_range">now</string>
+
+    <string name="duration_minutes_shortest">%1$d m</string>
+    <string name="duration_hours_shortest">%1$d h</string>
+    <string name="duration_days_shortest">%1$d d</string>
+    <string name="duration_week_shortest">%1$d w</string>
+
     <string name="view">View</string>
 
     <string name="sample_title_default">Default view</string>
@@ -27,6 +34,9 @@
 
     <string name="date_header_today">Today</string>
     <string name="date_header_yesterday">Yesterday</string>
+    <string name="network_error">network error</string>
+    <string name="permission_denied_error">permission denied</string>
+    <string name="internet_connection_failed">no internet connection</string>
 
     <string-array name="view_types_dialog">
         <item name="image">Image (default)</item>
