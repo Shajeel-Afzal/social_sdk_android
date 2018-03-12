@@ -166,21 +166,8 @@ public class DatabaseHelper {
             }
         });
 
-
-
-        /*
-        DatabaseReference databaseReference = ApplicationHelper.getDatabaseHelper().getDatabaseReference();
-        Task<Void> task = databaseReference.child("profiles").child(profile.getId()).setValue(profile);
-        task.addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                onProfileCreatedListener.onProfileCreated(task.isSuccessful());
-                addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), profile.getId());
-                LogUtil.logDebug(TAG, "createOrUpdateProfile, success: " + task.isSuccessful());
-            }
-        });
-        */
     }
+
 
     public void createProfile(final Profile profile, final OnProfileCreatedListener onProfileCreatedListener) {
 
@@ -251,6 +238,7 @@ public class DatabaseHelper {
         DatabaseReference databaseReference = database.getReference();
         return databaseReference.child("posts").push().getKey();
     }
+
 
     public void createOrUpdatePost(Post post) {
         try {
@@ -567,6 +555,7 @@ public class DatabaseHelper {
         postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "datasnapshot post: " + dataSnapshot.getValue());
                 Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
                 PostListResult result = parsePostList(objectMap);
 
@@ -658,7 +647,7 @@ public class DatabaseHelper {
 
     private PostListResult parsePostList(Map<String, Object> objectMap) {
         PostListResult result = new PostListResult();
-        List<Post> list = new ArrayList<Post>();
+        List<Post> list = new ArrayList<>();
         boolean isMoreDataAvailable = true;
         long lastItemCreatedDate = 0;
 
@@ -849,6 +838,7 @@ public class DatabaseHelper {
             }
         });
     }
+
 
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");

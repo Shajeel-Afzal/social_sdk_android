@@ -24,5 +24,6 @@
         android:id="@+id/follow_requests"
         android:title="Requests"
         app:showAsAction="ifRoom" />
+
 </menu>
 

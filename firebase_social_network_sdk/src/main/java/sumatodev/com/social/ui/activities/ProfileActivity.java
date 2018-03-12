@@ -60,6 +60,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.sumatodev.social_chat_sdk.views.activities.MessageActivity;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -98,6 +99,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private SimpleStatefulLayout statefulLayout;
     private Button followBtn;
     private LinearLayout dataLayout;
+    private Button messageBtn;
 
     private FirebaseAuth mAuth;
     private GoogleApiClient mGoogleApiClient;
@@ -172,9 +174,11 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         userFollowers = findViewById(R.id.userFollowers);
         userFollowings = findViewById(R.id.userFollowings);
         dataLayout = findViewById(R.id.dataLayout);
+        messageBtn = findViewById(R.id.messageBtn);
 
         userFollowers.setOnClickListener(this);
         userFollowings.setOnClickListener(this);
+        messageBtn.setOnClickListener(this);
     }
 
     @Override
@@ -191,6 +195,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 intent.putExtra(FollowingActivity.USER_ID_EXTRA_KEY, userID);
                 startActivity(intent);
             }
+        } else if (v == messageBtn) {
+            Intent intent = new Intent(ProfileActivity.this, MessageActivity.class);
+            intent.putExtra(MessageActivity.USER_KEY, userID);
+            startActivity(intent);
         }
     }
 
@@ -203,6 +211,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             if (userID != null) {
                 if (userID.equalsIgnoreCase(currentUserId)) {
                     followBtn.setVisibility(View.GONE);
+                    messageBtn.setVisibility(View.GONE);
                 }
                 checkFriendsStatus();
             }
