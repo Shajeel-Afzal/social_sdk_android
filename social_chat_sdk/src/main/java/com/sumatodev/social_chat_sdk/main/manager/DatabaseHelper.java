@@ -13,7 +13,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
@@ -24,16 +23,21 @@ import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnThreadsListChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
+import com.sumatodev.social_chat_sdk.main.model.ThreadListResult;
+import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
 import com.sumatodev.social_chat_sdk.main.utils.FileUtil;
 import com.sumatodev.social_chat_sdk.main.utils.LogUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import id.zelory.compressor.Compressor;
@@ -152,26 +156,44 @@ public class DatabaseHelper {
     }
 
 
-    public void getMessages(String userKey, final OnObjectChangedListener<Message> messageOnObject) {
+    public void getThreadsList(final OnThreadsListChangedListener<ThreadsModel> listener) {
+        DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
 
-        DatabaseReference reference = database.getReference();
-        Query query = reference.child(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
-        query.addValueEventListener(new ValueEventListener() {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Message message = child.getValue(Message.class);
-                    messageOnObject.onObjectChanged(message);
-                }
+                //Log.d(TAG, "datasnapshot threads: " + dataSnapshot.getValue());
+                Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
+                listener.onListChanged(getList(objectMap));
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                listener.onCanceled(context.getString(R.string.permission_denied_error));
             }
         });
-
     }
+
+    private ThreadListResult getList(Map<String, Object> value) {
+        ThreadListResult listResult = new ThreadListResult();
+        List<ThreadsModel> list = new ArrayList<>();
+
+        if (value != null) {
+
+            for (String key : value.keySet()) {
+
+                ThreadsModel model = new ThreadsModel();
+                model.setThreadKey(key);
+
+                list.add(model);
+            }
+
+            listResult.setThreads(list);
+        }
+        return listResult;
+    }
+
 
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
         StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));

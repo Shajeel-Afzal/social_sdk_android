@@ -30,7 +30,6 @@ public class ChatAdpater extends FirebaseRecyclerAdapter<Message, RecyclerView.V
     private String current_uid;
     private Callback callback;
 
-
     public void setCallback(Callback callback) {
         this.callback = callback;
     }
@@ -72,9 +71,9 @@ public class ChatAdpater extends FirebaseRecyclerAdapter<Message, RecyclerView.V
     private OnChatItemListener createOnChatItemListener() {
         return new OnChatItemListener() {
             @Override
-            public void onItemClick(int position, View view) {
+            public void onTextClick(int position, View view) {
                 if (callback != null) {
-                    callback.onItemClick(getRef(position).getKey(), view);
+                    callback.onTextClick(getRef(position).getKey(), view);
                 }
             }
 
@@ -99,7 +98,7 @@ public class ChatAdpater extends FirebaseRecyclerAdapter<Message, RecyclerView.V
     }
 
     public interface Callback {
-        void onItemClick(String key, View view);
+        void onTextClick(String key, View view);
 
         void onAuthorClick(String authorId, View view);
     }

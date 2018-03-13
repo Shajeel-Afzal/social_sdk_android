@@ -183,7 +183,6 @@ public class PostsAdapter extends BasePostsAdapter {
 
                 if (!list.isEmpty()) {
                     addList(list);
-
                     if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity)) {
                         PreferencesUtil.setPostWasLoadedAtLeastOnce(mainActivity, true);
                     }

@@ -1,30 +1,35 @@
-package com.sumatodev.social_chat_sdk.views.activities;
+package com.sumatodev.social_chat_sdk.views.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.view.MenuItem;
+import android.support.v4.app.Fragment;
+import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.sumatodev.social_chat_sdk.R;
 
 /**
- * Created by Ali on 10/03/2018.
+ * Created by Ali on 13/03/2018.
  */
 
-public class BaseActivity extends AppCompatActivity {
+public class BaseFragment extends Fragment {
 
     private FirebaseUser firebaseUser;
     private String current_uid;
+    private Activity activity;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getActivity() != null) {
+            activity = getActivity();
+        }
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
             current_uid = firebaseUser.getUid();
@@ -36,13 +41,13 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showSnackBar(int messageId) {
-        Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+        Snackbar snackbar = Snackbar.make(activity.findViewById(android.R.id.content),
                 messageId, Snackbar.LENGTH_LONG);
         snackbar.show();
     }
 
     public boolean hasInternetConnection() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = null;
         if (cm != null) {
             activeNetwork = cm.getActiveNetworkInfo();
@@ -59,12 +64,9 @@ public class BaseActivity extends AppCompatActivity {
         return hasInternetConnection;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-        }
-        return (super.onOptionsItemSelected(menuItem));
+    public void showSnackBar(View view, int messageId) {
+        Snackbar snackbar = Snackbar.make(view, messageId, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
+
 }

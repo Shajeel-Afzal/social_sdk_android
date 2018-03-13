@@ -42,9 +42,7 @@ public class MessagesManager extends FirebaseListenersManager {
         }
     }
 
-    public void getMessageList(String userKey, OnObjectChangedListener<Message> listener) {
-        ApplicationHelper.getDatabaseHelper().getMessages(userKey, listener);
-    }
+
 
 
     public void getProfileValue(Context activityContext, String id, final OnObjectChangedListener<Profile> listener) {

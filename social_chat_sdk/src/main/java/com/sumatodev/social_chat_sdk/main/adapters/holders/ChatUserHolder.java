@@ -38,7 +38,7 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
         this(view, onChatItemListener, true);
     }
 
-    public ChatUserHolder(View itemView, OnChatItemListener onChatItemListener, boolean isAuthorNeeded) {
+    public ChatUserHolder(View itemView, final OnChatItemListener onChatItemListener, boolean isAuthorNeeded) {
         super(itemView);
         this.context = itemView.getContext();
 
@@ -49,6 +49,26 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
 
         userImage_c.setVisibility(isAuthorNeeded ? View.VISIBLE : View.GONE);
         messagesManager = MessagesManager.getInstance(context.getApplicationContext());
+
+        itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = getAdapterPosition();
+                if (onChatItemListener != null && position != RecyclerView.NO_POSITION) {
+                    onChatItemListener.onTextClick(getAdapterPosition(), v);
+                }
+            }
+        });
+
+        userImage_c.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = getAdapterPosition();
+                if (onChatItemListener != null && position != RecyclerView.NO_POSITION) {
+                    onChatItemListener.onAuthorClick(getAdapterPosition(), v);
+                }
+            }
+        });
     }
 
 

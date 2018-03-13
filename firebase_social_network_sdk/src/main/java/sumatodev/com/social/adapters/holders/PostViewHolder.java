@@ -19,6 +19,7 @@ package sumatodev.com.social.adapters.holders;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -121,6 +122,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bindData(Post post) {
+
+        Log.d(TAG, "key: " + post.getId());
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 

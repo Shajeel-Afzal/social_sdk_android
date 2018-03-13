@@ -4,13 +4,14 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:supportsRtl="true">
-
         <activity android:name=".views.activities.MainActivity" />
         <activity android:name=".views.activities.MessageActivity" />
-        <activity android:name=".views.activities.BaseActivity"/>
+        <activity android:name=".views.activities.BaseActivity" />
+        <activity android:name=".views.activities.ThreadsActivity"></activity>
     </application>
 
 </manifest>

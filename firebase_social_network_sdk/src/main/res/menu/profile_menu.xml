@@ -25,5 +25,9 @@
         android:title="Requests"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/threads"
+        android:title="Threads" />
+
 </menu>
 

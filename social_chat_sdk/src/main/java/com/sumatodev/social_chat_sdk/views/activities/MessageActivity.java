@@ -68,6 +68,7 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
 
+        setupLinearLayout();
         initAdapter();
 
         MessageInput input = findViewById(R.id.input);
@@ -86,7 +87,6 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
 
                 View view = View.inflate(this, R.layout.chat_toolbar, null);
                 actionBar.setCustomView(view);
-
                 userName_c = view.findViewById(R.id.userName_c);
                 status_c = view.findViewById(R.id.status_c);
                 userImage_c = view.findViewById(R.id.userImage_c);
@@ -132,18 +132,16 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
         chatAdpater = new ChatAdpater(options);
         chatAdpater.setCallback(new ChatAdpater.Callback() {
             @Override
-            public void onItemClick(String key, View view) {
-                Toast.makeText(getApplicationContext(),"item clicked",Toast.LENGTH_SHORT).show();
+            public void onTextClick(String key, View view) {
+                Toast.makeText(getApplicationContext(), "item clicked", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onAuthorClick(String authorId, View view) {
-                Toast.makeText(getApplicationContext(),"image clicked",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "image clicked", Toast.LENGTH_SHORT).show();
             }
         });
-        layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(layoutManager);
+
         recyclerView.setAdapter(chatAdpater);
 
         chatAdpater.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -155,12 +153,19 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
         });
     }
 
+    private void setupLinearLayout() {
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(layoutManager);
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
         if (chatAdpater != null) {
             chatAdpater.stopListening();
         }
+
     }
 
     private void loadProfile() {

@@ -73,8 +73,7 @@ public class PostManager extends FirebaseListenersManager {
             Log.e(TAG, e.getMessage());
         }
     }
-
-
+    
     public void getPostsList(OnPostListChangedListener<Post> onDataChangedListener, long date) {
         ApplicationHelper.getDatabaseHelper().getPostList(onDataChangedListener, date);
     }
