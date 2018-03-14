@@ -67,7 +67,7 @@ public class ThreadsActivity extends BaseActivity {
     }
 
     private void openChatActivity(ThreadsModel threadsModel) {
-        Intent intent = new Intent(ThreadsActivity.this, MessageActivity.class);
+        Intent intent = new Intent(ThreadsActivity.this, ChatActivity.class);
         intent.putExtra(MessageActivity.USER_KEY, threadsModel.getThreadKey());
         startActivity(intent);
     }

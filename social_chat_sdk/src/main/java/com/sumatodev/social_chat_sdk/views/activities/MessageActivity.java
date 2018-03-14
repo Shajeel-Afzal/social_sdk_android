@@ -69,7 +69,7 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
         progressBar = findViewById(R.id.progressBar);
 
         setupLinearLayout();
-        initAdapter();
+       // initAdapter();
 
         MessageInput input = findViewById(R.id.input);
         input.setInputListener(this);
@@ -105,7 +105,7 @@ public class MessageActivity extends BaseActivity implements MessageInput.InputL
     public boolean onSubmit(CharSequence input) {
 
         Message message = new Message(getCurrent_uid(), userKey, input.toString());
-        messagesManager.sendNewMessage(message, MessageActivity.this);
+       // messagesManager.sendNewMessage(message, MessageActivity.this);
 
         return true;
     }

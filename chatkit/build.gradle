@@ -31,8 +31,13 @@ android {
 
 }
 
+ext {
+    flexboxVersion = '0.3.2'
+}
+
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
     implementation 'com.android.support:appcompat-v7:' + project.ANDROID_SUPPORT_VERSION
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'com.android.support:support-v4:' + project.ANDROID_SUPPORT_VERSION
@@ -43,23 +48,7 @@ dependencies {
     implementation 'com.android.support:customtabs:' + project.ANDROID_SUPPORT_VERSION
     implementation 'com.android.support:appcompat-v7:' + project.ANDROID_SUPPORT_VERSION
     implementation 'com.android.support:support-v4:' + project.ANDROID_SUPPORT_VERSION
-    //firebase
-    compile 'com.google.firebase:firebase-database:' + project.GOOGLE_SERVICES_VERSION
-    compile 'com.google.firebase:firebase-storage:' + project.GOOGLE_SERVICES_VERSION
-    compile 'com.google.firebase:firebase-auth:' + project.GOOGLE_SERVICES_VERSION
-    // FirebaseUI
-    compile 'com.firebaseui:firebase-ui-database:' + project.FIREBASE_UI_VERSION
-    compile 'com.firebaseui:firebase-ui-auth:' + project.FIREBASE_UI_VERSION
-    //utils
-    compile 'com.android.support:multidex:1.0.3'
-    implementation 'com.google.android:flexbox:0.3.2'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
-    compile 'de.hdodenhof:circleimageview:2.2.0'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
-    compile 'id.zelory:compressor:2.1.0'
-    implementation project(':chatkit')
+    compile "com.google.android:flexbox:$flexboxVersion"
 }
 // Bintray upload properties
 Properties properties = new Properties()

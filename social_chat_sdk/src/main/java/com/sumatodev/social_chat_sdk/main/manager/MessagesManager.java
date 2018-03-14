@@ -5,9 +5,11 @@ import android.util.Log;
 
 import com.google.firebase.database.ValueEventListener;
 import com.sumatodev.social_chat_sdk.ApplicationHelper;
+import com.sumatodev.social_chat_sdk.main.data.model.InputMessage;
+import com.sumatodev.social_chat_sdk.main.data.model.Message;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
-import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
 
 
@@ -34,6 +36,7 @@ public class MessagesManager extends FirebaseListenersManager {
         databaseHelper = ApplicationHelper.getDatabaseHelper();
     }
 
+    /*
     public void sendNewMessage(Message message, OnMessageSentListener onMessageSentListener) {
         try {
             ApplicationHelper.getDatabaseHelper().sendNewMessage(message, onMessageSentListener);
@@ -41,9 +44,25 @@ public class MessagesManager extends FirebaseListenersManager {
             Log.e(TAG, e.getMessage());
         }
     }
+    */
 
 
+    public void sendNewMessage(InputMessage message, OnMessageSentListener onMessageSentListener) {
+        try {
+            ApplicationHelper.getDatabaseHelper().sendMessage(message, onMessageSentListener);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 
+
+    public void getChatList(String key, OnMessageChangedListener<Message> listener){
+        try {
+            ApplicationHelper.getDatabaseHelper().getChatList(key,listener);
+        }catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
 
     public void getProfileValue(Context activityContext, String id, final OnObjectChangedListener<Profile> listener) {
         ValueEventListener valueEventListener = databaseHelper.getProfile(id, listener);

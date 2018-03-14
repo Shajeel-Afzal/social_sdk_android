@@ -60,6 +60,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.sumatodev.social_chat_sdk.views.activities.ChatActivity;
 import com.sumatodev.social_chat_sdk.views.activities.MessageActivity;
 import com.sumatodev.social_chat_sdk.views.activities.ThreadsActivity;
 
@@ -197,7 +198,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 startActivity(intent);
             }
         } else if (v == messageBtn) {
-            Intent intent = new Intent(ProfileActivity.this, MessageActivity.class);
+            Intent intent = new Intent(ProfileActivity.this, ChatActivity.class);
             intent.putExtra(MessageActivity.USER_KEY, userID);
             startActivity(intent);
         }

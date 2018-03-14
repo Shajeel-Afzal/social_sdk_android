@@ -9,10 +9,12 @@ import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
@@ -20,11 +22,14 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
+import com.sumatodev.social_chat_sdk.main.data.model.InputMessage;
+import com.sumatodev.social_chat_sdk.main.data.model.Message;
+import com.sumatodev.social_chat_sdk.main.data.model.User;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnThreadsListChangedListener;
-import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
 import com.sumatodev.social_chat_sdk.main.model.ThreadListResult;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
@@ -36,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,7 +114,7 @@ public class DatabaseHelper {
         activeListeners.clear();
     }
 
-
+/*
     public void sendNewMessage(Message message, final OnMessageSentListener onMessageSentListener) {
 
         try {
@@ -148,6 +154,50 @@ public class DatabaseHelper {
             Log.e(TAG, e.getMessage());
         }
     }
+    */
+
+    public void sendMessage(InputMessage inputMessage, final OnMessageSentListener onMessageSentListener) {
+
+        try {
+            String messageKey = generateMessageId(getCurrentUser(), inputMessage.getUid());
+
+            User user = new User(getCurrentUser(), null, null, false);
+            Message message = new Message(messageKey, user, inputMessage.getText());
+
+            DatabaseReference databaseReference = database.getReference();
+            Map messageMap = new ObjectMapper().convertValue(message, Map.class);
+
+            String currentUser = inputMessage.getUid() + "/" + getCurrentUser();
+            String chatUser = getCurrentUser() + "/" + inputMessage.getUid();
+
+            Map<String, Object> messageUserMap = new HashMap<>();
+            messageUserMap.put(currentUser + "/" + message.getId(), messageMap);
+            messageUserMap.put(chatUser + "/" + message.getId(), messageMap);
+
+            databaseReference.child(Consts.MESSAGES_REF).updateChildren(messageUserMap, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        onMessageSentListener.onMessageSent(true, "success");
+                    } else {
+                        switch (databaseError.getCode()) {
+                            case DatabaseError.NETWORK_ERROR:
+                                onMessageSentListener.onMessageSent(false, network_error);
+                                break;
+                            case DatabaseError.OPERATION_FAILED:
+                                onMessageSentListener.onMessageSent(false, operation_failed);
+                                break;
+                            default:
+                                onMessageSentListener.onMessageSent(false, sending_failed);
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+
+    }
 
     public String generateMessageId(String current_uid, String other_uid) {
         DatabaseReference databaseReference = database.getReference();
@@ -155,6 +205,69 @@ public class DatabaseHelper {
                 .child(other_uid).push().getKey();
     }
 
+
+    public void getChatList(String userKey, final OnMessageChangedListener<Message> listener) {
+
+        final DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF)
+                .child(getCurrentUser()).child(userKey);
+        Query postsQuery;
+
+        postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
+
+        postsQuery.keepSynced(true);
+
+        postsQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Log.d(TAG, "datasnapshot messages: " + dataSnapshot.getValue());
+
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    if (hashMap != null) {
+
+                        long createdDate = (long) hashMap.get("createdAt");
+
+                        Message message = new Message();
+                        message.setId((String) hashMap.get("id"));
+                        message.setText((String) hashMap.get("text"));
+                        message.setCreatedAt(new Date(createdDate));
+
+                        HashMap userMap = (HashMap) hashMap.get("user");
+                        User user = new User();
+                        if (userMap != null) {
+                            user.setId((String) userMap.get("id"));
+
+                            Log.d(TAG, "user: " + user.getId());
+                        }
+
+                        message.setUser(user);
+                        listener.OnListChanged(message);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                listener.onCancel(databaseError.getMessage());
+            }
+        });
+    }
 
     public void getThreadsList(final OnThreadsListChangedListener<ThreadsModel> listener) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
