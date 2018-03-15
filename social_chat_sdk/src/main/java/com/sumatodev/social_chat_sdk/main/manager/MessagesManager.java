@@ -8,9 +8,11 @@ import com.sumatodev.social_chat_sdk.ApplicationHelper;
 import com.sumatodev.social_chat_sdk.main.data.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.data.model.Message;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
+import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 
 
 /**
@@ -56,10 +58,10 @@ public class MessagesManager extends FirebaseListenersManager {
     }
 
 
-    public void getChatList(String key, OnMessageChangedListener<Message> listener){
+    public void getChatList(String key, OnMessageChangedListener<Message> listener) {
         try {
-            ApplicationHelper.getDatabaseHelper().getChatList(key,listener);
-        }catch (Exception e) {
+            ApplicationHelper.getDatabaseHelper().getChatList(key, listener);
+        } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
     }
@@ -73,4 +75,15 @@ public class MessagesManager extends FirebaseListenersManager {
         databaseHelper.getProfileSingleValue(id, listener);
     }
 
+    public void getUsersPublicProfile(String userKey, OnObjectChangedListener<UsersPublic> listener) {
+        databaseHelper.getUsersPublicProfile(userKey, listener);
+    }
+
+    public void getMessagesList(String userKey, OnMessageListChangedListener<Message> onMessageListChangedListener, long lastLoadedDate) {
+        ApplicationHelper.getDatabaseHelper().getMessagesList(userKey,onMessageListChangedListener,lastLoadedDate);
+    }
+
+    public void getMessages(String userKey,OnMessageListChangedListener<Message> listChangedListener,long date) {
+       ApplicationHelper.getDatabaseHelper().getMessages(userKey,listChangedListener,date);
+    }
 }

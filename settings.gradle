@@ -1,1 +1,1 @@
-include ':app', ':firebase_social_network_sdk', ':social_chat_sdk', ':chatkit'
+include ':app', ':firebase_social_network_sdk', ':social_chat_sdk'

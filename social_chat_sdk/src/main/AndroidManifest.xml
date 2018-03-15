@@ -9,7 +9,6 @@
         android:allowBackup="true"
         android:supportsRtl="true">
         <activity android:name=".views.activities.MainActivity" />
-        <activity android:name=".views.activities.MessageActivity" />
         <activity android:name=".views.activities.BaseActivity" />
         <activity android:name=".views.activities.ThreadsActivity" />
         <activity android:name=".views.activities.ChatActivity"></activity>

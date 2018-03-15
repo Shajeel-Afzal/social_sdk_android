@@ -1,8 +1,8 @@
 package com.sumatodev.social_chat_sdk.main.data.model;
 
 
-import com.sumatodev.chatkit.commons.models.IMessage;
-import com.sumatodev.chatkit.commons.models.MessageContentType;
+import com.sumatodev.social_chat_sdk.chatkit_ui.commons.models.IMessage;
+import com.sumatodev.social_chat_sdk.chatkit_ui.commons.models.MessageContentType;
 
 import java.util.Date;
 

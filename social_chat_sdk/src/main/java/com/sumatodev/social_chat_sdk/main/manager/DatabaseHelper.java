@@ -24,15 +24,18 @@ import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.data.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.data.model.Message;
+import com.sumatodev.social_chat_sdk.main.data.model.MessageListResult;
 import com.sumatodev.social_chat_sdk.main.data.model.User;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnThreadsListChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
 import com.sumatodev.social_chat_sdk.main.model.ThreadListResult;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
+import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 import com.sumatodev.social_chat_sdk.main.utils.FileUtil;
 import com.sumatodev.social_chat_sdk.main.utils.LogUtil;
 
@@ -41,6 +44,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -222,6 +227,7 @@ public class DatabaseHelper {
                 Log.d(TAG, "datasnapshot messages: " + dataSnapshot.getValue());
 
                 if (dataSnapshot.getValue() != null) {
+
                     HashMap hashMap = (HashMap) dataSnapshot.getValue();
                     if (hashMap != null) {
 
@@ -236,11 +242,10 @@ public class DatabaseHelper {
                         User user = new User();
                         if (userMap != null) {
                             user.setId((String) userMap.get("id"));
-
-                            Log.d(TAG, "user: " + user.getId());
                         }
 
                         message.setUser(user);
+
                         listener.OnListChanged(message);
                     }
                 }
@@ -377,4 +382,193 @@ public class DatabaseHelper {
         });
     }
 
+
+    public void getUsersPublicProfile(String userKey, final OnObjectChangedListener<UsersPublic> listener) {
+
+        DatabaseReference databaseReference = getDatabaseReference().child("users_public").child(userKey);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UsersPublic profile = dataSnapshot.getValue(UsersPublic.class);
+                listener.onObjectChanged(profile);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getProfileSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
+    public void getMessagesList(final String userKey, final OnMessageListChangedListener<Message> onMessageListChangedListener,
+                                final long date) {
+
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
+        Query postsQuery;
+        if (date == 0) {
+            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
+        } else {
+            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
+        }
+
+        postsQuery.keepSynced(true);
+        postsQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if (dataSnapshot.getValue() != null) {
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    MessageListResult result = getListResult(hashMap);
+
+                    if (result.getMessages().isEmpty() && result.isMoreDataAvailable()) {
+                        getMessagesList(userKey, onMessageListChangedListener, result.getLastItemCreatedDate() - 1);
+                    } else {
+                        onMessageListChangedListener.onListChanged(getListResult(hashMap));
+                    }
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
+                onMessageListChangedListener.onCancel(context.getString(R.string.permission_denied_error));
+            }
+        });
+    }
+
+    private MessageListResult getListResult(HashMap hashMap) {
+        MessageListResult result = new MessageListResult();
+        List<Message> list = new ArrayList<>();
+        boolean isMoreDataAvailable = true;
+        long lastItemCreatedDate = 0;
+
+        if (hashMap != null) {
+            isMoreDataAvailable = Constants.Message.MESSAGE_AMOUNT_ON_PAGE == hashMap.size();
+
+
+            long createdDate = (long) hashMap.get("createdAt");
+
+            if (lastItemCreatedDate == 0 || lastItemCreatedDate > createdDate) {
+                lastItemCreatedDate = createdDate;
+            }
+
+            Message message = new Message();
+
+            message.setId((String) hashMap.get("id"));
+            message.setText((String) hashMap.get("text"));
+            message.setCreatedAt(new Date(createdDate));
+
+            HashMap userMap = (HashMap) hashMap.get("user");
+            User user = new User();
+            if (userMap != null) {
+                user.setId((String) userMap.get("id"));
+            }
+
+            message.setUser(user);
+
+            list.add(message);
+
+            Collections.sort(list, new Comparator<Message>() {
+                @Override
+                public int compare(Message lhs, Message rhs) {
+                    return (lhs.getCreatedAt()).compareTo(rhs.getCreatedAt());
+                }
+            });
+
+            result.setMessages(list);
+            result.setLastItemCreatedDate(lastItemCreatedDate);
+            result.setMoreDataAvailable(isMoreDataAvailable);
+
+        }
+        return result;
+    }
+
+    public void getMessages(final String userKey, final OnMessageListChangedListener<Message> onMessageListChangedListener, long date) {
+
+        Log.d(TAG, "load more helper called");
+
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
+        Query postsQuery;
+        postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
+
+        postsQuery.keepSynced(true);
+        postsQuery.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+                if (dataSnapshot.getValue() != null) {
+
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    if (hashMap != null) {
+                        onMessageListChangedListener.onListChanged(getMessagesResult(hashMap));
+                    }
+                }
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
+                onMessageListChangedListener.onCancel(context.getString(R.string.permission_denied_error));
+            }
+        });
+    }
+
+    private MessageListResult getMessagesResult(HashMap hashMap) {
+
+        MessageListResult result = new MessageListResult();
+        List<Message> messageList = new ArrayList<>();
+
+        if (hashMap != null) {
+            long createdDate = (long) hashMap.get("createdAt");
+
+            Message message = new Message();
+            message.setId((String) hashMap.get("id"));
+            message.setText((String) hashMap.get("text"));
+            message.setCreatedAt(new Date(createdDate));
+
+            HashMap userMap = (HashMap) hashMap.get("user");
+            User user = new User();
+            if (userMap != null) {
+                user.setId((String) userMap.get("id"));
+            }
+
+            message.setUser(user);
+
+
+            messageList.add(message);
+            result.setMessages(messageList);
+        }
+
+        return result;
+    }
 }

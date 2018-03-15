@@ -10,6 +10,7 @@ import java.util.List;
 public class MessageListResult {
     List<Message> messages = new ArrayList<>();
     long lastItemCreatedDate;
+    boolean isMoreDataAvailable;
 
     public List<Message> getMessages() {
         return messages;
@@ -25,5 +26,13 @@ public class MessageListResult {
 
     public void setLastItemCreatedDate(long lastItemCreatedDate) {
         this.lastItemCreatedDate = lastItemCreatedDate;
+    }
+
+    public boolean isMoreDataAvailable() {
+        return isMoreDataAvailable;
+    }
+
+    public void setMoreDataAvailable(boolean moreDataAvailable) {
+        isMoreDataAvailable = moreDataAvailable;
     }
 }

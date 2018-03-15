@@ -61,7 +61,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.sumatodev.social_chat_sdk.views.activities.ChatActivity;
-import com.sumatodev.social_chat_sdk.views.activities.MessageActivity;
 import com.sumatodev.social_chat_sdk.views.activities.ThreadsActivity;
 
 import java.util.Calendar;
@@ -199,7 +198,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             }
         } else if (v == messageBtn) {
             Intent intent = new Intent(ProfileActivity.this, ChatActivity.class);
-            intent.putExtra(MessageActivity.USER_KEY, userID);
+            intent.putExtra(ChatActivity.USER_KEY, userID);
             startActivity(intent);
         }
     }

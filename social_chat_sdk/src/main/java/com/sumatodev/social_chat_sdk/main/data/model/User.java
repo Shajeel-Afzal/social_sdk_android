@@ -1,7 +1,7 @@
 package com.sumatodev.social_chat_sdk.main.data.model;
 
 
-import com.sumatodev.chatkit.commons.models.IUser;
+import com.sumatodev.social_chat_sdk.chatkit_ui.commons.models.IUser;
 
 /*
  * Created by troy379 on 04.04.17.

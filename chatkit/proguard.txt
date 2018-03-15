@@ -1,4 +1,0 @@
-# ViewHolder constructors are resolved by reflection
--keepclassmembers class * extends sumatodev.chatkit.commons.ViewHolder {
-   public <init>(android.view.View);
-}
