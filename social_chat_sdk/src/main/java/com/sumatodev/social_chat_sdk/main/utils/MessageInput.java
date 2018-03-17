@@ -14,7 +14,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package com.sumatodev.social_chat_sdk.chatkit_ui.messages;
+package com.sumatodev.social_chat_sdk.main.utils;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;

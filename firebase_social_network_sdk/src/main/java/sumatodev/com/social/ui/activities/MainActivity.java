@@ -267,7 +267,8 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
             });
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            LinearLayoutManager manager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(manager);
             ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
             recyclerView.setAdapter(postsAdapter);
             postsAdapter.loadFirstPage();

@@ -1,5 +1,6 @@
 package com.sumatodev.social_chat_sdk.views.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -19,6 +20,7 @@ import com.sumatodev.social_chat_sdk.R;
 
 public class BaseActivity extends AppCompatActivity {
 
+    public ProgressDialog progressDialog;
     private FirebaseUser firebaseUser;
     private String current_uid;
 
@@ -59,6 +61,24 @@ public class BaseActivity extends AppCompatActivity {
         return hasInternetConnection;
     }
 
+    public void showProgress() {
+        showProgress(R.string.loading);
+    }
+
+    public void showProgress(int message) {
+        hideProgress();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage(getString(message));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+
+    public void hideProgress() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         switch (menuItem.getItemId()) {

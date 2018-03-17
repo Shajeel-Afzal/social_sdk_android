@@ -37,6 +37,8 @@
     <string name="network_error">network error</string>
     <string name="permission_denied_error">permission denied</string>
     <string name="internet_connection_failed">no internet connection</string>
+    <string name="loading">loading</string>
+    <string name="deleting_message">deleting message</string>
 
     <string-array name="view_types_dialog">
         <item name="image">Image (default)</item>

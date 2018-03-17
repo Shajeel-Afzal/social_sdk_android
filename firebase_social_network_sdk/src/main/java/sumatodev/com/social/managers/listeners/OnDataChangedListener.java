@@ -24,5 +24,5 @@ import java.util.List;
 
 public interface OnDataChangedListener<T> {
 
-    public void onListChanged(List<T> list);
+    void onListChanged(List<T> list);
 }

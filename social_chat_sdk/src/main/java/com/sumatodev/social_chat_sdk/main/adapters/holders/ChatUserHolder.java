@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.listeners.OnChatItemListener;
+import com.sumatodev.social_chat_sdk.main.adapters.ChatAdpater;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.Message;
@@ -29,58 +29,66 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
     public ImageView userImage_c;
     public TextView messageText;
     public TextView textTime;
-    public LinearLayout textLayout;
     public ImageView status;
+    public LinearLayout textLayout;
     private MessagesManager messagesManager;
+    private ChatAdpater.Callback callback;
 
 
-    public ChatUserHolder(View view, OnChatItemListener onChatItemListener) {
-        this(view, onChatItemListener, true);
-    }
-
-    public ChatUserHolder(View itemView, final OnChatItemListener onChatItemListener, boolean isAuthorNeeded) {
+    public ChatUserHolder(View itemView, final ChatAdpater.Callback callback) {
         super(itemView);
+
+        this.callback = callback;
         this.context = itemView.getContext();
 
         userImage_c = itemView.findViewById(R.id.userImage_c);
         messageText = itemView.findViewById(R.id.messageText);
         textTime = itemView.findViewById(R.id.textTime);
         status = itemView.findViewById(R.id.status);
+        textLayout = itemView.findViewById(R.id.textLayout);
 
-        userImage_c.setVisibility(isAuthorNeeded ? View.VISIBLE : View.GONE);
+
         messagesManager = MessagesManager.getInstance(context.getApplicationContext());
 
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int position = getAdapterPosition();
-                if (onChatItemListener != null && position != RecyclerView.NO_POSITION) {
-                    onChatItemListener.onTextClick(getAdapterPosition(), v);
+        if (callback != null) {
+            textLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        callback.onLongItemClick(v, position);
+                        return true;
+                    }
+                    return false;
                 }
-            }
-        });
+            });
 
-        userImage_c.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int position = getAdapterPosition();
-                if (onChatItemListener != null && position != RecyclerView.NO_POSITION) {
-                    onChatItemListener.onAuthorClick(getAdapterPosition(), v);
-                }
-            }
-        });
+        }
     }
 
 
-    public void bindData(Message message) {
+    public void bindData(final Message message) {
 
-        messageText.setText(message.getText());
-        textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
-                DateUtils.FORMAT_SHOW_TIME));
+        final String messageKey = message.getId();
+        if (messageKey != null) {
+            messageText.setText(message.getText());
+            textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
+                    DateUtils.FORMAT_SHOW_TIME));
 
 
-        if (message.getFromUserId() != null) {
-            messagesManager.getProfileSingleValue(message.getFromUserId(), createProfileChangeListener(userImage_c));
+            if (message.getFromUserId() != null) {
+                messagesManager.getProfileSingleValue(message.getFromUserId(), createProfileChangeListener(userImage_c));
+            }
+
+
+            userImage_c.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (message.getFromUserId() != null) {
+                        callback.onAuthorClick(message.getFromUserId(), v);
+                    }
+                }
+            });
         }
     }
 

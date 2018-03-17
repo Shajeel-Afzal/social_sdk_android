@@ -8,8 +8,8 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -22,16 +22,15 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.data.model.InputMessage;
-import com.sumatodev.social_chat_sdk.main.data.model.Message;
-import com.sumatodev.social_chat_sdk.main.data.model.MessageListResult;
-import com.sumatodev.social_chat_sdk.main.data.model.User;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
-import com.sumatodev.social_chat_sdk.main.listeners.OnMessageChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnThreadsListChangedListener;
+import com.sumatodev.social_chat_sdk.main.model.InputMessage;
+import com.sumatodev.social_chat_sdk.main.model.Message;
+import com.sumatodev.social_chat_sdk.main.model.MessageListResult;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
 import com.sumatodev.social_chat_sdk.main.model.ThreadListResult;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
@@ -46,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,56 +117,16 @@ public class DatabaseHelper {
         activeListeners.clear();
     }
 
-/*
-    public void sendNewMessage(Message message, final OnMessageSentListener onMessageSentListener) {
+    public void sendNewMessage(InputMessage inputMessage, final OnMessageSentListener onMessageSentListener) {
 
         try {
+            Message message = new Message();
+            message.setText(inputMessage.getText());
+            message.setFromUserId(getCurrentUser());
+
             if (message.getId() == null) {
-                message.setId(generateMessageId(getCurrentUser(), message.getToUserId()));
+                message.setId(generateMessageId(getCurrentUser(), inputMessage.getUid()));
             }
-            DatabaseReference databaseReference = database.getReference();
-            Map messageMap = new ObjectMapper().convertValue(message, Map.class);
-
-            String currentUser = message.getToUserId() + "/" + getCurrentUser();
-            String chatUser = getCurrentUser() + "/" + message.getToUserId();
-
-            Map<String, Object> messageUserMap = new HashMap<>();
-            messageUserMap.put(currentUser + "/" + message.getId(), messageMap);
-            messageUserMap.put(chatUser + "/" + message.getId(), messageMap);
-
-            databaseReference.child(Consts.MESSAGES_REF).updateChildren(messageUserMap, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                    if (databaseError == null) {
-                        onMessageSentListener.onMessageSent(true, "success");
-                    } else {
-                        switch (databaseError.getCode()) {
-                            case DatabaseError.NETWORK_ERROR:
-                                onMessageSentListener.onMessageSent(false, network_error);
-                                break;
-                            case DatabaseError.OPERATION_FAILED:
-                                onMessageSentListener.onMessageSent(false, operation_failed);
-                                break;
-                            default:
-                                onMessageSentListener.onMessageSent(false, sending_failed);
-                        }
-                    }
-                }
-            });
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-    */
-
-    public void sendMessage(InputMessage inputMessage, final OnMessageSentListener onMessageSentListener) {
-
-        try {
-            String messageKey = generateMessageId(getCurrentUser(), inputMessage.getUid());
-
-            User user = new User(getCurrentUser(), null, null, false);
-            Message message = new Message(messageKey, user, inputMessage.getText());
-
             DatabaseReference databaseReference = database.getReference();
             Map messageMap = new ObjectMapper().convertValue(message, Map.class);
 
@@ -201,8 +159,8 @@ public class DatabaseHelper {
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
-
     }
+
 
     public String generateMessageId(String current_uid, String other_uid) {
         DatabaseReference databaseReference = database.getReference();
@@ -210,69 +168,6 @@ public class DatabaseHelper {
                 .child(other_uid).push().getKey();
     }
 
-
-    public void getChatList(String userKey, final OnMessageChangedListener<Message> listener) {
-
-        final DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF)
-                .child(getCurrentUser()).child(userKey);
-        Query postsQuery;
-
-        postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
-
-        postsQuery.keepSynced(true);
-
-        postsQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.d(TAG, "datasnapshot messages: " + dataSnapshot.getValue());
-
-                if (dataSnapshot.getValue() != null) {
-
-                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
-                    if (hashMap != null) {
-
-                        long createdDate = (long) hashMap.get("createdAt");
-
-                        Message message = new Message();
-                        message.setId((String) hashMap.get("id"));
-                        message.setText((String) hashMap.get("text"));
-                        message.setCreatedAt(new Date(createdDate));
-
-                        HashMap userMap = (HashMap) hashMap.get("user");
-                        User user = new User();
-                        if (userMap != null) {
-                            user.setId((String) userMap.get("id"));
-                        }
-
-                        message.setUser(user);
-
-                        listener.OnListChanged(message);
-                    }
-                }
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                listener.onCancel(databaseError.getMessage());
-            }
-        });
-    }
 
     public void getThreadsList(final OnThreadsListChangedListener<ThreadsModel> listener) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
@@ -400,57 +295,72 @@ public class DatabaseHelper {
         });
     }
 
-    public void getMessagesList(final String userKey, final OnMessageListChangedListener<Message> onMessageListChangedListener,
-                                final long date) {
-
-        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
-        Query postsQuery;
-        if (date == 0) {
-            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
-        } else {
-            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
-        }
-
-        postsQuery.keepSynced(true);
-        postsQuery.addChildEventListener(new ChildEventListener() {
+    public ValueEventListener getChatList(String userKey, final OnDataChangedListener<Message> onDataChangedListener) {
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF)
+                .child(getCurrentUser()).child(userKey);
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if (dataSnapshot.getValue() != null) {
-                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
-                    MessageListResult result = getListResult(hashMap);
-
-                    if (result.getMessages().isEmpty() && result.isMoreDataAvailable()) {
-                        getMessagesList(userKey, onMessageListChangedListener, result.getLastItemCreatedDate() - 1);
-                    } else {
-                        onMessageListChangedListener.onListChanged(getListResult(hashMap));
-                    }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<Message> list = new ArrayList<>();
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Message message = child.getValue(Message.class);
+                    list.add(message);
                 }
-            }
+                Collections.sort(list, new Comparator<Message>() {
+                    @Override
+                    public int compare(Message o1, Message o2) {
+                        return ((Long) o1.getCreatedAt()).compareTo((Long) o2.getCreatedAt());
+                    }
+                });
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
+                onDataChangedListener.onListChanged(list);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
-                onMessageListChangedListener.onCancel(context.getString(R.string.permission_denied_error));
             }
         });
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
     }
 
-    private MessageListResult getListResult(HashMap hashMap) {
+    public ValueEventListener getMessageList(final String userKey, final OnMessageListChangedListener<Message> listener, final long date) {
+
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
+
+        Query chatQuery;
+        if (date == 0) {
+            chatQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
+        } else {
+            chatQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
+        }
+
+        ValueEventListener eventListener = chatQuery.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                HashMap<String, Object> hashMap = (HashMap<String, Object>) dataSnapshot.getValue();
+                MessageListResult result = parceMessageList(hashMap);
+
+                if (result.getMessages().isEmpty() && result.isMoreDataAvailable()) {
+                    getMessageList(userKey, listener, result.getLastItemCreatedDate() - 1);
+                } else {
+                    listener.onListChanged(parceMessageList(hashMap));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
+                listener.onCanceled(context.getString(R.string.permission_denied_error));
+            }
+        });
+
+        activeListeners.put(eventListener, databaseReference);
+        return eventListener;
+    }
+
+    private MessageListResult parceMessageList(HashMap<String, Object> hashMap) {
         MessageListResult result = new MessageListResult();
         List<Message> list = new ArrayList<>();
         boolean isMoreDataAvailable = true;
@@ -459,116 +369,46 @@ public class DatabaseHelper {
         if (hashMap != null) {
             isMoreDataAvailable = Constants.Message.MESSAGE_AMOUNT_ON_PAGE == hashMap.size();
 
+            for (String key : hashMap.keySet()) {
+                Object obj = hashMap.get(key);
+                if (obj instanceof Map) {
+                    Map<String, Object> mapObj = (Map<String, Object>) obj;
 
-            long createdDate = (long) hashMap.get("createdAt");
+                    long createdDate = (long) mapObj.get("createdAt");
 
-            if (lastItemCreatedDate == 0 || lastItemCreatedDate > createdDate) {
-                lastItemCreatedDate = createdDate;
+                    if (lastItemCreatedDate == 0 || lastItemCreatedDate > createdDate) {
+                        lastItemCreatedDate = createdDate;
+                    }
+
+                    Message message = new Message();
+                    message.setId(key);
+                    message.setText((String) mapObj.get("text"));
+                    message.setCreatedAt(createdDate);
+                    message.setFromUserId((String) mapObj.get("fromUserId"));
+
+                    list.add(message);
+                }
             }
-
-            Message message = new Message();
-
-            message.setId((String) hashMap.get("id"));
-            message.setText((String) hashMap.get("text"));
-            message.setCreatedAt(new Date(createdDate));
-
-            HashMap userMap = (HashMap) hashMap.get("user");
-            User user = new User();
-            if (userMap != null) {
-                user.setId((String) userMap.get("id"));
-            }
-
-            message.setUser(user);
-
-            list.add(message);
 
             Collections.sort(list, new Comparator<Message>() {
                 @Override
-                public int compare(Message lhs, Message rhs) {
-                    return (lhs.getCreatedAt()).compareTo(rhs.getCreatedAt());
+                public int compare(Message o1, Message o2) {
+                    return ((Long) o2.getCreatedAt()).compareTo((Long) o1.getCreatedAt());
                 }
             });
 
             result.setMessages(list);
             result.setLastItemCreatedDate(lastItemCreatedDate);
             result.setMoreDataAvailable(isMoreDataAvailable);
-
         }
         return result;
     }
 
-    public void getMessages(final String userKey, final OnMessageListChangedListener<Message> onMessageListChangedListener, long date) {
 
-        Log.d(TAG, "load more helper called");
+    public Task<Void> removeMessage(String messageId, String userKey) {
+        DatabaseReference reference = database.getReference(Consts.MESSAGES_REF)
+                .child(getCurrentUser()).child(userKey).child(messageId);
 
-        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
-        Query postsQuery;
-        postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
-
-        postsQuery.keepSynced(true);
-        postsQuery.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-                if (dataSnapshot.getValue() != null) {
-
-                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
-                    if (hashMap != null) {
-                        onMessageListChangedListener.onListChanged(getMessagesResult(hashMap));
-                    }
-                }
-
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
-                onMessageListChangedListener.onCancel(context.getString(R.string.permission_denied_error));
-            }
-        });
-    }
-
-    private MessageListResult getMessagesResult(HashMap hashMap) {
-
-        MessageListResult result = new MessageListResult();
-        List<Message> messageList = new ArrayList<>();
-
-        if (hashMap != null) {
-            long createdDate = (long) hashMap.get("createdAt");
-
-            Message message = new Message();
-            message.setId((String) hashMap.get("id"));
-            message.setText((String) hashMap.get("text"));
-            message.setCreatedAt(new Date(createdDate));
-
-            HashMap userMap = (HashMap) hashMap.get("user");
-            User user = new User();
-            if (userMap != null) {
-                user.setId((String) userMap.get("id"));
-            }
-
-            message.setUser(user);
-
-
-            messageList.add(message);
-            result.setMessages(messageList);
-        }
-
-        return result;
+        return reference.removeValue();
     }
 }

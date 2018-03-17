@@ -19,7 +19,6 @@ package sumatodev.com.social.adapters.holders;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -29,6 +28,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.controllers.LikeController;
@@ -122,8 +122,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bindData(Post post) {
-
-        Log.d(TAG, "key: " + post.getId());
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 

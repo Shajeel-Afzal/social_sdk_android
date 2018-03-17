@@ -59,9 +59,9 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         this.context = itemView.getContext();
         profileManager = ProfileManager.getInstance(itemView.getContext().getApplicationContext());
 
-        avatarImageView = (ImageView) itemView.findViewById(R.id.avatarImageView);
-        commentTextView = (ExpandableTextView) itemView.findViewById(R.id.commentText);
-        dateTextView = (TextView) itemView.findViewById(R.id.dateTextView);
+        avatarImageView = itemView.findViewById(R.id.avatarImageView);
+        commentTextView = itemView.findViewById(R.id.commentText);
+        dateTextView = itemView.findViewById(R.id.dateTextView);
 
         if (callback != null) {
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -98,7 +98,8 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView, final ImageView avatarImageView, final String comment) {
+    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView,
+                                                                           final ImageView avatarImageView, final String comment) {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(Profile obj) {

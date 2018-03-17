@@ -1,16 +1,24 @@
-package com.sumatodev.social_chat_sdk.main.data.model;
+package com.sumatodev.social_chat_sdk.main.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Ali on 14/03/2018.
+ * Created by Ali on 16/03/2018.
  */
 
 public class MessageListResult {
+    boolean isMoreDataAvailable;
     List<Message> messages = new ArrayList<>();
     long lastItemCreatedDate;
-    boolean isMoreDataAvailable;
+
+    public boolean isMoreDataAvailable() {
+        return isMoreDataAvailable;
+    }
+
+    public void setMoreDataAvailable(boolean moreDataAvailable) {
+        isMoreDataAvailable = moreDataAvailable;
+    }
 
     public List<Message> getMessages() {
         return messages;
@@ -26,13 +34,5 @@ public class MessageListResult {
 
     public void setLastItemCreatedDate(long lastItemCreatedDate) {
         this.lastItemCreatedDate = lastItemCreatedDate;
-    }
-
-    public boolean isMoreDataAvailable() {
-        return isMoreDataAvailable;
-    }
-
-    public void setMoreDataAvailable(boolean moreDataAvailable) {
-        isMoreDataAvailable = moreDataAvailable;
     }
 }

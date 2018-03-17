@@ -1,4 +1,4 @@
-package com.sumatodev.social_chat_sdk.main.data.model;
+package com.sumatodev.social_chat_sdk.main.model;
 
 /**
  * Created by Ali on 14/03/2018.

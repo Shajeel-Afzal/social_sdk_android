@@ -18,5 +18,5 @@ package sumatodev.com.social.managers.listeners;
 
 public interface OnTaskCompleteListener {
 
-    public void onTaskComplete(boolean success);
+    void onTaskComplete(boolean success);
 }
