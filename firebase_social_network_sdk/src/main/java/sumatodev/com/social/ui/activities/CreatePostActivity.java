@@ -19,7 +19,6 @@ package sumatodev.com.social.ui.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,6 +27,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -47,7 +47,6 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     protected ImageView imageView;
     protected ProgressBar progressBar;
     protected EditText titleEditText;
-    protected EditText descriptionEditText;
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
@@ -65,7 +64,6 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         postManager = PostManager.getInstance(CreatePostActivity.this);
 
         titleEditText = findViewById(R.id.titleEditText);
-        descriptionEditText = findViewById(R.id.descriptionEditText);
         progressBar = findViewById(R.id.progressBar);
 
         imageView = findViewById(R.id.imageView);
@@ -109,52 +107,43 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     protected void attemptCreatePost() {
         // Reset errors.
         titleEditText.setError(null);
-        descriptionEditText.setError(null);
+        if (!validate()) {
+            hideKeyboard();
+            Toast.makeText(this, "post can't be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String title = titleEditText.getText().toString().trim();
-        String description = descriptionEditText.getText().toString().trim();
 
         View focusView = null;
         boolean cancel = false;
 
-        if (TextUtils.isEmpty(description)) {
-            descriptionEditText.setError(getString(R.string.warning_empty_description));
-            focusView = descriptionEditText;
-            cancel = true;
-        }
-
-        if (TextUtils.isEmpty(title)) {
-            titleEditText.setError(getString(R.string.warning_empty_title));
-            focusView = titleEditText;
-            cancel = true;
-        } else if (!ValidationUtil.isPostTitleValid(title)) {
+        if (!ValidationUtil.isPostTitleValid(title)) {
             titleEditText.setError(getString(R.string.error_post_title_length));
             focusView = titleEditText;
             cancel = true;
         }
 
-        if (!(this instanceof EditPostActivity) && imageUri == null) {
-            showWarningDialog(R.string.warning_empty_image);
-            focusView = imageView;
-            cancel = true;
-        }
 
         if (!cancel) {
             creatingPost = true;
             hideKeyboard();
-            savePost(title, description);
+            savePost(title);
         } else if (focusView != null) {
             focusView.requestFocus();
         }
     }
 
-    protected void savePost(String title, String description) {
+    protected void savePost(String title) {
         showProgress(R.string.message_creating_post);
         Post post = new Post();
-        post.setTitle(title);
-        post.setDescription(description);
+        if (!title.isEmpty()) {
+            post.setTitle(title);
+        }
+        if (imageUri != null) {
+            post.setImagePath(String.valueOf(imageUri));
+        }
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        post.setImagePath(String.valueOf(imageUri));
 
         //postManager.createOrUpdatePostWithImage(imageUri, CreatePostActivity.this, post);
 
@@ -204,5 +193,18 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    private boolean validate() {
+        boolean valid = true;
+        String title = titleEditText.getText().toString().trim();
+
+        if (title.isEmpty() && imageUri == null) {
+            valid = false;
+        } else if (!title.isEmpty() || imageUri != null) {
+            valid = true;
+        }
+
+        return valid;
     }
 }

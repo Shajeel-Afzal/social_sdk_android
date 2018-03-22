@@ -30,6 +30,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
@@ -77,8 +78,8 @@ public class EditPostActivity extends CreatePostActivity {
     }
 
     @Override
-    protected void savePost(final String title, final String description) {
-        doSavePost(title, description);
+    protected void savePost(final String title) {
+        doSavePost(title);
     }
 
     private void addCheckIsPostChangedListener() {
@@ -137,13 +138,13 @@ public class EditPostActivity extends CreatePostActivity {
         startActivity(intent);
     }
 
-    private void doSavePost(String title, String description) {
+    private void doSavePost(String title) {
         showProgress(R.string.message_saving);
         post.setTitle(title);
-        post.setDescription(description);
 
         if (imageUri != null) {
-            postManager.createOrUpdatePostWithImage(imageUri, EditPostActivity.this, post);
+            post.setImagePath(String.valueOf(imageUri));
+            postManager.createOrUpdatePostWithImage(EditPostActivity.this, post);
         } else {
             postManager.createOrUpdatePost(post);
             onPostSaved(true);
@@ -152,7 +153,6 @@ public class EditPostActivity extends CreatePostActivity {
 
     private void fillUIFields() {
         titleEditText.setText(post.getTitle());
-        descriptionEditText.setText(post.getDescription());
         loadPostDetailsImage();
         hideProgress();
     }

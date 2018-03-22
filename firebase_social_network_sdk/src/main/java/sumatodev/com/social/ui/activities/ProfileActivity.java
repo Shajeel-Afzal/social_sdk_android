@@ -20,7 +20,6 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -276,8 +275,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void createNewPost(Intent data) {
         Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
         if (post != null) {
-            postManager.createOrUpdatePostWithImage(Uri.parse(post.getImagePath()),
-                    ProfileActivity.this, post);
+            postManager.createOrUpdatePostWithImage(ProfileActivity.this, post);
             notificationView.setNotification(true, "Uploading Post");
         }
 

@@ -254,6 +254,17 @@ public class DatabaseHelper {
         }
     }
 
+    public Task<Void> createNewPost(Post post) {
+
+        DatabaseReference databaseReference = database.getReference();
+
+        Map<String, Object> postValues = post.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/posts/" + post.getId(), postValues);
+
+        return databaseReference.updateChildren(childUpdates);
+    }
+
 
     public Task<Void> removePost(Post post) {
         DatabaseReference databaseReference = database.getReference();
@@ -659,10 +670,10 @@ public class DatabaseHelper {
                 if (obj instanceof Map) {
                     Map<String, Object> mapObj = (Map<String, Object>) obj;
 
-                    if (!isPostValid(mapObj)) {
-                        LogUtil.logDebug(TAG, "Invalid post, id: " + key);
-                        continue;
-                    }
+                    // if (!isPostValid(mapObj)) {
+                    //   LogUtil.logDebug(TAG, "Invalid post, id: " + key);
+                    // continue;
+                    //}
 
                     boolean hasComplain = mapObj.containsKey("hasComplain") && (boolean) mapObj.get("hasComplain");
                     long createdDate = (long) mapObj.get("createdDate");
@@ -674,10 +685,13 @@ public class DatabaseHelper {
                     if (!hasComplain) {
                         Post post = new Post();
                         post.setId(key);
-                        post.setTitle((String) mapObj.get("title"));
-                        post.setDescription((String) mapObj.get("description"));
-                        post.setImagePath((String) mapObj.get("imagePath"));
-                        post.setImageTitle((String) mapObj.get("imageTitle"));
+                        if (mapObj.get("title") != null) {
+                            post.setTitle((String) mapObj.get("title"));
+                        }
+                        if (mapObj.get("imagePath") != null) {
+                            post.setImagePath((String) mapObj.get("imagePath"));
+                            post.setImageTitle((String) mapObj.get("imageTitle"));
+                        }
                         post.setAuthorId((String) mapObj.get("authorId"));
                         post.setCreatedDate(createdDate);
                         if (mapObj.containsKey("commentsCount")) {

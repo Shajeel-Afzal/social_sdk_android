@@ -97,17 +97,6 @@
                 android:layout_marginRight="@dimen/large_intrinsic_padding" />
 
             <TextView
-                android:id="@+id/descriptionEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/countersContainer"
-                android:layout_marginBottom="@dimen/large_intrinsic_padding"
-                android:paddingLeft="@dimen/large_intrinsic_padding"
-                android:paddingRight="@dimen/large_intrinsic_padding"
-                android:autoLink="all"
-                android:textAppearance="@style/TextAppearance.Second" />
-
-            <TextView
                 android:id="@+id/commentsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
