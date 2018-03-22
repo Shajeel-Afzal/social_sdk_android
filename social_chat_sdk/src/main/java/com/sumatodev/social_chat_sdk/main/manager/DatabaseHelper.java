@@ -27,12 +27,11 @@ import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
-import com.sumatodev.social_chat_sdk.main.listeners.OnThreadsListChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.MessageListResult;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
-import com.sumatodev.social_chat_sdk.main.model.ThreadListResult;
+import com.sumatodev.social_chat_sdk.main.model.Status;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
 import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 import com.sumatodev.social_chat_sdk.main.utils.FileUtil;
@@ -169,44 +168,46 @@ public class DatabaseHelper {
     }
 
 
-    public void getThreadsList(final OnThreadsListChangedListener<ThreadsModel> listener) {
+    public ValueEventListener getThreadsList(final OnDataChangedListener<ThreadsModel> onDataChangedListener) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
-
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //Log.d(TAG, "datasnapshot threads: " + dataSnapshot.getValue());
-                Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
-                listener.onListChanged(getList(objectMap));
 
+                if (dataSnapshot.getValue() != null) {
+                    List<ThreadsModel> list = new ArrayList<>();
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        ThreadsModel model = new ThreadsModel(child.getKey());
+                        list.add(model);
+                    }
+                    onDataChangedListener.onListChanged(list);
+                }
+                // Map<String, Object> objectMap = (HashMap<String, Object>) dataSnapshot.getValue();
+                //onDataChangedListener.onListChanged(getThreads(objectMap));
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                listener.onCanceled(context.getString(R.string.permission_denied_error));
+                onDataChangedListener.onCancel(context.getString(R.string.permission_denied_error));
             }
         });
+
+        activeListeners.put(valueEventListener, reference);
+        return valueEventListener;
     }
 
-    private ThreadListResult getList(Map<String, Object> value) {
-        ThreadListResult listResult = new ThreadListResult();
+    private List<ThreadsModel> getThreads(Map<String, Object> objectMap) {
         List<ThreadsModel> list = new ArrayList<>();
-
-        if (value != null) {
-
-            for (String key : value.keySet()) {
-
+        if (objectMap != null) {
+            for (String keys : objectMap.keySet()) {
                 ThreadsModel model = new ThreadsModel();
-                model.setThreadKey(key);
+                model.setThreadKey(keys);
 
                 list.add(model);
             }
-
-            listResult.setThreads(list);
         }
-        return listResult;
+        return list;
     }
-
 
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
         StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
@@ -278,10 +279,10 @@ public class DatabaseHelper {
     }
 
 
-    public void getUsersPublicProfile(String userKey, final OnObjectChangedListener<UsersPublic> listener) {
+    public ValueEventListener getUsersPublicProfile(String userKey, final OnObjectChangedListener<UsersPublic> listener) {
 
         DatabaseReference databaseReference = getDatabaseReference().child("users_public").child(userKey);
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 UsersPublic profile = dataSnapshot.getValue(UsersPublic.class);
@@ -291,34 +292,6 @@ public class DatabaseHelper {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "getProfileSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
-            }
-        });
-    }
-
-    public ValueEventListener getChatList(String userKey, final OnDataChangedListener<Message> onDataChangedListener) {
-        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF)
-                .child(getCurrentUser()).child(userKey);
-        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                List<Message> list = new ArrayList<>();
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Message message = child.getValue(Message.class);
-                    list.add(message);
-                }
-                Collections.sort(list, new Comparator<Message>() {
-                    @Override
-                    public int compare(Message o1, Message o2) {
-                        return ((Long) o1.getCreatedAt()).compareTo((Long) o2.getCreatedAt());
-                    }
-                });
-
-                onDataChangedListener.onListChanged(list);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
         activeListeners.put(valueEventListener, databaseReference);
@@ -404,6 +377,28 @@ public class DatabaseHelper {
         return result;
     }
 
+    public ValueEventListener getLastMessage(String userKey, final OnObjectChangedListener<Message> onObjectChangedListener) {
+
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
+        Query query = databaseReference.child(userKey).limitToLast(1);
+
+        ValueEventListener valueEventListener = query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Message message = child.getValue(Message.class);
+                    onObjectChangedListener.onObjectChanged(message);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
+    }
 
     public Task<Void> removeMessage(String messageId, String userKey) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF)
@@ -411,4 +406,20 @@ public class DatabaseHelper {
 
         return reference.removeValue();
     }
+
+    public Task<Void> removeConversation(String userKey) {
+
+        DatabaseReference reference = database.getReference(Consts.MESSAGES_REF)
+                .child(getCurrentUser()).child(userKey);
+
+        return reference.removeValue();
+    }
+
+    public void checkOnlineStatus(boolean status) {
+        DatabaseReference reference = database.getReference(Consts.USER_PUBLIC_REF)
+                .child(getCurrentUser()).child(Consts.STATUS_REF);
+
+        reference.setValue(new Status(status));
+    }
+
 }

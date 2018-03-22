@@ -11,23 +11,22 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/input">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:divider="@null"
-            android:padding="10dp"
-            android:paddingBottom="@dimen/intrinsic_padding" />
+        <cz.kinst.jakub.view.SimpleStatefulLayout
+            android:id="@+id/stateful_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            app:emptyLayout="@layout/empty_layout">
 
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:padding="10dp"
+                android:paddingBottom="@dimen/intrinsic_padding" />
+        </cz.kinst.jakub.view.SimpleStatefulLayout>
     </android.support.v4.widget.SwipeRefreshLayout>
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_gravity="center" />
 
     <View
         android:layout_width="match_parent"

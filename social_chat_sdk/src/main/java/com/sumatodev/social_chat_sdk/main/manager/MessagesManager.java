@@ -17,6 +17,7 @@ import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
 import com.sumatodev.social_chat_sdk.main.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
+import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
 import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 import com.sumatodev.social_chat_sdk.main.utils.LogUtil;
 
@@ -62,13 +63,10 @@ public class MessagesManager extends FirebaseListenersManager {
         databaseHelper.getProfileSingleValue(id, listener);
     }
 
-    public void getUsersPublicProfile(String userKey, OnObjectChangedListener<UsersPublic> listener) {
-        databaseHelper.getUsersPublicProfile(userKey, listener);
-    }
-
-    public void getChatList(Context context, String userKey, OnDataChangedListener<Message> onDataChangedListener) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getChatList(userKey, onDataChangedListener);
+    public void getUsersPublicProfile(Context context, String userKey, OnObjectChangedListener<UsersPublic> listener) {
+        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getUsersPublicProfile(userKey, listener);
         addListenerToMap(context, valueEventListener);
+
     }
 
     public void getMessageList(Context context, String userKey, OnMessageListChangedListener<Message> listener, long date) {
@@ -92,5 +90,37 @@ public class MessagesManager extends FirebaseListenersManager {
                 LogUtil.logError(TAG, "removeMessage()", e);
             }
         });
+    }
+
+    public void removeConversation(String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseHelper helper = ApplicationHelper.getDatabaseHelper();
+
+        helper.removeConversation(userKey).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onTaskCompleteListener.onTaskComplete(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onTaskCompleteListener.onTaskComplete(false);
+            }
+        });
+    }
+
+    public void getThreadsList(Context context, OnDataChangedListener<ThreadsModel> changedListener) {
+        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getThreadsList(changedListener);
+        addListenerToMap(context, valueEventListener);
+    }
+
+    public void getLastMessage(Context context, String userKey, OnObjectChangedListener<Message> onObjectChangedListener) {
+        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getLastMessage(userKey
+                , onObjectChangedListener);
+
+        addListenerToMap(context, valueEventListener);
+    }
+
+    public void checkOnlineStatus(boolean status) {
+        databaseHelper.checkOnlineStatus(status);
     }
 }

@@ -5,5 +5,5 @@ package com.sumatodev.social_chat_sdk.main.listeners;
  */
 
 public interface OnObjectChangedListener<T> {
-    public void onObjectChanged(T obj);
+    void onObjectChanged(T obj);
 }

@@ -16,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +31,11 @@ import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
+import com.sumatodev.social_chat_sdk.main.utils.FormatterUtil;
 import com.sumatodev.social_chat_sdk.main.utils.MessageInput;
 import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
+
+import cz.kinst.jakub.view.SimpleStatefulLayout;
 
 public class ChatActivity extends BaseActivity implements MessageInput.InputListener,
         View.OnClickListener, OnMessageSentListener {
@@ -49,7 +51,7 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
     private ImageView userImage_c;
     private MessagesManager messagesManager;
 
-    private ProgressBar progressBar;
+    private SimpleStatefulLayout mStatefulLayout;
     private ActionMode actionMode;
     private ChatAdpater adpater;
     private SwipeRefreshLayout swipeContainer;
@@ -72,7 +74,7 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
         input.setInputListener(this);
         recyclerView = findViewById(R.id.recyclerView);
         swipeContainer = findViewById(R.id.swipeContainer);
-        progressBar = findViewById(R.id.progressBar);
+        mStatefulLayout = findViewById(R.id.stateful_view);
 
 
         initRecyclerView();
@@ -103,7 +105,8 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
                 userImage_c = view.findViewById(R.id.userImage_c);
 
                 userImage_c.setOnClickListener(this);
-                messagesManager.getUsersPublicProfile(userKey, createProfileChangeListener(userName_c, userImage_c));
+                messagesManager.getUsersPublicProfile(ChatActivity.this, userKey,
+                        createProfileChangeListener(userName_c, userImage_c));
             }
         }
     }
@@ -115,6 +118,16 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
 
                 if (obj.getUsername() != null) {
                     userName.setText(obj.getUsername());
+                }
+                if (obj.getStatus() != null) {
+                    status_c.setVisibility(View.VISIBLE);
+                    if (obj.getStatus().isOnline) {
+                        status_c.setText(R.string.isOnline);
+                    } else {
+                        CharSequence lastSeen = FormatterUtil.getRelativeTimeSpanString(ChatActivity.this,
+                                obj.getStatus().lastSeen);
+                        status_c.setText(lastSeen);
+                    }
                 }
                 if (obj.getPhotoUrl() != null) {
 
@@ -163,6 +176,8 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
 
     private void initRecyclerView() {
 
+        mStatefulLayout.showProgress();
+
         adpater = new ChatAdpater(this, userKey, swipeContainer);
         adpater.setCallback(new ChatAdpater.Callback() {
             @Override
@@ -173,7 +188,7 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
 
             @Override
             public void onListLoadingFinished() {
-                progressBar.setVisibility(View.GONE);
+                mStatefulLayout.showContent();
             }
 
             @Override
@@ -185,8 +200,8 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
 
             @Override
             public void onCanceled(String message) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(ChatActivity.this, message, Toast.LENGTH_LONG).show();
+                mStatefulLayout.showEmpty();
+                mStatefulLayout.setEmptyText(message);
             }
         });
 
@@ -263,8 +278,10 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
         messagesManager.removeMessage(messageId, userKey, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
-                hideProgress();
-                mode.finish();
+                if (success) {
+                    hideProgress();
+                    mode.finish();
+                }
             }
         });
     }
@@ -278,5 +295,18 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
                 Toast.makeText(getApplicationContext(), "copied to clipboard", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        messagesManager.checkOnlineStatus(true);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        messagesManager.checkOnlineStatus(false);
+        messagesManager.closeListeners(this);
     }
 }

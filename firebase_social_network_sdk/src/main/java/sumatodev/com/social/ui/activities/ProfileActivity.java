@@ -102,6 +102,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private LinearLayout dataLayout;
     private Button messageBtn;
 
+    private Toolbar toolbar;
+    private TextView toolBar_title;
+
+
     private FirebaseAuth mAuth;
     private GoogleApiClient mGoogleApiClient;
     private String currentUserId;
@@ -120,16 +124,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_profile);
+        setContentView(R.layout.profile_message_view);
         findViews();
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        actionBar = getSupportActionBar();
-
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
+        setupToolBar();
 
         if (getIntent() != null) {
             userID = getIntent().getStringExtra(USER_ID_EXTRA_KEY);
@@ -165,7 +162,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void findViews() {
         progressBar = findViewById(R.id.progressBar);
         imageView = findViewById(R.id.imageView);
-        nameEditText = findViewById(R.id.nameEditText);
+        //nameEditText = findViewById(R.id.nameEditText);
         postsCounterTextView = findViewById(R.id.postsCounterTextView);
         followBtn = findViewById(R.id.followBtn);
         //likesCountersTextView = findViewById(R.id.likesCountersTextView);
@@ -203,6 +200,17 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         }
     }
 
+
+    private void setupToolBar() {
+        toolbar = findViewById(R.id.toolbar);
+        toolBar_title = findViewById(R.id.toolBar_title);
+        setSupportActionBar(toolbar);
+        actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+        }
+    }
 
     @Override
     public void onStart() {
@@ -322,6 +330,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                     postsCounterTextView.setText(buildCounterSpannable(postsLabel, postsCount));
 
                     if (postsCount > 0) {
+                        postsLabelTextView.setVisibility(View.VISIBLE);
                         statefulLayout.showContent();
                     } else if (postsCount < 0) {
                         statefulLayout.setEmptyText("no posts to show");
@@ -352,7 +361,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         contentString.append("\n");
         int start = contentString.length();
         contentString.append(label);
-        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Follow),
+        contentString.setSpan(new TextAppearanceSpan(this, R.style.TextAppearance_Message),
                 start, contentString.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return contentString;
     }
@@ -393,7 +402,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
     private void fillUIFields(Profile profile) {
         if (profile != null) {
-            nameEditText.setText(profile.getUsername());
+            if (actionBar != null) {
+                toolBar_title.setText(profile.getUsername());
+            }
 
             if (profile.getPhotoUrl() != null) {
                 Glide.with(this)
