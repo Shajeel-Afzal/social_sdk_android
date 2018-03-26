@@ -9,4 +9,5 @@
     <dimen name="input_padding_bottom">8sp</dimen>
 
     <dimen name="intrinsic_padding">8dp</dimen>
+    <dimen name="progress_bar_size">50dp</dimen>
 </resources>

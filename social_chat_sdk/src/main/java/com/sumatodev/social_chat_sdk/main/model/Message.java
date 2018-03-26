@@ -17,7 +17,7 @@ public class Message implements Serializable, LazyLoading {
     private long createdAt;
     private String fromUserId;
     private ItemType itemType;
-
+    private String imageUrl;
 
     public Message() {
         this.createdAt = new Date().getTime();
@@ -64,6 +64,15 @@ public class Message implements Serializable, LazyLoading {
         return createdAt;
     }
 
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
@@ -71,6 +80,7 @@ public class Message implements Serializable, LazyLoading {
         result.put("text", text);
         result.put("createdAt", createdAt);
         result.put("fromUserId", fromUserId);
+        result.put("imageUrl", imageUrl);
 
         return result;
     }

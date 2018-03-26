@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/intrinsic_padding"
-    tools:context=".activities.CreatePostActivity">
+    android:padding="@dimen/intrinsic_padding">
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -31,4 +31,10 @@
     <color name="gray_light">#e8e8e8</color>
     <color name="chat_blue">#00adef</color>
 
+
+    //
+
+    <color name="icon_color">#565D6A</color>
+    <color name="blur">#5A48667d</color>
+    <color name="dart_transparent">#81000000</color>
 </resources>

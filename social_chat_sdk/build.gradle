@@ -59,6 +59,7 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.2.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     compile 'id.zelory:compressor:2.1.0'
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
 }
 // Bintray upload properties
 Properties properties = new Properties()

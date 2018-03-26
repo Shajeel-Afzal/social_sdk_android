@@ -199,5 +199,7 @@ public class ChatAdpater extends ChatBaseAdapter {
         void onAuthorClick(String authorId, View view);
 
         void onCanceled(String message);
+
+        void onImageClick(String imageUrl);
     }
 }

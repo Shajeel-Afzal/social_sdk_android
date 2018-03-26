@@ -29,4 +29,12 @@
     <string name="deleting_message">deleting message</string>
     <string name="deleting_conversation">Deleting Conversation</string>
 
+
+    <string name="error_general">Something went wrong.</string>
+    <string name="error_incorrect_file_type">Incorrect file type</string>
+    <string name="error_bigger_file">File size is bigger than 10Mb</string>
+    <string name="permissions_not_granted">Cancelling, required permissions are not granted</string>
+    <string name="error_fail_load_image">Fail to load image</string>
+    <string name="error_fail_crop_image">Fail to crop image</string>
+    <string name="error_smaller_image">Image is too small. Required image size 100x100 px</string>
 </resources>

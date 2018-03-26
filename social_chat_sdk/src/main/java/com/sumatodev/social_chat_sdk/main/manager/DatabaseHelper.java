@@ -25,9 +25,7 @@ import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
-import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
-import com.sumatodev.social_chat_sdk.main.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.MessageListResult;
 import com.sumatodev.social_chat_sdk.main.model.Profile;
@@ -116,48 +114,23 @@ public class DatabaseHelper {
         activeListeners.clear();
     }
 
-    public void sendNewMessage(InputMessage inputMessage, final OnMessageSentListener onMessageSentListener) {
 
-        try {
-            Message message = new Message();
-            message.setText(inputMessage.getText());
-            message.setFromUserId(getCurrentUser());
+    public Task<Void> sendMessage(Message message, String uid) {
 
-            if (message.getId() == null) {
-                message.setId(generateMessageId(getCurrentUser(), inputMessage.getUid()));
-            }
-            DatabaseReference databaseReference = database.getReference();
-            Map messageMap = new ObjectMapper().convertValue(message, Map.class);
+        message.setFromUserId(getCurrentUser());
 
-            String currentUser = inputMessage.getUid() + "/" + getCurrentUser();
-            String chatUser = getCurrentUser() + "/" + inputMessage.getUid();
+        Map messageMap = new ObjectMapper().convertValue(message, Map.class);
 
-            Map<String, Object> messageUserMap = new HashMap<>();
-            messageUserMap.put(currentUser + "/" + message.getId(), messageMap);
-            messageUserMap.put(chatUser + "/" + message.getId(), messageMap);
+        String currentUser = uid + "/" + getCurrentUser();
+        String chatUser = getCurrentUser() + "/" + uid;
 
-            databaseReference.child(Consts.MESSAGES_REF).updateChildren(messageUserMap, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                    if (databaseError == null) {
-                        onMessageSentListener.onMessageSent(true, "success");
-                    } else {
-                        switch (databaseError.getCode()) {
-                            case DatabaseError.NETWORK_ERROR:
-                                onMessageSentListener.onMessageSent(false, network_error);
-                                break;
-                            case DatabaseError.OPERATION_FAILED:
-                                onMessageSentListener.onMessageSent(false, operation_failed);
-                                break;
-                            default:
-                                onMessageSentListener.onMessageSent(false, sending_failed);
-                        }
-                    }
-                }
-            });
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
+        Map<String, Object> messageUserMap = new HashMap<>();
+        messageUserMap.put(currentUser + "/" + message.getId(), messageMap);
+        messageUserMap.put(chatUser + "/" + message.getId(), messageMap);
+
+
+        DatabaseReference reference = database.getReference();
+        return reference.child(Consts.MESSAGES_REF).updateChildren(messageUserMap);
     }
 
 
@@ -211,7 +184,8 @@ public class DatabaseHelper {
 
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
         StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
-        StorageReference riversRef = storageRef.child("images/" + imageTitle);
+
+        StorageReference riversRef = storageRef.child("chat_image/" + imageTitle);
         // Create file metadata including the content type
         StorageMetadata metadata = new StorageMetadata.Builder()
                 .setCacheControl("max-age=7776000, Expires=7776000, public, must-revalidate")
@@ -356,6 +330,7 @@ public class DatabaseHelper {
                     Message message = new Message();
                     message.setId(key);
                     message.setText((String) mapObj.get("text"));
+                    message.setImageUrl((String) mapObj.get("imageUrl"));
                     message.setCreatedAt(createdDate);
                     message.setFromUserId((String) mapObj.get("fromUserId"));
 

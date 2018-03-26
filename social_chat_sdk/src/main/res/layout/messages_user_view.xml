@@ -28,8 +28,8 @@
             android:id="@+id/status"
             android:layout_width="15dp"
             android:layout_height="15dp"
-            android:visibility="gone"
             android:layout_gravity="center_horizontal|bottom|end"
+            android:visibility="gone"
             app:civ_border_color="@android:color/white"
             app:civ_border_width="2dp"
             tools:ignore="ContentDescription" />
@@ -49,7 +49,30 @@
             android:layout_height="wrap_content"
             android:gravity="top|start"
             android:padding="5dp"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/black"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/messageImage"
+                android:layout_width="150dp"
+                android:layout_height="150dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/textTime"

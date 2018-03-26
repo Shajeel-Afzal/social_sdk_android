@@ -3,11 +3,13 @@ package com.sumatodev.social_chat_sdk.views.activities;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,9 +18,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
@@ -36,10 +38,12 @@ import com.sumatodev.social_chat_sdk.main.utils.FormatterUtil;
 import com.sumatodev.social_chat_sdk.main.utils.MessageInput;
 import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 
-public class ChatActivity extends BaseActivity implements MessageInput.InputListener,
+public class ChatActivity extends PickImageActivity implements MessageInput.InputListener, MessageInput.AttachmentsListener,
         View.OnClickListener, OnMessageSentListener {
 
     private static final String TAG = ChatActivity.class.getSimpleName();
@@ -74,6 +78,8 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
 
         MessageInput input = findViewById(R.id.input);
         input.setInputListener(this);
+        input.setAttachmentsListener(this);
+
         recyclerView = findViewById(R.id.recyclerView);
         swipeContainer = findViewById(R.id.swipeContainer);
         mStatefulLayout = findViewById(R.id.stateful_view);
@@ -167,6 +173,15 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
         return true;
     }
 
+    private void sendImage() {
+        if (imageUri != null) {
+            InputMessage inputMessage = new InputMessage();
+            inputMessage.setUid(userKey);
+            inputMessage.setImageUrl(imageUri);
+            messagesManager.sendNewMessage(inputMessage, ChatActivity.this);
+        }
+    }
+
     @Override
     public void onMessageSent(boolean success, String message) {
         if (success) {
@@ -175,6 +190,88 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
     }
+
+
+    @Override
+    public void onAddAttachments(View view) {
+        showMenu(view);
+    }
+
+    private void showMenu(View view) {
+
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenuInflater().inflate(R.menu.chat_input_menu, popupMenu.getMenu());
+
+        try {
+            Field[] fields = popupMenu.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popupMenu);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper.getClass().getName());
+                    Method setForceIcons = classPopupHelper.getMethod("setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int i = item.getItemId();
+                if (i == R.id.inputGallery) {
+                    onSelectImageClick();
+                    return true;
+                } else if (i == R.id.inputLocation) {
+                    Toast.makeText(ChatActivity.this, "location", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
+    }
+
+
+    @Override
+    protected ProgressBar getProgressView() {
+        return null;
+    }
+
+    @Override
+    protected ImageView getImageView() {
+        return null;
+    }
+
+    @Override
+    protected void onImagePikedAction() {
+        startCropImageActivity();
+    }
+
+    @Override
+    protected void onFinishedCropping() {
+        if (imageUri != null) {
+            Intent intent = new Intent(ChatActivity.this, ImageActivity.class);
+            intent.putExtra("imageUrl", imageUri.toString());
+            startActivityForResult(intent, ImageActivity.IMAGE_PICKED_KEY);
+            Log.d(TAG, "ImageUrl: " + imageUri);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        handleCropImageResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == ImageActivity.IMAGE_PICKED_KEY) {
+                sendImage();
+            }
+        }
+    }
+
 
     private void initRecyclerView() {
 
@@ -205,6 +302,13 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
                 mStatefulLayout.showEmpty();
                 mStatefulLayout.setEmptyText(message);
             }
+
+            @Override
+            public void onImageClick(String image) {
+                if (image != null) {
+                   openImageDetailActivity(image);
+                }
+            }
         });
 
         layoutManager = new LinearLayoutManager(this);
@@ -219,6 +323,12 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
                 super.onScrolled(recyclerView, dx, dy);
             }
         });
+    }
+
+    private void openImageDetailActivity(String image) {
+        Intent intent = new Intent(ChatActivity.this, ImageDetailActivity.class);
+        intent.putExtra(ImageDetailActivity.IMAGE_URL_EXTRA_KEY, image);
+        startActivity(intent);
     }
 
 

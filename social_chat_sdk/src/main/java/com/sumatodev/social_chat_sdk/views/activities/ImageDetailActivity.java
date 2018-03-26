@@ -14,12 +14,13 @@
  *    limitations under the License.
  */
 
-package sumatodev.com.social.ui.activities;
+package com.sumatodev.social_chat_sdk.views.activities;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -31,8 +32,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import sumatodev.com.social.R;
-import sumatodev.com.social.views.TouchImageView;
+import com.sumatodev.social_chat_sdk.R;
+import com.sumatodev.social_chat_sdk.main.utils.TouchImageView;
+
 
 public class ImageDetailActivity extends BaseActivity {
 
@@ -40,6 +42,7 @@ public class ImageDetailActivity extends BaseActivity {
 
     public static final String IMAGE_URL_EXTRA_KEY = "ImageDetailActivity.IMAGE_URL_EXTRA_KEY";
 
+    private ActionBar actionBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
