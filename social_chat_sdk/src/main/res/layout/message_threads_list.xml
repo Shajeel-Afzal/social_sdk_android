@@ -7,7 +7,7 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="5dp">
+    android:padding="10dp">
 
     <FrameLayout
         android:id="@+id/imagesLayout"

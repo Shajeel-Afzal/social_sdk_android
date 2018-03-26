@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -34,6 +35,7 @@ import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 import com.sumatodev.social_chat_sdk.main.utils.FormatterUtil;
 import com.sumatodev.social_chat_sdk.main.utils.MessageInput;
 import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
+
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 
@@ -126,6 +128,7 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
                     } else {
                         CharSequence lastSeen = FormatterUtil.getRelativeTimeSpanString(ChatActivity.this,
                                 obj.getStatus().lastSeen);
+
                         status_c.setText(lastSeen);
                     }
                 }
@@ -168,7 +171,6 @@ public class ChatActivity extends BaseActivity implements MessageInput.InputList
     public void onMessageSent(boolean success, String message) {
         if (success) {
             Log.d(TAG, "message send");
-
         } else {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }

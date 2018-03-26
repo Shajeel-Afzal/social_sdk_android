@@ -6,12 +6,12 @@
     <string name="app_name">ChatKit</string>
     <string name="sample_title">ChatKit for Android</string>
 
-    <string name="now_time_range">now</string>
+    <string name="now_time_range">just now</string>
 
-    <string name="duration_minutes_shortest">%1$d m</string>
-    <string name="duration_hours_shortest">%1$d h</string>
-    <string name="duration_days_shortest">%1$d d</string>
-    <string name="duration_week_shortest">%1$d w</string>
+    <string name="duration_minutes_shortest">%1$d minute ago</string>
+    <string name="duration_hours_shortest">%1$d hour ago</string>
+    <string name="duration_days_shortest">%1$d day ago</string>
+    <string name="duration_week_shortest">%1$d week ago</string>
 
     <string name="view">View</string>
 

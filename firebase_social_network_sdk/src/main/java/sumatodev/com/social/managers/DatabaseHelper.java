@@ -296,9 +296,8 @@ public class DatabaseHelper {
     }
 
     public Task<Void> removeImage(String imageTitle) {
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://socialcomponents.appspot.com");
+        StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
         StorageReference desertRef = storageRef.child("images/" + imageTitle);
-
         return desertRef.delete();
     }
 
@@ -670,10 +669,10 @@ public class DatabaseHelper {
                 if (obj instanceof Map) {
                     Map<String, Object> mapObj = (Map<String, Object>) obj;
 
-                    // if (!isPostValid(mapObj)) {
-                    //   LogUtil.logDebug(TAG, "Invalid post, id: " + key);
-                    // continue;
-                    //}
+                    if (!isPostValid(mapObj)) {
+                        LogUtil.logDebug(TAG, "Invalid post, id: " + key);
+                        continue;
+                    }
 
                     boolean hasComplain = mapObj.containsKey("hasComplain") && (boolean) mapObj.get("hasComplain");
                     long createdDate = (long) mapObj.get("createdDate");
@@ -725,11 +724,9 @@ public class DatabaseHelper {
 
     private boolean isPostValid(Map<String, Object> post) {
         return post.containsKey("title")
-                && post.containsKey("description")
-                && post.containsKey("imagePath")
+                || post.containsKey("imagePath")
                 && post.containsKey("imageTitle")
-                && post.containsKey("authorId")
-                && post.containsKey("description");
+                && post.containsKey("authorId");
     }
 
     public void getProfileSingleValue(String id, final OnObjectChangedListener<Profile> listener) {

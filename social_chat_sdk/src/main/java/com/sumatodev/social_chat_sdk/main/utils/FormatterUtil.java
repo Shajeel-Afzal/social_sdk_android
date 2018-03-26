@@ -66,7 +66,6 @@ public class FormatterUtil {
         if (range < NOW_TIME_RANGE) {
             return context.getString(R.string.now_time_range);
         }
-
         return DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS);
     }
 

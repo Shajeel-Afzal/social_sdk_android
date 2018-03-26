@@ -100,7 +100,7 @@
                 android:id="@+id/commentsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/descriptionEditText"
+                android:layout_below="@+id/countersContainer"
                 android:layout_marginBottom="@dimen/intrinsic_padding"
                 android:paddingLeft="@dimen/large_intrinsic_padding"
                 android:paddingRight="@dimen/large_intrinsic_padding"
