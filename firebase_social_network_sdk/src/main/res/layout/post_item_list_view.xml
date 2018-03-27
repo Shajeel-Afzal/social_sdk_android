@@ -63,17 +63,30 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:ellipsize="end"
-                android:visibility="gone"
-                android:textAppearance="@style/TextAppearance.Title" />
+                android:textAppearance="@style/TextAppearance.Title"
+                android:visibility="gone" />
 
-            <ImageView
-                android:id="@+id/postImageView"
+            <FrameLayout
+                android:id="@+id/imageLayout"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/post_list_item_image_height"
-                android:layout_marginBottom="@dimen/intrinsic_padding"
-                android:scaleType="centerCrop"
                 android:visibility="gone"
-                tools:ignore="ContentDescription" />
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/postImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/post_list_item_image_height"
+                    android:layout_marginBottom="@dimen/intrinsic_padding"
+                    android:scaleType="centerCrop"
+                    tools:ignore="ContentDescription" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="@dimen/progress_bar_size"
+                    android:layout_height="@dimen/progress_bar_size"
+                    android:layout_gravity="center"
+                    android:visibility="visible" />
+            </FrameLayout>
 
             <include
                 android:id="@+id/countersContainer"

@@ -21,11 +21,16 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -59,7 +64,9 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private TextView dateTextView;
     private ImageView authorImageView;
     private ViewGroup likeViewGroup;
+    private FrameLayout imageLayout;
     private final TextView authorName;
+    private ProgressBar progressBar;
 
     private ProfileManager profileManager;
     private PostManager postManager;
@@ -84,6 +91,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         titleTextView = view.findViewById(R.id.titleTextView);
         authorImageView = view.findViewById(R.id.authorImageView);
         likeViewGroup = view.findViewById(R.id.likesContainer);
+        imageLayout = view.findViewById(R.id.imageLayout);
+        progressBar = view.findViewById(R.id.progressBar);
 
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
@@ -137,7 +146,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         dateTextView.setText(date);
 
         if (post.getImagePath() != null) {
-            postImageView.setVisibility(View.VISIBLE);
+            imageLayout.setVisibility(View.VISIBLE);
+
             String imageUrl = post.getImagePath();
             int width = Utils.getDisplayWidth(context);
             int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);
@@ -150,6 +160,18 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .crossFade()
                     .error(R.drawable.ic_stub)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
                     .into(postImageView);
         }
 
