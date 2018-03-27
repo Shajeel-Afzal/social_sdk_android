@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "629145749564-beqeitu05vimar52uupd3j53acp1kgbm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ali.notyet.bitcoinconverter",
+            "certificate_hash": "0fbc8e4ac81be01aa63b3593d231a60ac1cfed92"
+          }
+        },
+        {
           "client_id": "629145749564-qvjpn15t09si2pfc3a6c4khj54ve6ppl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -96,37 +104,6 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:629145749564:android:374b4af11ea6d701",
-        "android_client_info": {
-          "package_name": "com.hieuapp.rivchat"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "629145749564-i0nlo4ae3gvr37hhs2a8oa7ovobkuh3l.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBPBxpxFmcrUcWohBfuTqnfOeT2hQ-4Vkc"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:629145749564:android:eb6ff22eedf74cd0",
         "android_client_info": {
           "package_name": "ali.notyet.librarytest"
@@ -171,6 +148,37 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:629145749564:android:374b4af11ea6d701",
+        "android_client_info": {
+          "package_name": "com.hieuapp.rivchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629145749564-i0nlo4ae3gvr37hhs2a8oa7ovobkuh3l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPBxpxFmcrUcWohBfuTqnfOeT2hQ-4Vkc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:629145749564:android:7dc6f1c150245210",
         "android_client_info": {
           "package_name": "com.sumatodev.firebasesocial"
@@ -178,10 +186,62 @@
       },
       "oauth_client": [
         {
+          "client_id": "629145749564-5jfj60m4n93b0ehoupd18u8aumo8elci.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sumatodev.firebasesocial",
+            "certificate_hash": "0fbc8e4ac81be01aa63b3593d231a60ac1cfed92"
+          }
+        },
+        {
           "client_id": "629145749564-5ekb5g0spg4793hkjv4nhvn90t37jpu1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.sumatodev.firebasesocial",
+            "certificate_hash": "95359d84b1f039a04c4040acc52f659df6ea1948"
+          }
+        },
+        {
+          "client_id": "629145749564-i0nlo4ae3gvr37hhs2a8oa7ovobkuh3l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPBxpxFmcrUcWohBfuTqnfOeT2hQ-4Vkc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629145749564-i0nlo4ae3gvr37hhs2a8oa7ovobkuh3l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629145749564:android:a4cdd2c3fcac0008",
+        "android_client_info": {
+          "package_name": "sumatodev.chatssdk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629145749564-b4tdav62itu2pcmer67ap4aiu0vquvnt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "sumatodev.chatssdk",
             "certificate_hash": "95359d84b1f039a04c4040acc52f659df6ea1948"
           }
         },
