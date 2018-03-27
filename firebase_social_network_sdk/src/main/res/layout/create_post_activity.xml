@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/intrinsic_padding">
+    android:padding="10dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -11,47 +11,82 @@
         android:focusable="true"
         android:focusableInTouchMode="true">
 
-        <RelativeLayout
-            android:id="@+id/imageContainer"
-            android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_alignParentTop="true"
-            android:layout_marginBottom="@dimen/intrinsic_padding">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:src="@drawable/ic_stub" />
-
-            <ProgressBar
-                android:id="@+id/progressBar"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_centerInParent="true"
-                android:visibility="gone" />
-
-        </RelativeLayout>
-
-        <android.support.design.widget.TextInputLayout
-            android:id="@+id/input_layout_title"
+        <FrameLayout
+            android:id="@+id/textLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/imageContainer"
-            android:layout_marginBottom="@dimen/intrinsic_padding">
+            android:background="@drawable/circle_radius_colored"
+            android:minHeight="100dp"
+            android:padding="10dp">
 
             <EditText
                 android:id="@+id/titleEditText"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="start"
-                android:hint="@string/hint_title"
-                android:inputType="textMultiLine" />
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:gravity="start|top"
+                android:hint="Share your emotions..."
+                android:inputType="textMultiLine"
+                android:minHeight="100dp"
+                android:scrollbars="vertical"
+                android:textSize="14sp" />
 
-        </android.support.design.widget.TextInputLayout>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/imageLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/textLayout"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/circle_radius_colored"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_stub"
+                tools:ignore="ContentDescription" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/imageLayout"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/circle_radius_colored"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/imageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:background="?android:selectableItemBackground"
+                android:padding="10dp"
+                android:src="@drawable/ic_gallery"
+                tools:ignore="ContentDescription" />
+
+            <Button
+                android:id="@+id/submitBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:text="Post"
+                android:theme="@style/PostButton" />
+
+        </FrameLayout>
 
     </RelativeLayout>
 

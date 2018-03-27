@@ -18,7 +18,7 @@ public class GlobalApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        ApplicationHelper.initDatabaseHelper(this, "gs://androidfirebasesocialnetwork.appspot.com",
+        ApplicationHelper.initDatabaseHelper(this, "gs://fir-test-aa33f.appspot.com",
                 new LoginRequiredListener() {
                     @Override
                     public void loginRequired() {

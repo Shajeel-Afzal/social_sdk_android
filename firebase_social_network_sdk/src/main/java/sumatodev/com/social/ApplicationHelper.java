@@ -34,7 +34,8 @@ public class ApplicationHelper {
         return databaseHelper;
     }
 
-    public static void initDatabaseHelper(android.app.Application application, String storageLink, LoginRequiredListener loginRequiredListener) {
+    public static void initDatabaseHelper(android.app.Application application, String storageLink,
+                                          LoginRequiredListener loginRequiredListener) {
         databaseHelper = DatabaseHelper.getInstance(application);
         databaseHelper.init();
         storageBucketLink = storageLink;

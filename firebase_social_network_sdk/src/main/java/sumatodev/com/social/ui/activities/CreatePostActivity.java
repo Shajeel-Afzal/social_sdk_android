@@ -19,12 +19,12 @@ package sumatodev.com.social.ui.activities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -36,21 +36,22 @@ import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.utils.LogUtil;
-import sumatodev.com.social.utils.NotificationView;
 import sumatodev.com.social.utils.ValidationUtil;
 
-public class CreatePostActivity extends PickImageActivity implements OnPostCreatedListener {
+public class CreatePostActivity extends PickImageActivity implements OnPostCreatedListener, View.OnClickListener {
     private static final String TAG = CreatePostActivity.class.getSimpleName();
     public static final int CREATE_NEW_POST_REQUEST = 11;
     public static final String POST_DATA_KEY = "CreatePostActivity.POST_DATA_KEY";
 
+    protected FrameLayout imageLayout;
+    protected ImageButton imageButton;
     protected ImageView imageView;
     protected ProgressBar progressBar;
     protected EditText titleEditText;
+    protected Button submitBtn;
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
-    private NotificationView notificationView;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -65,10 +66,13 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         titleEditText = findViewById(R.id.titleEditText);
         progressBar = findViewById(R.id.progressBar);
+        imageLayout = findViewById(R.id.imageLayout);
+        imageButton = findViewById(R.id.imageButton);
+        submitBtn = findViewById(R.id.submitBtn);
 
         imageView = findViewById(R.id.imageView);
 
-        imageView.setOnClickListener(new View.OnClickListener() {
+        imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onSelectImageClick(v);
@@ -86,7 +90,8 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
             }
         });
 
-        notificationView = new NotificationView(this);
+        submitBtn.setOnClickListener(this);
+
     }
 
     @Override
@@ -101,6 +106,11 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
     @Override
     public void onImagePikedAction() {
+        if (imageUri != null) {
+            imageLayout.setVisibility(View.VISIBLE);
+        }else {
+            imageLayout.setVisibility(View.GONE);
+        }
         loadImageToImageView();
     }
 
@@ -169,18 +179,10 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.create_post_menu, menu);
-        return true;
-    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle item selection
-        int i = item.getItemId();
-        if (i == R.id.post) {
+    public void onClick(View v) {
+        if (v == submitBtn) {
             if (!creatingPost) {
                 if (hasInternetConnection()) {
                     attemptCreatePost();
@@ -188,10 +190,6 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
                     showSnackBar(R.string.internet_connection_failed);
                 }
             }
-
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -207,4 +205,5 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         return valid;
     }
+
 }
