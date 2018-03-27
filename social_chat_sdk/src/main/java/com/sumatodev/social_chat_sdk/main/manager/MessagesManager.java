@@ -10,7 +10,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.UploadTask;
-import com.sumatodev.social_chat_sdk.ApplicationHelper;
+import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 import com.sumatodev.social_chat_sdk.main.enums.UploadImagePrefix;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
@@ -46,7 +46,7 @@ public class MessagesManager extends FirebaseListenersManager {
 
     public MessagesManager(Context context) {
         this.context = context;
-        databaseHelper = ApplicationHelper.getDatabaseHelper();
+        databaseHelper = ChatApplicationHelper.getDatabaseHelper();
     }
 
 
@@ -122,20 +122,20 @@ public class MessagesManager extends FirebaseListenersManager {
     }
 
     public void getUsersPublicProfile(Context context, String userKey, OnObjectChangedListener<UsersPublic> listener) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getUsersPublicProfile(userKey, listener);
+        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getUsersPublicProfile(userKey, listener);
         addListenerToMap(context, valueEventListener);
 
     }
 
     public void getMessageList(Context context, String userKey, OnMessageListChangedListener<Message> listener, long date) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getMessageList(userKey,
+        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,
                 listener, date);
         addListenerToMap(context, valueEventListener);
     }
 
     public void removeMessage(String messageId, String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
 
-        DatabaseHelper helper = ApplicationHelper.getDatabaseHelper();
+        DatabaseHelper helper = ChatApplicationHelper.getDatabaseHelper();
         helper.removeMessage(messageId, userKey).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -151,7 +151,7 @@ public class MessagesManager extends FirebaseListenersManager {
     }
 
     public void removeConversation(String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
-        DatabaseHelper helper = ApplicationHelper.getDatabaseHelper();
+        DatabaseHelper helper = ChatApplicationHelper.getDatabaseHelper();
 
         helper.removeConversation(userKey).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -167,12 +167,12 @@ public class MessagesManager extends FirebaseListenersManager {
     }
 
     public void getThreadsList(Context context, OnDataChangedListener<ThreadsModel> changedListener) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getThreadsList(changedListener);
+        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getThreadsList(changedListener);
         addListenerToMap(context, valueEventListener);
     }
 
     public void getLastMessage(Context context, String userKey, OnObjectChangedListener<Message> onObjectChangedListener) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().getLastMessage(userKey
+        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getLastMessage(userKey
                 , onObjectChangedListener);
 
         addListenerToMap(context, valueEventListener);

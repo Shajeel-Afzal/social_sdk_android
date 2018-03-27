@@ -21,7 +21,7 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:theme="@style/Base.Theme.AppCompat" />
         <activity
-            android:name=".views.activities.ImageDetailActivity"
+            android:name=".views.activities.ShowImageActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppCompat.Black.NoActionBar" />
     </application>

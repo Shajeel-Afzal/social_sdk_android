@@ -6,9 +6,9 @@ import com.sumatodev.social_chat_sdk.main.manager.DatabaseHelper;
  * Created by Kristina on 10/28/16.
  */
 
-public class ApplicationHelper {
+public class ChatApplicationHelper {
 
-    private static final String TAG = ApplicationHelper.class.getSimpleName();
+    private static final String TAG = ChatApplicationHelper.class.getSimpleName();
     private static DatabaseHelper databaseHelper;
 
     public static DatabaseHelper getDatabaseHelper() {
