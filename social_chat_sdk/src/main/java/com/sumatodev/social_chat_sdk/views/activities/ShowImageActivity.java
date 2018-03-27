@@ -33,7 +33,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.utils.TouchImageView;
+import com.sumatodev.social_chat_sdk.main.utils.ZoomImageView;
 
 
 public class ShowImageActivity extends BaseActivity {
@@ -52,7 +52,7 @@ public class ShowImageActivity extends BaseActivity {
         setSupportActionBar(toolbar);
 
         actionBar = getSupportActionBar();
-        final TouchImageView touchImageView = findViewById(R.id.touchImageView);
+        final ZoomImageView touchImageView = findViewById(R.id.touchImageView);
         final ProgressBar progressBar = findViewById(R.id.progressBar);
         final ViewGroup viewGroup = findViewById(R.id.image_detail_container);
 

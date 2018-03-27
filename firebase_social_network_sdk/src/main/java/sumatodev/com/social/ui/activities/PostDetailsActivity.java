@@ -50,6 +50,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -113,6 +114,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private ProgressBar commentsProgressBar;
     private RecyclerView commentsRecyclerView;
     private TextView warningCommentsTextView;
+    private RelativeLayout imageContainer;
 
     private boolean attemptToLoadComments = false;
 
@@ -169,6 +171,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         dateTextView = findViewById(R.id.dateTextView);
         commentsProgressBar = findViewById(R.id.commentsProgressBar);
         warningCommentsTextView = findViewById(R.id.warningCommentsTextView);
+        imageContainer = findViewById(R.id.imageContainer);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && isAuthorAnimationRequired) {
             authorImageView.setScaleX(0);
@@ -412,10 +415,12 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private void fillPostFields() {
         if (post != null) {
             if (post.getTitle() != null) {
+                titleTextView.setVisibility(View.VISIBLE);
                 titleTextView.setText(post.getTitle());
             }
 
-            if (post.getImagePath()!=null) {
+            if (post.getImagePath() != null) {
+                imageContainer.setVisibility(View.VISIBLE);
                 loadPostDetailsImage();
             }
             loadAuthorImage();

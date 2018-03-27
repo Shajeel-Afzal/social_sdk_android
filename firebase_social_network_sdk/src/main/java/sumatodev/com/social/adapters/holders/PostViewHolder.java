@@ -84,7 +84,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         titleTextView = view.findViewById(R.id.titleTextView);
         authorImageView = view.findViewById(R.id.authorImageView);
         likeViewGroup = view.findViewById(R.id.likesContainer);
-        
+
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
 
@@ -124,6 +124,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
         if (post.getTitle() != null) {
+            titleTextView.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
         }
@@ -136,6 +137,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         dateTextView.setText(date);
 
         if (post.getImagePath() != null) {
+            postImageView.setVisibility(View.VISIBLE);
             String imageUrl = post.getImagePath();
             int width = Utils.getDisplayWidth(context);
             int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);

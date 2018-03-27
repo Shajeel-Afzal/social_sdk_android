@@ -13,7 +13,7 @@
         android:layout_gravity="center"
         android:visibility="visible" />
 
-    <com.sumatodev.social_chat_sdk.main.utils.TouchImageView
+    <com.sumatodev.social_chat_sdk.main.utils.ZoomImageView
         android:id="@+id/touchImageView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
