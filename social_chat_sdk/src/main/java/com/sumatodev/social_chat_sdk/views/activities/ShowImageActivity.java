@@ -36,17 +36,17 @@ import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.utils.TouchImageView;
 
 
-public class ImageDetailActivity extends BaseActivity {
+public class ShowImageActivity extends BaseActivity {
 
-    private static final String TAG = ImageDetailActivity.class.getSimpleName();
+    private static final String TAG = ShowImageActivity.class.getSimpleName();
 
-    public static final String IMAGE_URL_EXTRA_KEY = "ImageDetailActivity.IMAGE_URL_EXTRA_KEY";
+    public static final String IMAGE_URL_EXTRA_KEY = "ShowImageActivity.IMAGE_URL_EXTRA_KEY";
 
     private ActionBar actionBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.image_detail);
+        setContentView(R.layout.show_image_activity);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

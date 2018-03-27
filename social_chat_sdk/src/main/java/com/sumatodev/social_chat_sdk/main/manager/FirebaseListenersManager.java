@@ -19,7 +19,7 @@ package com.sumatodev.social_chat_sdk.main.manager;
 import android.content.Context;
 
 import com.google.firebase.database.ValueEventListener;
-import com.sumatodev.social_chat_sdk.ApplicationHelper;
+import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class FirebaseListenersManager {
     }
 
     public void closeListeners(Context context) {
-        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+        DatabaseHelper databaseHelper = ChatApplicationHelper.getDatabaseHelper();
         if (activeListeners.containsKey(context)) {
             for (ValueEventListener listener : activeListeners.get(context)) {
                 databaseHelper.closeListener(listener);

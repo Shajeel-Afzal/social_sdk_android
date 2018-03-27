@@ -326,8 +326,8 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
     }
 
     private void openImageDetailActivity(String image) {
-        Intent intent = new Intent(ChatActivity.this, ImageDetailActivity.class);
-        intent.putExtra(ImageDetailActivity.IMAGE_URL_EXTRA_KEY, image);
+        Intent intent = new Intent(ChatActivity.this, ShowImageActivity.class);
+        intent.putExtra(ShowImageActivity.IMAGE_URL_EXTRA_KEY, image);
         startActivity(intent);
     }
 
