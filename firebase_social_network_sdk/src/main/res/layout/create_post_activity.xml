@@ -80,11 +80,11 @@
 
             <Button
                 android:id="@+id/submitBtn"
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|center_vertical"
-                android:text="Post"
-                android:theme="@style/PostButton" />
+                android:text="Post" />
 
         </FrameLayout>
 
