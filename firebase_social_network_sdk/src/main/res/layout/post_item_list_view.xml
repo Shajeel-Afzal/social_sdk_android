@@ -67,18 +67,6 @@
                 android:textAppearance="@style/TextAppearance.Title"
                 tools:text="Post Title" />
 
-            <TextView
-                android:id="@+id/detailsTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/intrinsic_padding"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textAppearance="@style/TextAppearance.Second"
-                tools:text="Post Description" />
-
             <ImageView
                 android:id="@+id/postImageView"
                 android:layout_width="match_parent"
