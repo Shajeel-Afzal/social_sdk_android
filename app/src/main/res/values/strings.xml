@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">FirebaseSocial</string>
+    <string name="please_login_to_save_your_information">Login to add comments, like and create new posts!</string>
+    <string name="login_now">Login Now</string>
+    <string name="or">or</string>
+    <string name="login_later">Login Later</string>
+    <string name="authenticating">Authenticating</string>
+    <string name="please_wait_for_a_moment">Please wait for a moment!</string>
 </resources>
