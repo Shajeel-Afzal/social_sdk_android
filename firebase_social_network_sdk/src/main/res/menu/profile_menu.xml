@@ -23,7 +23,12 @@
     <item
         android:id="@+id/follow_requests"
         android:title="Requests"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
+
+    <item
+        app:showAsAction="never"
+        android:id="@+id/threads"
+        android:title="Threads" />
 
 </menu>
 

@@ -74,7 +74,6 @@ public class PostManager extends FirebaseListenersManager {
         }
     }
 
-
     public void getPostsList(OnPostListChangedListener<Post> onDataChangedListener, long date) {
         ApplicationHelper.getDatabaseHelper().getPostList(onDataChangedListener, date);
     }
@@ -92,41 +91,61 @@ public class PostManager extends FirebaseListenersManager {
         ApplicationHelper.getDatabaseHelper().getSinglePost(postId, onPostChangedListener);
     }
 
-    public void createOrUpdatePostWithImage(Uri imageUri, final OnPostCreatedListener onPostCreatedListener, final Post post) {
+    public void createOrUpdatePostWithImage(final OnPostCreatedListener onPostCreatedListener, final Post post) {
         // Register observers to listen for when the download is done or if it fails
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         if (post.getId() == null) {
             post.setId(databaseHelper.generatePostId());
         }
 
-        final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.POST, post.getId());
-        UploadTask uploadTask = databaseHelper.uploadImage(imageUri, imageTitle);
+        if (post.getImagePath() != null) {
+            final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.POST, post.getId());
+            UploadTask uploadTask = databaseHelper.uploadImage(Uri.parse(post.getImagePath()), imageTitle);
 
-        if (uploadTask != null) {
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                    onPostCreatedListener.onPostSaved(false);
+            if (uploadTask != null) {
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        onPostCreatedListener.onPostSaved(false);
 
-                }
-            }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    LogUtil.logDebug(TAG, "successful upload image, image url: " + String.valueOf(downloadUrl));
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        LogUtil.logDebug(TAG, "successful upload image, image url: " + String.valueOf(downloadUrl));
 
-                    post.setImagePath(String.valueOf(downloadUrl));
-                    post.setImageTitle(imageTitle);
-                    createOrUpdatePost(post);
+                        post.setImagePath(String.valueOf(downloadUrl));
+                        post.setImageTitle(imageTitle);
+                        createOrUpdatePost(post);
 
-                    onPostCreatedListener.onPostSaved(true);
-                }
-            });
+                        onPostCreatedListener.onPostSaved(true);
+                    }
+                });
+            }
+        } else {
+
+            try {
+                ApplicationHelper.getDatabaseHelper().createNewPost(post)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                onPostCreatedListener.onPostSaved(true);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        onPostCreatedListener.onPostSaved(false);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+
         }
     }
-
 
     public Task<Void> removeImage(String imageTitle) {
         final DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();

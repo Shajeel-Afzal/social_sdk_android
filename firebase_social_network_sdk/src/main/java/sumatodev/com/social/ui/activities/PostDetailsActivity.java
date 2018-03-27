@@ -110,7 +110,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private ProgressBar progressBar;
     private ImageView postImageView;
     private TextView titleTextView;
-    private TextView descriptionEditText;
     private ProgressBar commentsProgressBar;
     private RecyclerView commentsRecyclerView;
     private TextView warningCommentsTextView;
@@ -154,7 +153,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         incrementWatchersCount();
 
         titleTextView = findViewById(R.id.titleTextView);
-        descriptionEditText = findViewById(R.id.descriptionEditText);
         postImageView = findViewById(R.id.postImageView);
         progressBar = findViewById(R.id.progressBar);
         commentsRecyclerView = findViewById(R.id.commentsRecyclerView);
@@ -413,10 +411,13 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private void fillPostFields() {
         if (post != null) {
-            titleTextView.setText(post.getTitle());
-            descriptionEditText.setText(post.getDescription());
+            if (post.getTitle() != null) {
+                titleTextView.setText(post.getTitle());
+            }
 
-            loadPostDetailsImage();
+            if (post.getImagePath()!=null) {
+                loadPostDetailsImage();
+            }
             loadAuthorImage();
         }
     }

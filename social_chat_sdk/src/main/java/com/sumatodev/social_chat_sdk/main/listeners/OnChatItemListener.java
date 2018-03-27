@@ -9,7 +9,7 @@ import android.view.View;
 public interface OnChatItemListener {
 
 
-    void onItemClick(int position, View view);
+    void onTextClick(int position, View view);
 
     void onAuthorClick(int position, View view);
 

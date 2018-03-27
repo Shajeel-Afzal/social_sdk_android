@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 stfalcon.com
+ * Copyright 2016 sumatodev.com
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 
 import com.sumatodev.social_chat_sdk.R;
+
 
 /**
  * Style for MessageInputStyle customization by xml attributes

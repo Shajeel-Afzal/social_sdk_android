@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="AppTheme.ActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="actionMenuTextColor">@color/white</item>
+    </style>
+
     <style name="ChatTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="AppCompat.Black.NoActionBar" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:colorBackground">@android:color/background_dark</item>
+        <item name="android:windowBackground">@android:color/background_dark</item>
+    </style>
     <style name="ChatMessageInfo">
         <item name="android:textSize">11sp</item>
     </style>

@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright 2016 sumatodev.com
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+
 package com.sumatodev.social_chat_sdk.main.utils;
 
 import android.content.Context;
@@ -23,8 +39,7 @@ import java.lang.reflect.Field;
  * Component for input outcoming messages
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class MessageInput extends RelativeLayout
-        implements View.OnClickListener, TextWatcher {
+public class MessageInput extends RelativeLayout implements View.OnClickListener, TextWatcher {
 
     protected EditText messageInput;
     protected ImageButton messageSendButton;
@@ -95,7 +110,7 @@ public class MessageInput extends RelativeLayout
                 messageInput.setText("");
             }
         } else if (id == R.id.attachmentButton) {
-            onAddAttachments();
+            onAddAttachments(view);
         }
     }
 
@@ -130,8 +145,8 @@ public class MessageInput extends RelativeLayout
         return inputListener != null && inputListener.onSubmit(input);
     }
 
-    private void onAddAttachments() {
-        if (attachmentsListener != null) attachmentsListener.onAddAttachments();
+    private void onAddAttachments(View view) {
+        if (attachmentsListener != null) attachmentsListener.onAddAttachments(view);
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -178,11 +193,11 @@ public class MessageInput extends RelativeLayout
     private void init(Context context) {
         inflate(context, R.layout.view_message_input, this);
 
-        messageInput = (EditText) findViewById(R.id.messageInput);
-        messageSendButton = (ImageButton) findViewById(R.id.messageSendButton);
-        attachmentButton = (ImageButton) findViewById(R.id.attachmentButton);
-        sendButtonSpace = (Space) findViewById(R.id.sendButtonSpace);
-        attachmentButtonSpace = (Space) findViewById(R.id.attachmentButtonSpace);
+        messageInput = findViewById(R.id.messageInput);
+        messageSendButton = findViewById(R.id.messageSendButton);
+        attachmentButton = findViewById(R.id.attachmentButton);
+        sendButtonSpace = findViewById(R.id.sendButtonSpace);
+        attachmentButtonSpace = findViewById(R.id.attachmentButtonSpace);
 
         messageSendButton.setOnClickListener(this);
         attachmentButton.setOnClickListener(this);
@@ -199,15 +214,10 @@ public class MessageInput extends RelativeLayout
 
             final Object drawableFieldOwner;
             final Class<?> drawableFieldClass;
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                drawableFieldOwner = this.messageInput;
-                drawableFieldClass = TextView.class;
-            } else {
-                final Field editorField = TextView.class.getDeclaredField("mEditor");
-                editorField.setAccessible(true);
-                drawableFieldOwner = editorField.get(this.messageInput);
-                drawableFieldClass = drawableFieldOwner.getClass();
-            }
+            final Field editorField = TextView.class.getDeclaredField("mEditor");
+            editorField.setAccessible(true);
+            drawableFieldOwner = editorField.get(this.messageInput);
+            drawableFieldClass = drawableFieldOwner.getClass();
             final Field drawableField = drawableFieldClass.getDeclaredField("mCursorDrawable");
             drawableField.setAccessible(true);
             drawableField.set(drawableFieldOwner, new Drawable[]{drawable, drawable});
@@ -237,6 +247,6 @@ public class MessageInput extends RelativeLayout
         /**
          * Fires when user presses 'add' button.
          */
-        void onAddAttachments();
+        void onAddAttachments(View view);
     }
 }

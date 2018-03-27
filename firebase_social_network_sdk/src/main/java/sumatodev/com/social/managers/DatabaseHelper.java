@@ -254,6 +254,17 @@ public class DatabaseHelper {
         }
     }
 
+    public Task<Void> createNewPost(Post post) {
+
+        DatabaseReference databaseReference = database.getReference();
+
+        Map<String, Object> postValues = post.toMap();
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/posts/" + post.getId(), postValues);
+
+        return databaseReference.updateChildren(childUpdates);
+    }
+
 
     public Task<Void> removePost(Post post) {
         DatabaseReference databaseReference = database.getReference();
@@ -285,9 +296,8 @@ public class DatabaseHelper {
     }
 
     public Task<Void> removeImage(String imageTitle) {
-        StorageReference storageRef = storage.getReferenceFromUrl("gs://socialcomponents.appspot.com");
+        StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
         StorageReference desertRef = storageRef.child("images/" + imageTitle);
-
         return desertRef.delete();
     }
 
@@ -674,10 +684,13 @@ public class DatabaseHelper {
                     if (!hasComplain) {
                         Post post = new Post();
                         post.setId(key);
-                        post.setTitle((String) mapObj.get("title"));
-                        post.setDescription((String) mapObj.get("description"));
-                        post.setImagePath((String) mapObj.get("imagePath"));
-                        post.setImageTitle((String) mapObj.get("imageTitle"));
+                        if (mapObj.get("title") != null) {
+                            post.setTitle((String) mapObj.get("title"));
+                        }
+                        if (mapObj.get("imagePath") != null) {
+                            post.setImagePath((String) mapObj.get("imagePath"));
+                            post.setImageTitle((String) mapObj.get("imageTitle"));
+                        }
                         post.setAuthorId((String) mapObj.get("authorId"));
                         post.setCreatedDate(createdDate);
                         if (mapObj.containsKey("commentsCount")) {
@@ -711,11 +724,9 @@ public class DatabaseHelper {
 
     private boolean isPostValid(Map<String, Object> post) {
         return post.containsKey("title")
-                && post.containsKey("description")
-                && post.containsKey("imagePath")
+                || post.containsKey("imagePath")
                 && post.containsKey("imageTitle")
-                && post.containsKey("authorId")
-                && post.containsKey("description");
+                && post.containsKey("authorId");
     }
 
     public void getProfileSingleValue(String id, final OnObjectChangedListener<Profile> listener) {

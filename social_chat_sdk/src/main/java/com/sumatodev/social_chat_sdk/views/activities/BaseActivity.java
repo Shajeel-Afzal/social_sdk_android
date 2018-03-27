@@ -1,5 +1,6 @@
 package com.sumatodev.social_chat_sdk.views.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -18,6 +20,7 @@ import com.sumatodev.social_chat_sdk.R;
 
 public class BaseActivity extends AppCompatActivity {
 
+    public ProgressDialog progressDialog;
     private FirebaseUser firebaseUser;
     private String current_uid;
 
@@ -29,7 +32,6 @@ public class BaseActivity extends AppCompatActivity {
             current_uid = firebaseUser.getUid();
         }
     }
-
 
     public String getCurrent_uid() {
         return current_uid;
@@ -57,5 +59,32 @@ public class BaseActivity extends AppCompatActivity {
         }
 
         return hasInternetConnection;
+    }
+
+    public void showProgress() {
+        showProgress(R.string.loading);
+    }
+
+    public void showProgress(int message) {
+        hideProgress();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage(getString(message));
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+
+    public void hideProgress() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        switch (menuItem.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+        }
+        return (super.onOptionsItemSelected(menuItem));
     }
 }

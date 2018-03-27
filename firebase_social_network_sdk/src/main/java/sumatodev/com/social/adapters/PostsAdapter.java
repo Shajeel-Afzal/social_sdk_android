@@ -19,6 +19,7 @@ package sumatodev.com.social.adapters;
 
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,9 +141,10 @@ public class PostsAdapter extends BasePostsAdapter {
 
 
         }
-
         if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
             ((PostViewHolder) holder).bindData(postList.get(position));
+
+            Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
         }
     }
 
@@ -183,7 +185,6 @@ public class PostsAdapter extends BasePostsAdapter {
 
                 if (!list.isEmpty()) {
                     addList(list);
-
                     if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity)) {
                         PreferencesUtil.setPostWasLoadedAtLeastOnce(mainActivity, true);
                     }
@@ -222,8 +223,11 @@ public class PostsAdapter extends BasePostsAdapter {
 
     public interface Callback {
         void onItemClick(Post post, View view);
+
         void onListLoadingFinished();
+
         void onAuthorClick(String authorId, View view);
+
         void onCanceled(String message);
     }
 }

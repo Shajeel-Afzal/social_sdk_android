@@ -33,7 +33,6 @@ public class NotificationView {
             updateProgressNotification();
         } else {
             setCompletedNotification(mTitle);
-            //setProgressNotification(mTitle);
         }
     }
 
@@ -65,6 +64,7 @@ public class NotificationView {
         mBuilder.setSmallIcon(R.drawable.ic_uploading_complete).setContentTitle(mTitle)
                 .setAutoCancel(true);
 
+        mBuilder.setProgress(0, 0, false);
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(mContext, MainActivity.class);
         // The stack builder object will contain an artificial back stack for

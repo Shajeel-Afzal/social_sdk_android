@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:focusableInTouchMode="true"
     android:focusable="true"
-    android:focusableInTouchMode="true">
+    android:background="@android:color/white">
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -24,8 +25,8 @@
                 android:id="@+id/imageContainer"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/post_detail_image_height"
-                android:layout_alignParentTop="true"
-                android:layout_marginBottom="@dimen/intrinsic_padding">
+                android:layout_marginBottom="@dimen/intrinsic_padding"
+                android:layout_alignParentTop="true">
 
                 <ProgressBar
                     android:id="@+id/progressBar"
@@ -39,9 +40,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:transitionName="@string/post_image_transition_name"
                     android:visibility="visible"
-                    tools:targetApi="lollipop" />
+                    android:transitionName="@string/post_image_transition_name"
+                    tools:targetApi="lollipop"/>
 
             </RelativeLayout>
 
@@ -49,14 +50,14 @@
                 android:id="@+id/titleTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/authorImageView"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/authorImageView"
                 android:layout_marginBottom="@dimen/intrinsic_padding"
                 android:layout_toStartOf="@+id/authorImageView"
                 android:paddingLeft="@dimen/large_intrinsic_padding"
                 android:paddingRight="@dimen/large_intrinsic_padding"
-                android:textAppearance="@style/TextAppearance.Title" />
+                android:textAppearance="@style/TextAppearance.Title"
+                android:layout_alignEnd="@+id/authorImageView" />
 
             <LinearLayout
                 android:id="@+id/authorContainer"
@@ -96,21 +97,10 @@
                 android:layout_marginRight="@dimen/large_intrinsic_padding" />
 
             <TextView
-                android:id="@+id/descriptionEditText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/countersContainer"
-                android:layout_marginBottom="@dimen/large_intrinsic_padding"
-                android:autoLink="all"
-                android:paddingLeft="@dimen/large_intrinsic_padding"
-                android:paddingRight="@dimen/large_intrinsic_padding"
-                android:textAppearance="@style/TextAppearance.Second" />
-
-            <TextView
                 android:id="@+id/commentsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/descriptionEditText"
+                android:layout_below="@+id/countersContainer"
                 android:layout_marginBottom="@dimen/intrinsic_padding"
                 android:paddingLeft="@dimen/large_intrinsic_padding"
                 android:paddingRight="@dimen/large_intrinsic_padding"
@@ -161,12 +151,12 @@
                 android:layout_alignTop="@+id/imageContainer"
                 android:layout_marginRight="@dimen/intrinsic_padding"
                 android:layout_marginTop="@dimen/post_author_image_margin"
-                android:transitionName="@string/post_author_image_transition_name"
                 app:border="false"
                 app:shadow="true"
                 app:shadow_color="@color/circle_image_shadow"
                 app:shadow_radius="@dimen/circle_image_shadow_radius"
-                tools:targetApi="lollipop" />
+                android:transitionName="@string/post_author_image_transition_name"
+                tools:targetApi="lollipop"/>
 
         </RelativeLayout>
     </ScrollView>
@@ -196,8 +186,7 @@
             android:inputType="textMultiLine"
             android:maxHeight="@dimen/new_comment_max_height"
             android:minHeight="@dimen/new_comment_min_height"
-            android:padding="@dimen/intrinsic_padding"
-            android:textColor="@color/primary_dark_text" />
+            android:padding="@dimen/intrinsic_padding" />
 
         <Button
             android:id="@+id/sendButton"

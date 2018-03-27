@@ -21,7 +21,7 @@ import sumatodev.com.social.model.PostListResult;
 
 public interface OnPostListChangedListener<Post> {
 
-    public void onListChanged(PostListResult result);
+    void onListChanged(PostListResult result);
 
     void onCanceled(String message);
 }

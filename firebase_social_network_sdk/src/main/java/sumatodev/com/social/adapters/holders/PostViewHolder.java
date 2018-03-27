@@ -125,10 +125,11 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
-        String title = removeNewLinesDividers(post.getTitle());
-        titleTextView.setText(title);
-        String description = removeNewLinesDividers(post.getDescription());
-        detailsTextView.setText(description);
+        if (post.getTitle() != null) {
+            String title = removeNewLinesDividers(post.getTitle());
+            titleTextView.setText(title);
+        }
+
         likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
         commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
         watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
@@ -136,19 +137,21 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
         dateTextView.setText(date);
 
-        String imageUrl = post.getImagePath();
-        int width = Utils.getDisplayWidth(context);
-        int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);
+        if (post.getImagePath() != null) {
+            String imageUrl = post.getImagePath();
+            int width = Utils.getDisplayWidth(context);
+            int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);
 
-        // Displayed and saved to cache image, as needs for post detail.
-        Glide.with(context)
-                .load(imageUrl)
-                .centerCrop()
-                .override(width, height)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .crossFade()
-                .error(R.drawable.ic_stub)
-                .into(postImageView);
+            // Displayed and saved to cache image, as needs for post detail.
+            Glide.with(context)
+                    .load(imageUrl)
+                    .centerCrop()
+                    .override(width, height)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .crossFade()
+                    .error(R.drawable.ic_stub)
+                    .into(postImageView);
+        }
 
         if (post.getAuthorId() != null) {
             profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));

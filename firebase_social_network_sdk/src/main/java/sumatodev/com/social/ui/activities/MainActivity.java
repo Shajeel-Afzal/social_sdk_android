@@ -21,7 +21,6 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -149,12 +148,18 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             switch (requestCode) {
                 case ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST:
                     if (data != null) {
-                        createNewPost(data);
+                        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+                        if (post != null) {
+                            createNewPost(post);
+                        }
                     }
                     break;
                 case CreatePostActivity.CREATE_NEW_POST_REQUEST:
                     if (data != null) {
-                        createNewPost(data);
+                        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+                        if (post != null) {
+                            createNewPost(post);
+                        }
                     }
                     break;
 
@@ -173,13 +178,10 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         }
     }
 
-    private void createNewPost(Intent data) {
-        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
-        if (post != null) {
-            postManager.createOrUpdatePostWithImage(Uri.parse(post.getImagePath()),
-                    MainActivity.this, post);
-            notificationView.setNotification(true, "Uploading Post");
-        }
+    private void createNewPost(Post post) {
+
+        postManager.createOrUpdatePostWithImage(MainActivity.this, post);
+        notificationView.setNotification(true, "Uploading Post");
 
     }
 
@@ -273,7 +275,8 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
             });
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            LinearLayoutManager manager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(manager);
             ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
             recyclerView.setAdapter(postsAdapter);
             postsAdapter.loadFirstPage();

@@ -1,6 +1,5 @@
 package com.sumatodev.social_chat_sdk.main.model;
 
-import com.google.firebase.database.Exclude;
 import com.sumatodev.social_chat_sdk.main.enums.ItemType;
 
 import java.io.Serializable;
@@ -17,34 +16,19 @@ public class Message implements Serializable, LazyLoading {
     private String text;
     private long createdAt;
     private String fromUserId;
-    private String toUserId;
     private ItemType itemType;
-
+    private String imageUrl;
 
     public Message() {
         this.createdAt = new Date().getTime();
         itemType = ItemType.ITEM;
     }
 
-    public Message(String fromUserId, String toUserId, String text) {
-        this(fromUserId, toUserId, text, new Date().getTime());
-    }
 
     public Message(ItemType itemType) {
         this.itemType = itemType;
         setId(itemType.toString());
 
-    }
-
-    public Message(String fromUserId, String toUserId, String text, long createdAt) {
-        this.text = text;
-        this.fromUserId = fromUserId;
-        this.toUserId = toUserId;
-        this.createdAt = createdAt;
-    }
-
-    public String getStatus() {
-        return "Sent";
     }
 
     public void setText(String text) {
@@ -67,13 +51,6 @@ public class Message implements Serializable, LazyLoading {
         this.fromUserId = fromUserId;
     }
 
-    public String getToUserId() {
-        return toUserId;
-    }
-
-    public void setToUserId(String toUserId) {
-        this.toUserId = toUserId;
-    }
 
     public String getId() {
         return id;
@@ -87,7 +64,15 @@ public class Message implements Serializable, LazyLoading {
         return createdAt;
     }
 
-    @Exclude
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
@@ -95,7 +80,7 @@ public class Message implements Serializable, LazyLoading {
         result.put("text", text);
         result.put("createdAt", createdAt);
         result.put("fromUserId", fromUserId);
-        result.put("toUserId", toUserId);
+        result.put("imageUrl", imageUrl);
 
         return result;
     }

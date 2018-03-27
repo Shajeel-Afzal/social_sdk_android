@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2016 stfalcon.com
+ * Copyright 2016 sumatodev.com
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 
 import com.sumatodev.social_chat_sdk.R;
+
 
 /**
  * Base class for chat component styles
