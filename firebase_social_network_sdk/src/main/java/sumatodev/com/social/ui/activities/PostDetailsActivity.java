@@ -24,9 +24,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -194,6 +197,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             });
         }
 
+
         final Button sendButton = findViewById(R.id.sendButton);
 
         initRecyclerView();
@@ -269,7 +273,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
         authorTextView.setOnClickListener(onAuthorClickListener);
 
-        supportPostponeEnterTransition();
+        if (hasImage(authorImageView)) {
+            supportPostponeEnterTransition();
+        }
     }
 
     @Override
@@ -836,6 +842,16 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         updateComment(newText, commentId);
     }
 
+    private boolean hasImage(@NonNull ImageView view) {
+        Drawable drawable = view.getDrawable();
+        boolean hasImage = (drawable != null);
+
+        if (hasImage && (drawable instanceof BitmapDrawable)) {
+            hasImage = ((BitmapDrawable)drawable).getBitmap() != null;
+        }
+
+        return hasImage;
+    }
     private class ActionModeCallback implements ActionMode.Callback {
         Comment selectedComment;
         int position;
