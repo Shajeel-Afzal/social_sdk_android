@@ -398,7 +398,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         };
     }
 
-    private void fillUIFields(Profile profile) {
+    private void fillUIFields(final Profile profile) {
         if (profile != null) {
             if (actionBar != null) {
                 toolBar_title.setText(profile.getUsername());
@@ -409,7 +409,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                         .load(profile.getPhotoUrl())
                         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                         .crossFade()
-                        .error(R.drawable.ic_stub)
+                        .error(R.drawable.user_thumbnail)
                         .listener(new RequestListener<String, GlideDrawable>() {
                             @Override
                             public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
@@ -428,6 +428,13 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                         .into(imageView);
 
                 checkFollowStatus();
+
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openImageDetailScreen(profile.getPhotoUrl());
+                    }
+                });
             } else {
                 progressBar.setVisibility(View.GONE);
                 imageView.setImageResource(R.drawable.ic_stub);
@@ -440,6 +447,11 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         }
     }
 
+    private void openImageDetailScreen(String profileUrl) {
+        Intent intent = new Intent(this, ImageDetailActivity.class);
+        intent.putExtra(ImageDetailActivity.IMAGE_URL_EXTRA_KEY, profileUrl);
+        startActivity(intent);
+    }
 
     private void scheduleStartPostponedTransition(final ImageView imageView) {
         imageView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {

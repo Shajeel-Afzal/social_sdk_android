@@ -36,6 +36,7 @@
                     android:layout_height="@dimen/post_list_item_author_image_side"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     app:border="false"
+                    android:src="@drawable/user_thumbnail"
                     app:shadow="true"
                     app:shadow_color="@color/circle_image_shadow"
                     app:shadow_radius="@dimen/circle_image_shadow_radius" />

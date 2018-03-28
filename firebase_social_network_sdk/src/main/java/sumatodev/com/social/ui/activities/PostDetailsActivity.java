@@ -18,7 +18,6 @@
 package sumatodev.com.social.ui.activities;
 
 import android.animation.Animator;
-import android.annotation.TargetApi;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,7 +38,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.transition.Transition;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -73,7 +71,6 @@ import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
-import sumatodev.com.social.listeners.CustomTransitionListener;
 import sumatodev.com.social.managers.CommentManager;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
@@ -86,7 +83,6 @@ import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
-import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
 
@@ -176,27 +172,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         warningCommentsTextView = findViewById(R.id.warningCommentsTextView);
         imageContainer = findViewById(R.id.imageContainer);
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && isAuthorAnimationRequired) {
-            authorImageView.setScaleX(0);
-            authorImageView.setScaleY(0);
-
-            // Add a listener to get noticed when the transition ends to animate the fab button
-            getWindow().getSharedElementEnterTransition().addListener(new CustomTransitionListener() {
-                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public void onTransitionEnd(Transition transition) {
-                    super.onTransitionEnd(transition);
-                    //disable execution for exit transition
-                    if (!isEnterTransitionFinished) {
-                        isEnterTransitionFinished = true;
-                        AnimationUtils.showViewByScale(authorImageView)
-                                .setListener(authorAnimatorListener)
-                                .start();
-                    }
-                }
-            });
-        }
-
 
         final Button sendButton = findViewById(R.id.sendButton);
 
@@ -273,7 +248,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
         authorTextView.setOnClickListener(onAuthorClickListener);
 
-        if (hasImage(authorImageView)) {
+        if (hasImage(postImageView)) {
             supportPostponeEnterTransition();
         }
     }
@@ -513,6 +488,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 if (obj.getPhotoUrl() != null) {
                     Glide.with(PostDetailsActivity.this)
                             .load(obj.getPhotoUrl())
+                            .placeholder(R.drawable.user_thumbnail)
                             .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                             .crossFade()
                             .into(authorImageView);
@@ -847,11 +823,12 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         boolean hasImage = (drawable != null);
 
         if (hasImage && (drawable instanceof BitmapDrawable)) {
-            hasImage = ((BitmapDrawable)drawable).getBitmap() != null;
+            hasImage = ((BitmapDrawable) drawable).getBitmap() != null;
         }
 
         return hasImage;
     }
+
     private class ActionModeCallback implements ActionMode.Callback {
         Comment selectedComment;
         int position;
