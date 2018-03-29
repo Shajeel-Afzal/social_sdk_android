@@ -16,13 +16,13 @@
 
 package sumatodev.com.social.model;
 
-import sumatodev.com.social.enums.ItemType;
-import sumatodev.com.social.utils.FormatterUtil;
-
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import sumatodev.com.social.enums.ItemType;
+import sumatodev.com.social.utils.FormatterUtil;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -41,6 +41,7 @@ public class Post implements Serializable, LazyLoading {
     private long likesCount;
     private long watchersCount;
     private boolean hasComplain;
+    private CommentStatus commentStatus;
     private ItemType itemType;
 
     public Post() {
@@ -141,6 +142,14 @@ public class Post implements Serializable, LazyLoading {
         this.hasComplain = hasComplain;
     }
 
+    public CommentStatus getCommentStatus() {
+        return commentStatus;
+    }
+
+    public void setCommentStatus(CommentStatus status) {
+        this.commentStatus = status;
+    }
+
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
@@ -155,6 +164,8 @@ public class Post implements Serializable, LazyLoading {
         result.put("watchersCount", watchersCount);
         result.put("hasComplain", hasComplain);
         result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
+        result.put("status", commentStatus);
+
 
         return result;
     }

@@ -71,6 +71,7 @@ import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Comment;
+import sumatodev.com.social.model.CommentStatus;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
@@ -397,6 +398,12 @@ public class DatabaseHelper {
         DatabaseReference databaseReference = database.getReference();
         DatabaseReference postRef = databaseReference.child("post-comments").child(postId).child(commentId);
         return postRef.removeValue();
+    }
+
+    public Task<Void> setCommentsStatus(String postId, boolean status) {
+        DatabaseReference reference = database.getReference(Consts.POSTS_REF)
+                .child(postId).child(Consts.COMMENT_STATUS_REF);
+        return reference.setValue(new CommentStatus(status));
     }
 
     public void onNewLikeAddedListener(ChildEventListener childEventListener) {

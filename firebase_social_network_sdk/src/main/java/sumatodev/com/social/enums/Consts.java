@@ -14,4 +14,6 @@ public class Consts {
     public static final String FOLLOWING_LIST_REF = "followingList";
     public static final String FIREBASE_PUBLIC_USERS = "users_public";
     public static final String FIREBASE_LOCATION_USERS = "profiles";
+    public static final String POSTS_REF = "posts";
+    public static final String COMMENT_STATUS_REF = "commentStatus";
 }

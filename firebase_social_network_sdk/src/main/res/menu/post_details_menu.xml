@@ -23,4 +23,9 @@
         android:orderInCategory="2"
         android:visible="false" />
 
+    <item android:id="@+id/comments_action"
+        android:title="Comments On/Off"
+        app:showAsAction="never"
+        android:orderInCategory="2"
+        android:visible="false"/>
 </menu>

@@ -38,6 +38,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,12 +50,15 @@ import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -93,6 +98,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private static final int TIME_OUT_LOADING_COMMENTS = 30000;
     public static final int UPDATE_POST_REQUEST = 1;
     public static final String POST_STATUS_EXTRA_KEY = "PostDetailsActivity.POST_STATUS_EXTRA_KEY";
+    private static final String TAG = PostDetailsActivity.class.getSimpleName();
 
     private EditText commentEditText;
     @Nullable
@@ -120,6 +126,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private MenuItem complainActionMenuItem;
     private MenuItem editActionMenuItem;
     private MenuItem deleteActionMenuItem;
+    private MenuItem commentsOnOffAction;
 
     private String postId;
 
@@ -190,12 +197,22 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                sendButton.setEnabled(charSequence.toString().trim().length() > 0);
+                boolean valid = charSequence.toString().trim().length() > 0;
+                if (post != null && post.getCommentStatus() != null) {
+                    if (post.getCommentStatus().commentStatus) {
+                        if (valid) {
+                            sendButton.setEnabled(true);
+                        }
+                    } else {
+                        hideKeyBoard();
+                        Toast.makeText(PostDetailsActivity.this, "comment status is off", Toast.LENGTH_SHORT).show();
+                        sendButton.setEnabled(false);
+                    }
+                }
             }
 
             @Override
@@ -643,9 +660,10 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void updateOptionMenuVisibility() {
-        if (editActionMenuItem != null && deleteActionMenuItem != null && hasAccessToModifyPost()) {
+        if (editActionMenuItem != null && deleteActionMenuItem != null && commentsOnOffAction != null && hasAccessToModifyPost()) {
             editActionMenuItem.setVisible(true);
             deleteActionMenuItem.setVisible(true);
+            commentsOnOffAction.setVisible(true);
         }
 
         if (complainActionMenuItem != null && post != null && !post.isHasComplain()) {
@@ -660,6 +678,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         complainActionMenuItem = menu.findItem(R.id.complain_action);
         editActionMenuItem = menu.findItem(R.id.edit_post_action);
         deleteActionMenuItem = menu.findItem(R.id.delete_post_action);
+        commentsOnOffAction = menu.findItem(R.id.comments_action);
 
         if (post != null) {
             updateOptionMenuVisibility();
@@ -688,10 +707,27 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 attemptToRemovePost();
             }
             return true;
+        } else if (i == R.id.comments_action) {
+            if (hasAccessToModifyPost()) {
+                setCommentsAction();
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void setCommentsAction() {
+        if (checkInternetConnection()) {
+            ProfileStatus profileStatus = profileManager.checkProfile();
+
+            if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
+                openCommentsActionDialoag();
+            } else {
+                doAuthorization(profileStatus);
+            }
+        }
+    }
+
 
     private void doComplainAction() {
         if (checkInternetConnection()) {
@@ -758,6 +794,48 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 });
 
         builder.create().show();
+    }
+
+    private void openCommentsActionDialoag() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View view = inflater.inflate(R.layout.switch_layout, null);
+        builder.setView(view);
+
+        Switch statusBtn = view.findViewById(R.id.switchBtn);
+
+        if (post != null && post.getCommentStatus() != null) {
+            statusBtn.setChecked(post.getCommentStatus().commentStatus);
+        }
+
+        statusBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    setCommentStatus(true);
+                } else {
+                    setCommentStatus(false);
+                }
+            }
+        });
+
+        builder.setPositiveButton("Close", null);
+        builder.create().show();
+    }
+
+    private void setCommentStatus(boolean value) {
+        if (post != null) {
+            commentManager.setCommentsState(post.getId(), value, new OnTaskCompleteListener() {
+                @Override
+                public void onTaskComplete(boolean success) {
+                    if (success) {
+                        Log.d(TAG, "Status Updated");
+                    } else {
+                        Log.d(TAG, "Status Failed");
+                    }
+                }
+            });
+        }
     }
 
     private void openComplainDialog() {

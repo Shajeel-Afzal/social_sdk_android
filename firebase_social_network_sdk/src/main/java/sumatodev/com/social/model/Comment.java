@@ -17,12 +17,12 @@
 package sumatodev.com.social.model;
 
 
-import sumatodev.com.social.utils.FormatterUtil;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import sumatodev.com.social.utils.FormatterUtil;
 
 public class Comment {
 
@@ -74,6 +74,7 @@ public class Comment {
         this.createdDate = createdDate;
     }
 
+
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
@@ -83,4 +84,7 @@ public class Comment {
 
         return result;
     }
+
+
+
 }
