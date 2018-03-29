@@ -58,7 +58,6 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -120,6 +119,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private RecyclerView commentsRecyclerView;
     private TextView warningCommentsTextView;
     private RelativeLayout imageContainer;
+    private Button sendButton;
 
     private boolean attemptToLoadComments = false;
 
@@ -180,7 +180,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         imageContainer = findViewById(R.id.imageContainer);
 
 
-        final Button sendButton = findViewById(R.id.sendButton);
+        sendButton = findViewById(R.id.sendButton);
 
         initRecyclerView();
 
@@ -202,16 +202,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 boolean valid = charSequence.toString().trim().length() > 0;
-                if (post != null && post.getCommentStatus() != null) {
-                    if (post.getCommentStatus().commentStatus) {
-                        if (valid) {
-                            sendButton.setEnabled(true);
-                        }
-                    } else {
-                        hideKeyBoard();
-                        Toast.makeText(PostDetailsActivity.this, "comment status is off", Toast.LENGTH_SHORT).show();
-                        sendButton.setEnabled(false);
-                    }
+                if (post != null && post.getCommentStatus() != null && post.getCommentStatus().commentStatus) {
+                    sendButton.setEnabled(valid);
                 }
             }
 
@@ -383,6 +375,27 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         updateCounters();
         initLikeButtonState();
         updateOptionMenuVisibility();
+        updateCommentStatus();
+    }
+
+    private void updateCommentStatus() {
+        if (post != null && post.getCommentStatus() != null) {
+            if (post.getCommentStatus().commentStatus) {
+                sendButton.setEnabled(true);
+                commentEditText.setText(R.string.comment_text_hint);
+                commentEditText.setEnabled(true);
+                commentEditText.setClickable(true);
+                commentEditText.setLongClickable(true);
+                commentEditText.setFocusable(true);
+            } else {
+                sendButton.setEnabled(false);
+                commentEditText.setText("comment status is off");
+                commentEditText.setEnabled(false);
+                commentEditText.setClickable(false);
+                commentEditText.setLongClickable(false);
+                commentEditText.setFocusable(false);
+            }
+        }
     }
 
     private void incrementWatchersCount() {
