@@ -46,6 +46,7 @@ import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
+import sumatodev.com.social.utils.DataShare;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.NotificationView;
 
@@ -306,6 +307,21 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
+                public void onShareClick(final Post post, View view) {
+                    PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
+                            new OnObjectExistListener<Post>() {
+                                @Override
+                                public void onDataChanged(boolean exist) {
+                                    if (exist) {
+                                        openShareIntent(post);
+                                    } else {
+                                        showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
+                                    }
+                                }
+                            });
+                }
+
+                @Override
                 public void onCanceled(String message) {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
@@ -328,6 +344,13 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             });
         }
     }
+
+    private void openShareIntent(Post post) {
+        if (post.getImagePath() != null) {
+            new DataShare(MainActivity.this, "Share Image").ShareAndLoadImage(post.getImagePath());
+        }
+    }
+
 
     private void hideCounterView() {
         if (!counterAnimationInProgress && newPostsCounterTextView.getVisibility() == View.VISIBLE) {

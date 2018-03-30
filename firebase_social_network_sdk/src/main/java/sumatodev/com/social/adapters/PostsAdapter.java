@@ -118,6 +118,14 @@ public class PostsAdapter extends BasePostsAdapter {
                     callback.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
                 }
             }
+
+            @Override
+            public void onShareClick(int position, View view) {
+                if (callback != null) {
+                    selectedPostPosition = position;
+                    callback.onShareClick(getItemByPosition(position), view);
+                }
+            }
         };
     }
 
@@ -228,6 +236,7 @@ public class PostsAdapter extends BasePostsAdapter {
 
         void onAuthorClick(String authorId, View view);
 
+        void onShareClick(Post post,View view);
         void onCanceled(String message);
     }
 }

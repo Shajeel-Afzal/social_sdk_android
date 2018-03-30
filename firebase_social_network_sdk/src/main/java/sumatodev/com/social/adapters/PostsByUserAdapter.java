@@ -75,6 +75,11 @@ public class PostsByUserAdapter extends BasePostsAdapter {
             public void onAuthorClick(int position, View view) {
 
             }
+
+            @Override
+            public void onShareClick(int position, View view) {
+
+            }
         };
     }
 

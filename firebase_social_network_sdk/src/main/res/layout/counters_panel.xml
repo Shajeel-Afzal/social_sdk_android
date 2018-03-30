@@ -3,23 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center_vertical">
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
     <LinearLayout
         android:id="@+id/watchersContainer"
         android:layout_width="@dimen/post_counters_item_width"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/intrinsic_padding"
-        android:paddingBottom="@dimen/intrinsic_padding"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/intrinsic_padding"
+        android:paddingTop="@dimen/intrinsic_padding">
 
         <ImageView
             android:id="@+id/watcherImageView"
-            app:srcCompat="@drawable/ic_watchers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_watchers"
             tools:ignore="VectorDrawableCompat" />
 
         <TextView
@@ -35,16 +36,16 @@
         android:id="@+id/likesContainer"
         android:layout_width="@dimen/post_counters_item_width"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/intrinsic_padding"
-        android:paddingBottom="@dimen/intrinsic_padding"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/intrinsic_padding"
+        android:paddingTop="@dimen/intrinsic_padding">
 
         <ImageView
             android:id="@+id/likesImageView"
-            app:srcCompat="@drawable/ic_like"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_like"
             tools:ignore="VectorDrawableCompat" />
 
         <TextView
@@ -60,16 +61,16 @@
         android:id="@+id/commentsCounterContainer"
         android:layout_width="@dimen/post_counters_item_width"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/intrinsic_padding"
-        android:paddingBottom="@dimen/intrinsic_padding"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/intrinsic_padding"
+        android:paddingTop="@dimen/intrinsic_padding">
 
         <ImageView
             android:id="@+id/commentsCountImageView"
-            app:srcCompat="@drawable/ic_comments"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_comments" />
 
         <TextView
             android:id="@+id/commentsCountTextView"
@@ -84,17 +85,17 @@
         android:id="@+id/dateContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/intrinsic_padding"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingBottom="@dimen/intrinsic_padding"
         android:paddingRight="@dimen/intrinsic_padding"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:paddingTop="@dimen/intrinsic_padding">
 
         <ImageView
             android:id="@+id/dateImageView"
-            app:srcCompat="@drawable/ic_time"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_time" />
 
         <TextView
             android:id="@+id/dateTextView"
@@ -104,5 +105,30 @@
             android:textAppearance="@style/TextAppearance.Second.Light" />
 
     </LinearLayout>
+
+    <LinearLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/intrinsic_padding"
+        android:paddingRight="@dimen/intrinsic_padding"
+        android:paddingTop="@dimen/intrinsic_padding">
+
+        <ImageView
+            android:id="@+id/postShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_share" />
+
+        <TextView
+            android:id="@+id/shareCountTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/small_intrinsic_padding"
+            android:textAppearance="@style/TextAppearance.Second.Light" />
+    </LinearLayout>
+
 
 </LinearLayout>

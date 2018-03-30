@@ -66,6 +66,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private ViewGroup likeViewGroup;
     private FrameLayout imageLayout;
     private final TextView authorName;
+    private ImageView postShare;
     private ProgressBar progressBar;
 
     private ProfileManager profileManager;
@@ -92,6 +93,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         authorImageView = view.findViewById(R.id.authorImageView);
         likeViewGroup = view.findViewById(R.id.likesContainer);
         imageLayout = view.findViewById(R.id.imageLayout);
+        postShare = view.findViewById(R.id.postShare);
         progressBar = view.findViewById(R.id.progressBar);
 
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
@@ -123,6 +125,16 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                 int position = getAdapterPosition();
                 if (onClickListener != null && position != RecyclerView.NO_POSITION) {
                     onClickListener.onAuthorClick(getAdapterPosition(), v);
+                }
+            }
+        });
+
+        postShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onShareClick(getAdapterPosition(), v);
                 }
             }
         });
@@ -225,5 +237,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         void onLikeClick(LikeController likeController, int position);
 
         void onAuthorClick(int position, View view);
+
+        void onShareClick(int position,View view);
     }
 }
