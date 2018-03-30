@@ -76,6 +76,7 @@ import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.FileUtil;
 import sumatodev.com.social.utils.LogUtil;
 
@@ -857,6 +858,32 @@ public class DatabaseHelper {
         });
     }
 
+    public ValueEventListener getSearchList(String string, final OnDataChangedListener<UsersPublic> onDataChangedListener) {
+        DatabaseReference reference = database.getReference(Consts.FIREBASE_PUBLIC_USERS);
+        Query query = reference.orderByChild("username").startAt(string).endAt(string + "\uf8ff");
+
+        ValueEventListener valueEventListener = query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "Search Result: " + dataSnapshot.getValue());
+                List<UsersPublic> list = new ArrayList<>();
+                if (dataSnapshot.getValue() != null) {
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        UsersPublic usersPublic = child.getValue(UsersPublic.class);
+                        list.add(usersPublic);
+                    }
+                }
+                onDataChangedListener.onListChanged(list);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        activeListeners.put(valueEventListener, reference);
+        return valueEventListener;
+    }
 
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");

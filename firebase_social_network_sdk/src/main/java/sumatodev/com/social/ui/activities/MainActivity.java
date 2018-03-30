@@ -1,20 +1,3 @@
-/*
- *  Copyright 2017 Rozdoum
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
@@ -36,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,17 +28,23 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
+
+import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsAdapter;
+import sumatodev.com.social.adapters.SearchAdapter;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
+import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.NotificationView;
@@ -62,6 +52,7 @@ import sumatodev.com.social.utils.NotificationView;
 public class MainActivity extends BaseActivity implements OnPostCreatedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private MaterialSearchView mSearchView;
     private PostsAdapter postsAdapter;
     private RecyclerView recyclerView;
     private FloatingActionButton floatingActionButton;
@@ -73,6 +64,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
     private NotificationView notificationView;
+    private SearchAdapter searchAdapter;
 
     public static void start(Context context) {
         Intent starter = new Intent(context, MainActivity.class);
@@ -86,6 +78,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mSearchView = findViewById(R.id.search_view);
 
         profileManager = ProfileManager.getInstance(this);
         postManager = PostManager.getInstance(this);
@@ -102,12 +95,56 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         postManager.setPostCounterWatcher(postCounterWatcher);
 
 //        setOnLikeAddedListener();
+        initSearchBar();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         updateNewPostCounter();
+
+    }
+
+    private void initSearchBar() {
+
+        mSearchView.setAnimationDuration(100);
+        mSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.length() > 0) {
+                    postManager.getSearchList(getApplicationContext(), newText, publicOnDataChangedListener());
+                }
+                return false;
+            }
+        });
+
+
+        mSearchView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                UsersPublic usersPublic = searchAdapter.getItemByPosition(position);
+                if (usersPublic.getId() != null) {
+                    openProfileActivity(usersPublic.getId());
+                }
+            }
+        });
+    }
+
+    OnDataChangedListener<UsersPublic> publicOnDataChangedListener() {
+        return new OnDataChangedListener<UsersPublic>() {
+            @Override
+            public void onListChanged(List<UsersPublic> list) {
+                if (!list.isEmpty()) {
+                    searchAdapter = new SearchAdapter(MainActivity.this, list, true);
+                    mSearchView.setAdapter(searchAdapter);
+                }
+            }
+        };
     }
 
     private void setOnLikeAddedListener() {
@@ -412,6 +449,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+
+        MenuItem item = menu.findItem(R.id.action_search);
+        mSearchView.setMenuItem(item);
         return true;
     }
 
@@ -436,27 +476,36 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 startActivity(new Intent(MainActivity.this, UsersActivity.class));
             }
             return true;
-        }  else {
+        } else {
             return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
     public void onBackPressed() {
+
         super.onBackPressed();
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        postManager.closeListeners(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        postManager.closeListeners(this);
     }
 }

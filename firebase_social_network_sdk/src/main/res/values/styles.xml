@@ -80,4 +80,11 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="MaterialSearchViewStyle">
+        <item name="searchBackground">@color/iron</item>
+        <item name="android:textColor">@color/primary_dark_text</item>
+        <item name="android:textColorHint">@color/secondary_light</item>
+        <item name="android:hint">@string/search_hint</item>
+        <item name="searchSuggestionBackground">@color/light</item>
+    </style>
 </resources>

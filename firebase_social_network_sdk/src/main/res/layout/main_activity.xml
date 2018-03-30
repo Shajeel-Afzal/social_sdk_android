@@ -27,10 +27,10 @@
 
     <ProgressBar
         android:id="@+id/progressBar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large" />
+        android:layout_gravity="center" />
 
     <RelativeLayout
         android:id="@+id/activity_main"
@@ -58,21 +58,27 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="16dp"
-            android:padding="@dimen/intrinsic_padding"
             android:background="@drawable/posts_counter_bg"
-            android:textColor="@android:color/white"
             android:gravity="center_vertical"
-            android:visibility="gone"/>
+            android:padding="@dimen/intrinsic_padding"
+            android:textColor="@android:color/white"
+            android:visibility="gone" />
 
     </RelativeLayout>
+
+    <com.miguelcatalan.materialsearchview.MaterialSearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/MaterialSearchViewStyle" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/addNewPostFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
         android:layout_margin="@dimen/large_intrinsic_padding"
         android:clickable="true"
-        android:src="@drawable/ic_add_white_48dp"
-        android:layout_gravity="bottom|right" />
+        android:src="@drawable/ic_add_white_48dp" />
 
 </android.support.design.widget.CoordinatorLayout>

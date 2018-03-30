@@ -382,18 +382,21 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         if (post != null && post.getCommentStatus() != null) {
             if (post.getCommentStatus().commentStatus) {
                 sendButton.setEnabled(true);
-                commentEditText.setText(R.string.comment_text_hint);
+                commentEditText.setHint(R.string.comment_text_hint);
                 commentEditText.setEnabled(true);
                 commentEditText.setClickable(true);
                 commentEditText.setLongClickable(true);
                 commentEditText.setFocusable(true);
+                commentEditText.setFocusableInTouchMode(true);
+                commentEditText.requestFocus();
             } else {
                 sendButton.setEnabled(false);
-                commentEditText.setText("comment status is off");
+                commentEditText.setHint("comment status is off");
                 commentEditText.setEnabled(false);
                 commentEditText.setClickable(false);
                 commentEditText.setLongClickable(false);
                 commentEditText.setFocusable(false);
+                commentEditText.clearFocus();
             }
         }
     }

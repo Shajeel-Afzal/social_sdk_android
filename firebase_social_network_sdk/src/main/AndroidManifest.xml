@@ -79,9 +79,6 @@
         <activity android:name=".ui.activities.UsersActivity" />
         <activity android:name=".ui.activities.FollowersActivity" />
         <activity android:name=".ui.activities.FollowingActivity" />
-        <activity
-            android:name=".ui.activities.SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

@@ -38,6 +38,7 @@ import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
 
@@ -232,5 +233,11 @@ public class PostManager extends FirebaseListenersManager {
 
     public interface PostCounterWatcher {
         void onPostCounterChanged(int newValue);
+    }
+
+    public void getSearchList(Context context, String searchString, OnDataChangedListener<UsersPublic> onDataChangedListener) {
+        DatabaseHelper reference = ApplicationHelper.getDatabaseHelper();
+        ValueEventListener valueEventListener = reference.getSearchList(searchString,onDataChangedListener);
+        addListenerToMap(context, valueEventListener);
     }
 }
