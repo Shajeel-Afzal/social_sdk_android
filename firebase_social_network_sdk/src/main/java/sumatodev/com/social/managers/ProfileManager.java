@@ -42,6 +42,7 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
+import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
@@ -143,9 +144,9 @@ public class ProfileManager extends FirebaseListenersManager {
         databaseHelper.getProfileSingleValue(id, listener);
     }
 
-    public void deleteAccount(String userKey, OnTaskCompleteListener onTaskCompleteListener) {
+    public void deleteAccount(OnTaskCompleteListener onTaskCompleteListener) {
         try {
-            ApplicationHelper.getDatabaseHelper().deleteAccount(userKey, onTaskCompleteListener);
+            ApplicationHelper.getDatabaseHelper().deleteAccount(onTaskCompleteListener);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -162,4 +163,12 @@ public class ProfileManager extends FirebaseListenersManager {
             return ProfileStatus.PROFILE_CREATED;
         }
     }
+
+
+    public void checkAccountStatus(Context context, String userKey, OnObjectChangedListener<AccountStatus> objectChangedListener) {
+        ValueEventListener eventListener = databaseHelper.checkAccountStatus(userKey,objectChangedListener);
+        addListenerToMap(context, eventListener);
+
+    }
+
 }

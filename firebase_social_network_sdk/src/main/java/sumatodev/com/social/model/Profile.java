@@ -29,6 +29,7 @@ public class Profile implements Serializable {
     private String photoUrl;
     private long likesCount;
     private String registrationToken;
+    private AccountStatus accountStatus;
 
     public Profile() {
         // Default constructor required for calls to DataSnapshot.getValue(Profile.class)
@@ -84,5 +85,13 @@ public class Profile implements Serializable {
 
     public void setRegistrationToken(String registrationToken) {
         this.registrationToken = registrationToken;
+    }
+
+    public AccountStatus getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(AccountStatus accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }

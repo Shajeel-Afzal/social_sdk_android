@@ -18,4 +18,7 @@ public class Consts {
     public static final String COMMENT_STATUS_REF = "commentStatus";
     public static final String POST_COMMENTS_REF = "post-comments";
     public static final String COMMENTS_LIKES_REF = "comment-likes";
+    public static final String ACCOUNT_DISABLED = "disabled";
+    public static final String ACCOUNT_ACTIVE = "active";
+    public static final String ACCOUNT_STATUS = "accountStatus";
 }

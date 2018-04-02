@@ -70,6 +70,7 @@ import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
+import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.CommentStatus;
 import sumatodev.com.social.model.Like;
@@ -79,6 +80,7 @@ import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.FileUtil;
 import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.PreferencesUtil;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -162,7 +164,8 @@ public class DatabaseHelper {
         result.put(Consts.FIREBASE_LOCATION_USERS + "/" + profile.getId(), userPrivateMap);
         result.put(Consts.FIREBASE_PUBLIC_USERS + "/" + profile.getId(), userPublicMap);
 
-        Task<Void> task = FirebaseUtils.getDatabaseRef().updateChildren(result);
+        DatabaseReference reference = database.getReference();
+        Task<Void> task = reference.updateChildren(result);
         task.addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -868,27 +871,40 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public void deleteAccount(String userKey, OnTaskCompleteListener onTaskCompleteListener) {
-        DatabaseReference reference = database.getReference();
+    public void deleteAccount(final OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseReference reference = database.getReference(Consts.FIREBASE_LOCATION_USERS)
+                .child(getCurrentUser()).child(Consts.ACCOUNT_STATUS);
 
-        HashMap<String, Object> hashMap = new HashMap<>();
-
-        hashMap.put(Consts.USER_KEY + "/" + getCurrentUser(), null);
-        hashMap.put(Consts.FIREBASE_PUBLIC_USERS + "/" + getCurrentUser(), null);
-
-
+        reference.setValue(new AccountStatus(Consts.ACCOUNT_DISABLED)).addOnCompleteListener
+                (new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        PreferencesUtil.setProfileActive(context, false);
+                        onTaskCompleteListener.onTaskComplete(true);
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onTaskCompleteListener.onTaskComplete(false);
+            }
+        });
     }
 
-    public void deleteUsersPost(String userKey) {
+    public void setAccountStatusActive() {
+        DatabaseReference reference = database.getReference(Consts.FIREBASE_LOCATION_USERS)
+                .child(getCurrentUser()).child(Consts.ACCOUNT_STATUS);
+        reference.setValue(new AccountStatus(Consts.ACCOUNT_ACTIVE));
+    }
 
-        DatabaseReference reference = database.getReference(Consts.POSTS_REF);
-        Query query = reference.orderByChild("authorId").equalTo(getCurrentUser());
-        query.addValueEventListener(new ValueEventListener() {
+    public ValueEventListener checkAccountStatus(String userKey, final OnObjectChangedListener<AccountStatus> objectChangedListener) {
+        DatabaseReference reference = database.getReference(Consts.FIREBASE_LOCATION_USERS)
+                .child(userKey).child(Consts.ACCOUNT_STATUS);
+        ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    Log.d(TAG, "child keys: " + child.getRef());
-                }
+                Log.d(TAG, "Account Status: " + dataSnapshot.getValue());
+                AccountStatus status = dataSnapshot.getValue(AccountStatus.class);
+                objectChangedListener.onObjectChanged(status);
             }
 
             @Override
@@ -896,6 +912,8 @@ public class DatabaseHelper {
 
             }
         });
+        activeListeners.put(valueEventListener, reference);
+        return valueEventListener;
     }
 
     public ValueEventListener getCommentsList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
@@ -1041,6 +1059,7 @@ public class DatabaseHelper {
         activeListeners.put(valueEventListener, reference);
         return valueEventListener;
     }
+
 
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");

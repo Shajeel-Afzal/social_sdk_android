@@ -7,12 +7,17 @@
     android:background="@android:color/white"
     android:orientation="vertical">
 
+    <include
+        android:id="@+id/stateful_view"
+        layout="@layout/account_disabled_layout" />
+
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:visibility="gone">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsingToolbar"
@@ -48,6 +53,7 @@
                         tools:ignore="ContentDescription" />
 
                     <LinearLayout
+                        android:id="@+id/userDetailLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
@@ -186,6 +192,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/heading"
+        android:visibility="gone"
         app:emptyLayout="@layout/empty_layout"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -205,10 +212,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:padding="5dp"
-                    android:visibility="gone"
                     android:text="Recent Posts"
                     android:textAllCaps="true"
-                    android:textColor="@android:color/white" />
+                    android:textColor="@android:color/white"
+                    android:visibility="gone" />
             </FrameLayout>
 
 

@@ -105,7 +105,7 @@ public class CommentLikeController {
         int likeDefault = context.getResources().getColor(R.color.secondary_text);
         like_action.setTextColor(isLiked ? liked : likeDefault);
         likes_count.setTextColor(isLiked ? liked : likeDefault);
-        
+
         this.isLiked = isLiked;
     }
 

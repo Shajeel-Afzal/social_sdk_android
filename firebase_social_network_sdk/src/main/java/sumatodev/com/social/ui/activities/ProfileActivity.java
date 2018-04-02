@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -66,7 +67,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
-import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsByUserAdapter;
 import sumatodev.com.social.enums.Consts;
@@ -77,6 +77,8 @@ import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
+import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
+import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Follow;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
@@ -91,13 +93,14 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     public static final String USER_ID_EXTRA_KEY = "ProfileActivity.USER_ID_EXTRA_KEY";
 
     // UI references.
+    private AppBarLayout appbar;
     private TextView nameEditText;
     private ImageView imageView;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView postsCounterTextView, userFollowers, userFollowings;
     private TextView postsLabelTextView;
-    private SimpleStatefulLayout statefulLayout;
+    private SimpleStatefulLayout statefulLayout, statefulAccountView;
     private Button followBtn;
     private LinearLayout dataLayout;
     private Button messageBtn;
@@ -118,7 +121,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private PostManager postManager;
     private NotificationView notificationView;
     private DatabaseReference mFriendsRef;
-    private DatabaseReference mMyDatabaseRef;
     private boolean mProcessClick = false;
 
     @Override
@@ -134,17 +136,18 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         }
 
         mAuth = FirebaseAuth.getInstance();
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+
         if (firebaseUser != null) {
             currentUserId = firebaseUser.getUid();
         }
 
         if (userID != null && currentUserId != null) {
             mFriendsRef = FirebaseUtils.getFriendsRef().child(userID);
-            mMyDatabaseRef = FirebaseUtils.getFriendsRef().child(currentUserId);
         }
 
         postManager = PostManager.getInstance(this);
+        profileManager = ProfileManager.getInstance(this);
         notificationView = new NotificationView(this);
         // Set up the login form.
 
@@ -155,11 +158,13 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             }
         });
 
-        loadPostsList();
         supportPostponeEnterTransition();
+
     }
 
     private void findViews() {
+        statefulAccountView = findViewById(R.id.stateful_view);
+        appbar = findViewById(R.id.appbar);
         progressBar = findViewById(R.id.progressBar);
         imageView = findViewById(R.id.imageView);
         //nameEditText = findViewById(R.id.nameEditText);
@@ -216,23 +221,46 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     public void onStart() {
         super.onStart();
         if (hasInternetConnection()) {
-            dataLayout.setVisibility(View.VISIBLE);
+            statefulAccountView.showProgress();
             if (userID != null) {
-                if (userID.equalsIgnoreCase(currentUserId)) {
-                    followBtn.setVisibility(View.GONE);
-                    messageBtn.setVisibility(View.GONE);
-                }
-                checkFriendsStatus();
+                profileManager.checkAccountStatus(ProfileActivity.this, userID, onObjectChangedListener());
             }
-
-            loadProfile();
-
-            if (mGoogleApiClient != null) {
-                mGoogleApiClient.connect();
-            }
-        } else {
-            dataLayout.setVisibility(View.GONE);
         }
+    }
+
+    private OnObjectChangedListener<AccountStatus> onObjectChangedListener() {
+        return new OnObjectChangedListener<AccountStatus>() {
+            @Override
+            public void onObjectChanged(AccountStatus obj) {
+                if (obj != null) {
+                    if (obj.profileStatus.equals(Consts.ACCOUNT_ACTIVE)) {
+                        statefulAccountView.showContent();
+
+                        appbar.setVisibility(View.VISIBLE);
+                        statefulLayout.setVisibility(View.VISIBLE);
+
+                        dataLayout.setVisibility(View.VISIBLE);
+                        if (userID != null) {
+                            if (userID.equalsIgnoreCase(currentUserId)) {
+                                followBtn.setVisibility(View.GONE);
+                                messageBtn.setVisibility(View.GONE);
+                            }
+                            checkFriendsStatus();
+                        }
+
+                        loadProfile();
+                        loadPostsList();
+
+                        if (mGoogleApiClient != null) {
+                            mGoogleApiClient.connect();
+                        }
+                    } else if (obj.profileStatus.equals(Consts.ACCOUNT_DISABLED)) {
+                        statefulAccountView.showEmpty();
+                        statefulAccountView.setEmptyText("Account Disabled");
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -386,7 +414,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     }
 
     private void loadProfile() {
-        profileManager = ProfileManager.getInstance(this);
         profileManager.getProfileValue(ProfileActivity.this, userID, createOnProfileChangedListener());
     }
 
@@ -527,11 +554,23 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             startActivity(new Intent(ProfileActivity.this, ThreadsActivity.class));
             return true;
         } else if (i == R.id.action_delete) {
-            ApplicationHelper.getDatabaseHelper().deleteUsersPost(currentUserId);
+            initAccountDelete();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void initAccountDelete() {
+        profileManager.deleteAccount(new OnTaskCompleteListener() {
+            @Override
+            public void onTaskComplete(boolean success) {
+                if (success) {
+                    LogoutHelper.signOut(mGoogleApiClient, ProfileActivity.this);
+                    startMainActivity();
+                }
+            }
+        });
     }
 
 

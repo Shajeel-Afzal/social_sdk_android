@@ -21,7 +21,7 @@ package sumatodev.com.social.enums;
  */
 
 public enum ProfileStatus {
-    PROFILE_CREATED(0), NOT_AUTHORIZED(1), NO_PROFILE(2);
+    PROFILE_CREATED(0), NOT_AUTHORIZED(1), NO_PROFILE(2), DISABLED(3);
 
     int status;
 

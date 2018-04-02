@@ -71,7 +71,6 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
-import sumatodev.com.social.controllers.CommentLikeController;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;

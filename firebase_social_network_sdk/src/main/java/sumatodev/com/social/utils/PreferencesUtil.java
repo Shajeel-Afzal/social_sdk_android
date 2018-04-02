@@ -25,6 +25,7 @@ public class PreferencesUtil {
 
     private static final String SHARED_PREFERENCES_NAME = "sumatodev.com.social";
     private static final String PREF_PARAM_IS_PROFILE_CREATED = "isProfileCreated";
+    private static final String PREF_PARAM_IS_PROFILE_ACTIVE = "isProfileActive";
     private static final String PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE = "isPostsWasLoadedAtLeastOnce";
 
     private static SharedPreferences getSharedPreferences(Context context) {
@@ -39,15 +40,24 @@ public class PreferencesUtil {
         return getSharedPreferences(context).getBoolean(PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE, false);
     }
 
+
     public static void setProfileCreated(Context context, Boolean isProfileCreated) {
         getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_PROFILE_CREATED, isProfileCreated).apply();
+    }
+
+    public static Boolean isProfileActive(Context context) {
+        return getSharedPreferences(context).getBoolean(PREF_PARAM_IS_PROFILE_ACTIVE, false);
+    }
+
+    public static void setProfileActive(Context context, Boolean isProfileActive) {
+        getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_PROFILE_ACTIVE, isProfileActive).apply();
     }
 
     public static void setPostWasLoadedAtLeastOnce(Context context, Boolean isPostWasLoadedAtLeastOnce) {
         getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE, isPostWasLoadedAtLeastOnce).apply();
     }
 
-    public static void clearPreferences(Context context){
+    public static void clearPreferences(Context context) {
         final SharedPreferences.Editor editor = getSharedPreferences(context).edit();
         editor.clear();
         editor.apply();

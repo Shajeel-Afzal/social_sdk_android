@@ -49,9 +49,12 @@ public class SignInActivity extends AppCompatActivity {
                     startCreateProfileActivity();
                 } else {
                     PreferencesUtil.setProfileCreated(SignInActivity.this, true);
+                    PreferencesUtil.setProfileActive(SignInActivity.this, true);
                     sumatodev.com.social.ui.activities.MainActivity.start(SignInActivity.this);
                     DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
                             .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), userId);
+                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                            .setAccountStatusActive();
                 }
                 hideProgress();
                 finish();
