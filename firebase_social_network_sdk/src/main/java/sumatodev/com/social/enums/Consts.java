@@ -16,4 +16,6 @@ public class Consts {
     public static final String FIREBASE_LOCATION_USERS = "profiles";
     public static final String POSTS_REF = "posts";
     public static final String COMMENT_STATUS_REF = "commentStatus";
+    public static final String POST_COMMENTS_REF = "post-comments";
+    public static final String COMMENTS_LIKES_REF = "comment-likes";
 }

@@ -60,7 +60,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:padding="5dp"
-            android:src="@drawable/ic_accept"
+            app:srcCompat="@drawable/ic_accept"
             tools:ignore="ContentDescription" />
 
         <ImageButton
@@ -69,7 +69,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:padding="5dp"
-            android:src="@drawable/ic_reject"
+            app:srcCompat="@drawable/ic_reject"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 </LinearLayout>

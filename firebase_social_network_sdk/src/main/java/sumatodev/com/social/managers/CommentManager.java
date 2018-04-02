@@ -27,8 +27,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Comment;
+import sumatodev.com.social.model.Like;
 import sumatodev.com.social.utils.LogUtil;
 
 public class CommentManager extends FirebaseListenersManager {
@@ -79,9 +81,19 @@ public class CommentManager extends FirebaseListenersManager {
             }
         });
     }
+    public void hasCurrentUserLikeComment(String postId, String commentId, final OnObjectExistListener<Like>
+            onObjectExistListener) {
+        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+        databaseHelper.hasCurrentUserLikeCommentValue(postId, commentId, onObjectExistListener);
+    }
 
     public void updateComment(String commentId, String commentText, String postId, OnTaskCompleteListener onTaskCompleteListener) {
         ApplicationHelper.getDatabaseHelper().updateComment(commentId, commentText, postId, onTaskCompleteListener);
+    }
+
+    public void isCommentExist(String postId, String commentId, OnObjectExistListener<Comment> onObjectExistListener) {
+        DatabaseHelper helper = ApplicationHelper.getDatabaseHelper();
+        helper.isCommentExistSingleValue(postId, commentId, onObjectExistListener);
     }
 
     public void setCommentsState(String postId, boolean status, final OnTaskCompleteListener onTaskCompleteListener) {

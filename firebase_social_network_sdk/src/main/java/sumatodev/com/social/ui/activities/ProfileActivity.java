@@ -66,6 +66,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
+import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsByUserAdapter;
 import sumatodev.com.social.enums.Consts;
@@ -524,6 +525,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             return true;
         } else if (i == R.id.threads) {
             startActivity(new Intent(ProfileActivity.this, ThreadsActivity.class));
+            return true;
+        } else if (i == R.id.action_delete) {
+            ApplicationHelper.getDatabaseHelper().deleteUsersPost(currentUserId);
             return true;
         } else {
             return super.onOptionsItemSelected(item);

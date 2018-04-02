@@ -123,6 +123,10 @@ public class DatabaseHelper {
         return database.getReference();
     }
 
+    public String getCurrentUser() {
+        return firebaseAuth.getCurrentUser() == null ? null : firebaseAuth.getCurrentUser().getUid();
+    }
+
     public void closeListener(ValueEventListener listener) {
         if (activeListeners.containsKey(listener)) {
             DatabaseReference reference = activeListeners.get(listener);
@@ -310,6 +314,7 @@ public class DatabaseHelper {
             String commentId = mCommentsReference.push().getKey();
             Comment comment = new Comment(commentText);
             comment.setId(commentId);
+            comment.setPostId(postId);
             comment.setAuthorId(authorId);
 
             mCommentsReference.child(commentId).setValue(comment, new DatabaseReference.CompletionListener() {
@@ -463,6 +468,58 @@ public class DatabaseHelper {
 
     }
 
+
+    public void updateCommentLike(final String postId, final String commentId) {
+        try {
+            String authorId = firebaseAuth.getCurrentUser().getUid();
+            DatabaseReference mLikesReference = database.getReference().child("comment-likes").child(postId)
+                    .child(commentId).child(authorId);
+            mLikesReference.push();
+            String id = mLikesReference.push().getKey();
+            Like like = new Like(authorId);
+            like.setId(id);
+
+            mLikesReference.child(id).setValue(like, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                    if (databaseError == null) {
+                        DatabaseReference commentRef = database.getReference("post-comments/" + postId + "/"
+                                + commentId + "/likesCount");
+                        incrementLikesCount(commentRef);
+
+                    } else {
+                        LogUtil.logError(TAG, databaseError.getMessage(), databaseError.toException());
+                    }
+                }
+
+                private void incrementLikesCount(DatabaseReference postRef) {
+                    postRef.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+                            Integer currentValue = mutableData.getValue(Integer.class);
+                            if (currentValue == null) {
+                                mutableData.setValue(1);
+                            } else {
+                                mutableData.setValue(currentValue + 1);
+                            }
+
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                            LogUtil.logInfo(TAG, "Updating likes count transaction is completed.");
+                        }
+                    });
+                }
+
+            });
+        } catch (Exception e) {
+            LogUtil.logError(TAG, "createOrUpdateLike()", e);
+        }
+
+    }
+
     public void incrementWatchersCount(String postId) {
         DatabaseReference postRef = database.getReference("posts/" + postId + "/watchersCount");
         postRef.runTransaction(new Transaction.Handler() {
@@ -497,6 +554,46 @@ public class DatabaseHelper {
 
                     DatabaseReference profileRef = database.getReference("profiles/" + postAuthorId + "/likesCount");
                     decrementLikesCount(profileRef);
+                } else {
+                    LogUtil.logError(TAG, databaseError.getMessage(), databaseError.toException());
+                }
+            }
+
+            private void decrementLikesCount(DatabaseReference postRef) {
+                postRef.runTransaction(new Transaction.Handler() {
+                    @Override
+                    public Transaction.Result doTransaction(MutableData mutableData) {
+                        Long currentValue = mutableData.getValue(Long.class);
+                        if (currentValue == null) {
+                            mutableData.setValue(0);
+                        } else {
+                            mutableData.setValue(currentValue - 1);
+                        }
+
+                        return Transaction.success(mutableData);
+                    }
+
+                    @Override
+                    public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                        LogUtil.logInfo(TAG, "Updating likes count transaction is completed.");
+                    }
+                });
+            }
+        });
+    }
+
+    public void removeCommentLike(final String postId, final String commentId) {
+        String authorId = firebaseAuth.getCurrentUser().getUid();
+        DatabaseReference mLikesReference = database.getReference().child("comment-likes").child(postId)
+                .child(commentId).child(authorId);
+        mLikesReference.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    DatabaseReference commentRef = database.getReference("post-comments/" + postId + "/"
+                            + commentId + "/likesCount");
+                    decrementLikesCount(commentRef);
+
                 } else {
                     LogUtil.logError(TAG, databaseError.getMessage(), databaseError.toException());
                 }
@@ -771,6 +868,35 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
+    public void deleteAccount(String userKey, OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseReference reference = database.getReference();
+
+        HashMap<String, Object> hashMap = new HashMap<>();
+
+        hashMap.put(Consts.USER_KEY + "/" + getCurrentUser(), null);
+        hashMap.put(Consts.FIREBASE_PUBLIC_USERS + "/" + getCurrentUser(), null);
+
+
+    }
+
+    public void deleteUsersPost(String userKey) {
+
+        DatabaseReference reference = database.getReference(Consts.POSTS_REF);
+        Query query = reference.orderByChild("authorId").equalTo(getCurrentUser());
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    Log.d(TAG, "child keys: " + child.getRef());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     public ValueEventListener getCommentsList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
@@ -838,6 +964,22 @@ public class DatabaseHelper {
         });
     }
 
+    public void hasCurrentUserLikeCommentValue(String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
+        DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF)
+                .child(postId).child(commentId).child(getCurrentUser());
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                onObjectExistListener.onDataChanged(dataSnapshot.exists());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "hasCurrentUserLikeCommentValue(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
     public void addComplainToPost(Post post) {
         DatabaseReference databaseReference = getDatabaseReference();
         databaseReference.child("posts").child(post.getId()).child("hasComplain").setValue(true);
@@ -854,6 +996,21 @@ public class DatabaseHelper {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "isPostExistSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
+    public void isCommentExistSingleValue(String postId, String commentId, final OnObjectExistListener<Comment> onObjectExistListener) {
+        DatabaseReference databaseReference = database.getReference(Consts.POST_COMMENTS_REF).child(postId).child(commentId);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                onObjectExistListener.onDataChanged(dataSnapshot.exists());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "isCommentExistSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
     }
@@ -888,4 +1045,5 @@ public class DatabaseHelper {
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");
     }
+
 }

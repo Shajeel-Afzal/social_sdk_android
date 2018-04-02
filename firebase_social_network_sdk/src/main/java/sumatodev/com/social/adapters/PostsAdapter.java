@@ -126,6 +126,14 @@ public class PostsAdapter extends BasePostsAdapter {
                     callback.onShareClick(getItemByPosition(position), view);
                 }
             }
+
+            @Override
+            public void onPictureLongPress(int position, View view) {
+                if (callback != null) {
+                    selectedPostPosition = position;
+                    callback.onPictureLongPress(getItemByPosition(position).getImagePath(), view);
+                }
+            }
         };
     }
 
@@ -236,7 +244,10 @@ public class PostsAdapter extends BasePostsAdapter {
 
         void onAuthorClick(String authorId, View view);
 
-        void onShareClick(Post post,View view);
+        void onShareClick(Post post, View view);
+
         void onCanceled(String message);
+
+        void onPictureLongPress(String imageUrl, View view);
     }
 }

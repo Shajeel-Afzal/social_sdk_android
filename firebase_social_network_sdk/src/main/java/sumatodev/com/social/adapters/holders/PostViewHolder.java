@@ -138,6 +138,17 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
+
+        postImageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onPictureLongPress(position, v);
+                }
+                return false;
+            }
+        });
     }
 
     public void bindData(Post post) {
@@ -187,7 +198,9 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     .into(postImageView);
         }
 
-        if (post.getAuthorId() != null) {
+        if (post.getAuthorId() != null)
+
+        {
             profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
         }
 
@@ -238,6 +251,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         void onAuthorClick(int position, View view);
 
-        void onShareClick(int position,View view);
+        void onShareClick(int position, View view);
+
+        void onPictureLongPress(int position, View view);
     }
 }

@@ -28,7 +28,8 @@
         <activity
             android:name=".ui.activities.PostDetailsActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/label_post_detail_activity" />
+            android:label="@string/label_post_detail_activity"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".ui.activities.CreatePostActivity"
             android:configChanges="orientation|screenSize"

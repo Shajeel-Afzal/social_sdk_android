@@ -21,14 +21,19 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_delete"
+        android:orderInCategory="20"
+        android:title="Delete Account"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/follow_requests"
         android:title="Requests"
         app:showAsAction="never" />
 
     <item
-        app:showAsAction="never"
         android:id="@+id/threads"
-        android:title="Threads" />
+        android:title="Threads"
+        app:showAsAction="never" />
 
 </menu>
 

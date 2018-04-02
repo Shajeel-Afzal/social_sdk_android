@@ -27,8 +27,10 @@ import sumatodev.com.social.utils.FormatterUtil;
 public class Comment {
 
     private String id;
+    private String postId;
     private String text;
     private String authorId;
+    private long likesCount;
     private long createdDate;
 
 
@@ -50,6 +52,14 @@ public class Comment {
         this.id = id;
     }
 
+    public String getPostId() {
+        return postId;
+    }
+
+    public void setPostId(String postId) {
+        this.postId = postId;
+    }
+
     public String getText() {
         return text;
     }
@@ -66,6 +76,14 @@ public class Comment {
         this.authorId = authorId;
     }
 
+    public long getLikesCount() {
+        return likesCount;
+    }
+
+    public void setLikesCount(long likesCount) {
+        this.likesCount = likesCount;
+    }
+
     public long getCreatedDate() {
         return createdDate;
     }
@@ -78,13 +96,16 @@ public class Comment {
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
+        result.put("id", id);
+        result.put("postId",postId);
         result.put("text", text);
+        result.put("authorId", authorId);
+        result.put("likesCount", likesCount);
         result.put("createdDate", createdDate);
         result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
 
         return result;
     }
-
 
 
 }

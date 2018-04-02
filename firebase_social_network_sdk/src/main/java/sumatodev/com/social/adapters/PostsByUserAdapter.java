@@ -80,6 +80,11 @@ public class PostsByUserAdapter extends BasePostsAdapter {
             public void onShareClick(int position, View view) {
 
             }
+
+            @Override
+            public void onPictureLongPress(int position, View view) {
+
+            }
         };
     }
 

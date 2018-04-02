@@ -25,16 +25,24 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
+import sumatodev.com.social.controllers.CommentLikeController;
+import sumatodev.com.social.managers.CommentManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
+import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Comment;
+import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.views.ExpandableTextView;
@@ -49,19 +57,28 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
     private final ExpandableTextView commentTextView;
     private final TextView dateTextView;
     private final ProfileManager profileManager;
+    private TextView likes_count;
+    private TextView like_action;
+    private ViewGroup likeContainer;
     private CommentsAdapter.Callback callback;
     private Context context;
+    private CommentManager commentManager;
+    private CommentLikeController commentLikeController;
 
-    public CommentViewHolder(View itemView, final CommentsAdapter.Callback callback) {
+    public CommentViewHolder(View itemView, final CommentsAdapter.Callback callback, final OnClickListener onClickListener) {
         super(itemView);
 
         this.callback = callback;
         this.context = itemView.getContext();
         profileManager = ProfileManager.getInstance(itemView.getContext().getApplicationContext());
+        commentManager = CommentManager.getInstance(itemView.getContext().getApplicationContext());
 
         avatarImageView = itemView.findViewById(R.id.avatarImageView);
         commentTextView = itemView.findViewById(R.id.commentText);
         dateTextView = itemView.findViewById(R.id.dateTextView);
+        like_action = itemView.findViewById(R.id.like_action);
+        likes_count = itemView.findViewById(R.id.likes_count);
+        likeContainer = itemView.findViewById(R.id.likeContainer);
 
         if (callback != null) {
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -77,25 +94,50 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                 }
             });
         }
+        if (onClickListener != null) {
+            likeContainer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        onClickListener.onLikeClick(commentLikeController, position);
+                    }
+                }
+            });
+        }
     }
 
     public void bindData(Comment comment) {
+
+        commentLikeController = new CommentLikeController(context, comment, likes_count, like_action, true);
+
         final String authorId = comment.getAuthorId();
-        if (authorId != null)
+        if (comment.getText() != null) {
+            commentTextView.setText(comment.getText());
+
+            CharSequence date = FormatterUtil.getRelativeTimeSpanString(context, comment.getCreatedDate());
+            dateTextView.setText(date);
+
+        }
+
+        likes_count.setText(String.valueOf(comment.getLikesCount()));
+
+        if (authorId != null) {
             profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
                     avatarImageView, comment.getText()));
 
-        commentTextView.setText(comment.getText());
+            avatarImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    callback.onAuthorClick(authorId, v);
+                }
+            });
+        }
 
-        CharSequence date = FormatterUtil.getRelativeTimeSpanString(context, comment.getCreatedDate());
-        dateTextView.setText(date);
-
-        avatarImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callback.onAuthorClick(authorId, v);
-            }
-        });
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            commentManager.hasCurrentUserLikeComment(comment.getPostId(), comment.getId(), onObjectExistListener());
+        }
     }
 
     private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView,
@@ -124,5 +166,18 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                 0, userName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         commentTextView.setText(contentString);
+    }
+
+    private OnObjectExistListener<Like> onObjectExistListener() {
+        return new OnObjectExistListener<Like>() {
+            @Override
+            public void onDataChanged(boolean exist) {
+                commentLikeController.initLike(exist);
+            }
+        };
+    }
+
+    public interface OnClickListener {
+        void onLikeClick(CommentLikeController likeController, int position);
     }
 }

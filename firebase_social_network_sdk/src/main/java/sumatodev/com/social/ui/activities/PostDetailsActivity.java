@@ -71,6 +71,7 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
+import sumatodev.com.social.controllers.CommentLikeController;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;
@@ -304,7 +305,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void initRecyclerView() {
-        commentsAdapter = new CommentsAdapter();
+        commentsAdapter = new CommentsAdapter(this);
         commentsAdapter.setCallback(new CommentsAdapter.Callback() {
             @Override
             public void onLongItemClick(View view, int position) {
@@ -317,6 +318,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 openProfileActivity(authorId, view);
 
             }
+
         });
         commentsRecyclerView.setAdapter(commentsAdapter);
         commentsRecyclerView.setNestedScrollingEnabled(false);
@@ -971,6 +973,10 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         public void onDestroyActionMode(ActionMode mode) {
             mActionMode = null;
         }
+    }
+
+    public void showFloatButtonRelatedSnackBar(int messageId) {
+        showSnackBar(messageId);
     }
 
     Animator.AnimatorListener authorAnimatorListener = new Animator.AnimatorListener() {

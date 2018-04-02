@@ -17,9 +17,9 @@
 package sumatodev.com.social.managers;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -30,20 +30,22 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.UploadTask;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.enums.UploadImagePrefix;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
+import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.PreferencesUtil;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -141,12 +143,20 @@ public class ProfileManager extends FirebaseListenersManager {
         databaseHelper.getProfileSingleValue(id, listener);
     }
 
+    public void deleteAccount(String userKey, OnTaskCompleteListener onTaskCompleteListener) {
+        try {
+            ApplicationHelper.getDatabaseHelper().deleteAccount(userKey, onTaskCompleteListener);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
     public ProfileStatus checkProfile() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user == null) {
             return ProfileStatus.NOT_AUTHORIZED;
-        } else if (!PreferencesUtil.isProfileCreated(context)){
+        } else if (!PreferencesUtil.isProfileCreated(context)) {
             return ProfileStatus.NO_PROFILE;
         } else {
             return ProfileStatus.PROFILE_CREATED;

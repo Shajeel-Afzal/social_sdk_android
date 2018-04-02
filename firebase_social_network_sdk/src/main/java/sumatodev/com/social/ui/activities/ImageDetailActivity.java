@@ -17,6 +17,7 @@
 package sumatodev.com.social.ui.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -26,11 +27,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.views.TouchImageView;
 
@@ -74,7 +77,7 @@ public class ImageDetailActivity extends BaseActivity {
             actionBar.hide();
         }
 
-        String imageUrl = getIntent().getStringExtra(IMAGE_URL_EXTRA_KEY);
+        final String imageUrl = getIntent().getStringExtra(IMAGE_URL_EXTRA_KEY);
 
         int maxImageSide = calcMaxImageSide();
 
@@ -109,6 +112,19 @@ public class ImageDetailActivity extends BaseActivity {
                 }
             }
         });
+
+        touchImageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                openActionSheet(imageUrl);
+                return false;
+            }
+        });
+    }
+
+    private void openActionSheet(String imageUrl) {
+
+
     }
 
     private int calcMaxImageSide() {

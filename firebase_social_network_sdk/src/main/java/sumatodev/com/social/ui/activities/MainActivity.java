@@ -322,6 +322,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
+                public void onPictureLongPress(String imageUrl, View view) {
+
+                }
+
+                @Override
                 public void onCanceled(String message) {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
