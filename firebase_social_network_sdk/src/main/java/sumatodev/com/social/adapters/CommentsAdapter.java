@@ -19,6 +19,7 @@
 package sumatodev.com.social.adapters;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,6 +67,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
     public void onBindViewHolder(CommentViewHolder holder, int position) {
         holder.itemView.setLongClickable(true);
         holder.bindData(getItemByPosition(position));
+
     }
 
     public Comment getItemByPosition(int position) {

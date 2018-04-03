@@ -54,7 +54,6 @@ dependencies {
     compile 'com.google.firebase:firebase-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.android.gms:play-services-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-messaging:' + project.GOOGLE_SERVICES_VERSION
-
     // FirebaseUI
     compile 'com.firebaseui:firebase-ui-auth:' + project.FIREBASE_UI_VERSION
     compile 'com.firebaseui:firebase-ui-database:' + project.FIREBASE_UI_VERSION

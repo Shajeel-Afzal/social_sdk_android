@@ -1,6 +1,15 @@
 package sumatodev.com.social.controllers;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.view.animation.BounceInterpolator;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import sumatodev.com.social.ApplicationHelper;
@@ -31,11 +40,11 @@ public class CommentLikeController {
     private String postId;
     private String commentId;
 
-    private AnimationType likeAnimationType = AnimationType.BOUNCE_ANIM;
+    private AnimationType likeAnimationType = AnimationType.COLOR_ANIM;
 
 
     private TextView likes_count;
-    private TextView like_action;
+    private ImageView likesImageView;
 
 
     private boolean isListView = false;
@@ -45,12 +54,12 @@ public class CommentLikeController {
 
 
     public CommentLikeController(Context context, Comment comment, TextView likes_count,
-                                 TextView like_action, boolean isListView) {
+                                 ImageView like_action, boolean isListView) {
         this.context = context;
         this.postId = comment.getPostId();
         this.commentId = comment.getId();
         this.likes_count = likes_count;
-        this.like_action = like_action;
+        this.likesImageView = like_action;
         this.isListView = isListView;
     }
 
@@ -58,7 +67,7 @@ public class CommentLikeController {
     private void likeClickAction(long prevValue) {
 
         if (!updatingLikeCounter) {
-            //startAnimateLikeButton(likeAnimationType);
+            startAnimateLikeButton(likeAnimationType);
             if (!isLiked) {
                 addLike(prevValue);
             } else {
@@ -88,8 +97,81 @@ public class CommentLikeController {
         ApplicationHelper.getDatabaseHelper().removeCommentLike(postId, commentId);
     }
 
+    private void startAnimateLikeButton(AnimationType animationType) {
+        switch (animationType) {
+            case BOUNCE_ANIM:
+                bounceAnimateImageView();
+                break;
+            case COLOR_ANIM:
+                colorAnimateImageView();
+                break;
+        }
+    }
+    private void bounceAnimateImageView() {
+        AnimatorSet animatorSet = new AnimatorSet();
+
+        ObjectAnimator bounceAnimX = ObjectAnimator.ofFloat(likesImageView, "scaleX", 0.2f, 1f);
+        bounceAnimX.setDuration(ANIMATION_DURATION);
+        bounceAnimX.setInterpolator(new BounceInterpolator());
+
+        ObjectAnimator bounceAnimY = ObjectAnimator.ofFloat(likesImageView, "scaleY", 0.2f, 1f);
+        bounceAnimY.setDuration(ANIMATION_DURATION);
+        bounceAnimY.setInterpolator(new BounceInterpolator());
+        bounceAnimY.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                likesImageView.setImageResource(!isLiked ? R.drawable.ic_like_active
+                        : R.drawable.ic_like);
+            }
+        });
+
+        animatorSet.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+            }
+        });
+
+        animatorSet.play(bounceAnimX).with(bounceAnimY);
+        animatorSet.start();
+    }
+
+    private void colorAnimateImageView() {
+        final int activatedColor = context.getResources().getColor(R.color.like_icon_activated);
+
+        final ValueAnimator colorAnim = !isLiked ? ObjectAnimator.ofFloat(0f, 1f)
+                : ObjectAnimator.ofFloat(1f, 0f);
+        colorAnim.setDuration(ANIMATION_DURATION);
+        colorAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                float mul = (Float) animation.getAnimatedValue();
+                int alpha = adjustAlpha(activatedColor, mul);
+                likesImageView.setColorFilter(alpha, PorterDuff.Mode.SRC_ATOP);
+                if (mul == 0.0) {
+                    likesImageView.setColorFilter(null);
+                }
+            }
+        });
+
+        colorAnim.start();
+    }
+
+    private int adjustAlpha(int color, float factor) {
+        int alpha = Math.round(Color.alpha(color) * factor);
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        return Color.argb(alpha, red, green, blue);
+    }
+
     public void setUpdatingLikeCounter(boolean updatingLikeCounter) {
         this.updatingLikeCounter = updatingLikeCounter;
+    }
+
+
+    public void initLike(boolean isLiked) {
+        likesImageView.setImageResource(isLiked ? R.drawable.ic_like_active : R.drawable.ic_like);
+        this.isLiked = isLiked;
     }
 
     private void updateLocalCommentLikeCounter(Comment comment) {
@@ -98,15 +180,6 @@ public class CommentLikeController {
         } else {
             comment.setLikesCount(comment.getLikesCount() - 1);
         }
-    }
-
-    public void initLike(boolean isLiked) {
-        int liked = context.getResources().getColor(R.color.primary);
-        int likeDefault = context.getResources().getColor(R.color.secondary_text);
-        like_action.setTextColor(isLiked ? liked : likeDefault);
-        likes_count.setTextColor(isLiked ? liked : likeDefault);
-
-        this.isLiked = isLiked;
     }
 
     public void handleLikeClickAction(final BaseActivity baseActivity, final Comment comment) {

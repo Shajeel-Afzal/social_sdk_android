@@ -99,7 +99,20 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
 
+
         view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onItemClick(getAdapterPosition(), v);
+                }
+            }
+        });
+
+
+
+        postImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int position = getAdapterPosition();
@@ -139,16 +152,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             }
         });
 
-        postImageView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                int position = getAdapterPosition();
-                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
-                    onClickListener.onPictureLongPress(position, v);
-                }
-                return false;
-            }
-        });
     }
 
     public void bindData(Post post) {

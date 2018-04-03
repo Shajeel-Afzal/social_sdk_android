@@ -21,6 +21,14 @@ public class NotificationView {
     private final Context mContext;
     private static final int mId = 58956;
     private NotificationManager mNotifyManager;
+    private static NotificationView instance;
+
+    public static NotificationView getInstance(Context context) {
+        if (instance == null) {
+            instance = new NotificationView(context);
+        }
+        return instance;
+    }
 
     public NotificationView(Context mContext) {
         this.mContext = mContext;

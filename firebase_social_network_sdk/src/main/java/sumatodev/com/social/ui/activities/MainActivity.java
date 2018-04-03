@@ -48,7 +48,6 @@ import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.DataShare;
 import sumatodev.com.social.utils.LogUtil;
-import sumatodev.com.social.utils.NotificationView;
 
 public class MainActivity extends BaseActivity implements OnPostCreatedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -64,7 +63,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
-    private NotificationView notificationView;
     private SearchAdapter searchAdapter;
 
     public static void start(Context context) {
@@ -83,7 +81,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
         profileManager = ProfileManager.getInstance(this);
         postManager = PostManager.getInstance(this);
-        notificationView = new NotificationView(this);
         initContentView();
 
         postCounterWatcher = new PostManager.PostCounterWatcher() {
@@ -118,7 +115,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.length() > 0) {
-                    postManager.getSearchList(getApplicationContext(), newText, publicOnDataChangedListener());
+                    postManager.getSearchList(getApplicationContext(), newText.toLowerCase(), publicOnDataChangedListener());
                 }
                 return false;
             }
@@ -218,8 +215,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
     private void createNewPost(Post post) {
 
-        postManager.createOrUpdatePostWithImage(MainActivity.this, post);
-        notificationView.setNotification(true, "Uploading Post");
+        postManager.createOrUpdatePostWithImage(this, MainActivity.this, post);
 
     }
 
@@ -227,7 +223,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     public void onPostSaved(boolean success) {
         hideProgress();
         if (success) {
-            notificationView.setNotification(false, "Uploading Post Successful");
             refreshPostList();
             //showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
             LogUtil.logDebug(TAG, "Post was created");
@@ -276,16 +271,17 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             postsAdapter.setCallback(new PostsAdapter.Callback() {
                 @Override
                 public void onItemClick(final Post post, final View view) {
-                    PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(), new OnObjectExistListener<Post>() {
-                        @Override
-                        public void onDataChanged(boolean exist) {
-                            if (exist) {
-                                openPostDetailsActivity(post, view);
-                            } else {
-                                showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
-                            }
-                        }
-                    });
+                    PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
+                            new OnObjectExistListener<Post>() {
+                                @Override
+                                public void onDataChanged(boolean exist) {
+                                    if (exist) {
+                                        openPostDetailsActivity(post, view);
+                                    } else {
+                                        showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
+                                    }
+                                }
+                            });
                 }
 
                 @Override
@@ -399,8 +395,8 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
             ActivityOptions options = ActivityOptions.
                     makeSceneTransitionAnimation(MainActivity.this,
-                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name)),
-                            new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
+                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
+                            //new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
                     );
             startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
         } else {
@@ -504,9 +500,16 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 startActivity(new Intent(MainActivity.this, UsersActivity.class));
             }
             return true;
+        } else if (i == R.id.action_invite) {
+            sendInvitation();
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void sendInvitation() {
+
     }
 
     @Override

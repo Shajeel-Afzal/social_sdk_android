@@ -41,6 +41,7 @@ import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.NotificationView;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -92,7 +93,7 @@ public class PostManager extends FirebaseListenersManager {
         ApplicationHelper.getDatabaseHelper().getSinglePost(postId, onPostChangedListener);
     }
 
-    public void createOrUpdatePostWithImage(final OnPostCreatedListener onPostCreatedListener, final Post post) {
+    public void createOrUpdatePostWithImage(final Context context, final OnPostCreatedListener onPostCreatedListener, final Post post) {
         // Register observers to listen for when the download is done or if it fails
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         if (post.getId() == null) {
@@ -103,6 +104,8 @@ public class PostManager extends FirebaseListenersManager {
             final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.POST, post.getId());
             UploadTask uploadTask = databaseHelper.uploadImage(Uri.parse(post.getImagePath()), imageTitle);
 
+            NotificationView.getInstance(context).setNotification(true, "Uploading Post");
+
             if (uploadTask != null) {
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -110,6 +113,7 @@ public class PostManager extends FirebaseListenersManager {
                         // Handle unsuccessful uploads
                         onPostCreatedListener.onPostSaved(false);
 
+                        NotificationView.getInstance(context).setNotification(false, "Failed Uploading Post");
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -123,6 +127,8 @@ public class PostManager extends FirebaseListenersManager {
                         createOrUpdatePost(post);
 
                         onPostCreatedListener.onPostSaved(true);
+
+                        NotificationView.getInstance(context).setNotification(false, "Uploading Post Successful");
                     }
                 });
             }
@@ -155,28 +161,45 @@ public class PostManager extends FirebaseListenersManager {
 
     public void removePost(final Post post, final OnTaskCompleteListener onTaskCompleteListener) {
         final DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
-        Task<Void> removeImageTask = removeImage(post.getImageTitle());
 
-        removeImageTask.addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                databaseHelper.removePost(post).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        onTaskCompleteListener.onTaskComplete(task.isSuccessful());
-                        databaseHelper.updateProfileLikeCountAfterRemovingPost(post);
-                        LogUtil.logDebug(TAG, "removePost(), is success: " + task.isSuccessful());
-                    }
-                });
-                LogUtil.logDebug(TAG, "removeImage(): success");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                LogUtil.logError(TAG, "removeImage()", exception);
-                onTaskCompleteListener.onTaskComplete(false);
-            }
-        });
+        if (post.getImageTitle() != null) {
+            Task<Void> removeImageTask = removeImage(post.getImageTitle());
+
+            removeImageTask.addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    databaseHelper.removePost(post).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            onTaskCompleteListener.onTaskComplete(task.isSuccessful());
+                            databaseHelper.updateProfileLikeCountAfterRemovingPost(post);
+                            LogUtil.logDebug(TAG, "removePost(), is success: " + task.isSuccessful());
+                        }
+                    });
+                    LogUtil.logDebug(TAG, "removeImage(): success");
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    LogUtil.logError(TAG, "removeImage()", exception);
+                    onTaskCompleteListener.onTaskComplete(false);
+                }
+            });
+        } else {
+            databaseHelper.removePost(post).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    onTaskCompleteListener.onTaskComplete(task.isSuccessful());
+                    databaseHelper.updateProfileLikeCountAfterRemovingPost(post);
+                    LogUtil.logDebug(TAG, "removePost(), is success: " + task.isSuccessful());
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    onTaskCompleteListener.onTaskComplete(false);
+                }
+            });
+        }
     }
 
     public void addComplain(Post post) {
@@ -237,7 +260,7 @@ public class PostManager extends FirebaseListenersManager {
 
     public void getSearchList(Context context, String searchString, OnDataChangedListener<UsersPublic> onDataChangedListener) {
         DatabaseHelper reference = ApplicationHelper.getDatabaseHelper();
-        ValueEventListener valueEventListener = reference.getSearchList(searchString,onDataChangedListener);
+        ValueEventListener valueEventListener = reference.getSearchList(searchString, onDataChangedListener);
         addListenerToMap(context, valueEventListener);
     }
 }

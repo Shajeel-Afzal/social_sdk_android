@@ -178,8 +178,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentsProgressBar = findViewById(R.id.commentsProgressBar);
         warningCommentsTextView = findViewById(R.id.warningCommentsTextView);
         imageContainer = findViewById(R.id.imageContainer);
-
-
         sendButton = findViewById(R.id.sendButton);
 
         initRecyclerView();
@@ -254,8 +252,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         };
 
         authorImageView.setOnClickListener(onAuthorClickListener);
-
         authorTextView.setOnClickListener(onAuthorClickListener);
+
 
         if (hasImage(postImageView)) {
             supportPostponeEnterTransition();
@@ -421,11 +419,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         builder.show();
     }
 
-    private void scrollToFirstComment() {
-        if (post != null && post.getCommentsCount() > 0) {
-            scrollView.smoothScrollTo(0, commentsLabel.getTop());
-        }
-    }
 
     private void fillPostFields() {
         if (post != null) {
@@ -652,6 +645,12 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             commentEditText.setText(null);
             commentEditText.clearFocus();
             hideKeyBoard();
+        }
+    }
+
+    private void scrollToFirstComment() {
+        if (post != null && post.getCommentsCount() > 0) {
+            scrollView.smoothScrollTo(0, commentsLabel.getTop());
         }
     }
 

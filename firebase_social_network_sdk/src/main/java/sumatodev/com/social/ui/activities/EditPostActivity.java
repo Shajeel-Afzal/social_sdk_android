@@ -144,7 +144,7 @@ public class EditPostActivity extends CreatePostActivity {
 
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
-            postManager.createOrUpdatePostWithImage(EditPostActivity.this, post);
+            postManager.createOrUpdatePostWithImage(this,EditPostActivity.this, post);
         } else {
             postManager.createOrUpdatePost(post);
             onPostSaved(true);

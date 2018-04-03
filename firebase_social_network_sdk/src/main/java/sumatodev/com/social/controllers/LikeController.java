@@ -54,7 +54,7 @@ public class LikeController {
     private String postId;
     private String postAuthorId;
 
-    private AnimationType likeAnimationType = LikeController.AnimationType.BOUNCE_ANIM;
+    private AnimationType likeAnimationType = AnimationType.BOUNCE_ANIM;
 
     private TextView likeCounterTextView;
     private ImageView likesImageView;

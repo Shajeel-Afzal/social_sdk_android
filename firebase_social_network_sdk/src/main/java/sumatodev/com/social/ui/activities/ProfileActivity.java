@@ -158,7 +158,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
             }
         });
 
-        supportPostponeEnterTransition();
+        //supportPostponeEnterTransition();
 
     }
 
@@ -255,6 +255,9 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             mGoogleApiClient.connect();
                         }
                     } else if (obj.profileStatus.equals(Consts.ACCOUNT_DISABLED)) {
+                        appbar.setVisibility(View.GONE);
+                        statefulLayout.setVisibility(View.GONE);
+
                         statefulAccountView.showEmpty();
                         statefulAccountView.setEmptyText("Account Disabled");
                     }
@@ -325,7 +328,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void createNewPost(Intent data) {
         Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
         if (post != null) {
-            postManager.createOrUpdatePostWithImage(ProfileActivity.this, post);
+            postManager.createOrUpdatePostWithImage(this, ProfileActivity.this, post);
             notificationView.setNotification(true, "Uploading Post");
         }
 
@@ -583,6 +586,20 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     }
 
     private void initAccountDelete() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Delete Account").
+                setMessage("Are you sure you want to delete this account..")
+                .setNegativeButton(R.string.button_title_cancel, null)
+                .setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteAccount();
+                    }
+                });
+        builder.create().show();
+    }
+
+    private void deleteAccount() {
         profileManager.deleteAccount(new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
