@@ -111,7 +111,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         });
 
 
-
         postImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -158,10 +157,12 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
+
         if (post.getTitle() != null) {
             titleTextView.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
+
         }
 
         likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
@@ -201,9 +202,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     .into(postImageView);
         }
 
-        if (post.getAuthorId() != null)
-
-        {
+        if (post.getAuthorId() != null) {
             profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
         }
 

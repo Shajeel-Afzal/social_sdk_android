@@ -2,8 +2,10 @@ package com.sumatodev.firebasesocial;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
@@ -16,9 +18,13 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.Arrays;
 
+import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.ProfileManager;
+import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
+import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
+import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.ui.activities.CreateProfileActivity;
 import sumatodev.com.social.utils.PreferencesUtil;
@@ -48,16 +54,68 @@ public class SignInActivity extends AppCompatActivity {
                 if (!exist) {
                     startCreateProfileActivity();
                 } else {
-                    PreferencesUtil.setProfileCreated(SignInActivity.this, true);
-                    PreferencesUtil.setProfileActive(SignInActivity.this, true);
-                    sumatodev.com.social.ui.activities.MainActivity.start(SignInActivity.this);
-                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
-                            .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), userId);
-                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
-                            .setAccountStatusActive();
+                    ProfileManager.getInstance(SignInActivity.this).checkAccountStatus(userId, new OnObjectChangedListener<AccountStatus>() {
+                        @Override
+                        public void onObjectChanged(AccountStatus obj) {
+                            if (obj != null) {
+                                if (obj.profileStatus.equals(Consts.ACCOUNT_ACTIVE)) {
+
+                                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                            .setAccountStatusActive(new OnTaskCompleteListener() {
+                                                @Override
+                                                public void onTaskComplete(boolean success) {
+                                                    if (success) {
+                                                        PreferencesUtil.setProfileCreated(SignInActivity.this, true);
+                                                        PreferencesUtil.setProfileActive(SignInActivity.this, true);
+                                                        sumatodev.com.social.ui.activities.MainActivity.start(SignInActivity.this);
+                                                        DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                                                .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), userId);
+
+                                                    }
+                                                }
+                                            });
+
+                                    hideProgress();
+                                    finish();
+
+                                } else if (obj.profileStatus.equals(Consts.ACCOUNT_DISABLED)) {
+
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(SignInActivity.this);
+                                    builder.setTitle("Account Status")
+                                            .setMessage("Your account is currently deactivated..Do you want to reactivate you account?")
+                                            .setNegativeButton(R.string.button_title_cancel, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    hideProgress();
+                                                    finish();
+                                                }
+                                            })
+                                            .setPositiveButton(R.string.button_yes, new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                                            .setAccountStatusActive(new OnTaskCompleteListener() {
+                                                                @Override
+                                                                public void onTaskComplete(boolean success) {
+                                                                    PreferencesUtil.setProfileCreated(SignInActivity.this, true);
+                                                                    PreferencesUtil.setProfileActive(SignInActivity.this, true);
+                                                                    sumatodev.com.social.ui.activities.MainActivity.start(SignInActivity.this);
+                                                                    DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                                                            .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), userId);
+
+                                                                    hideProgress();
+                                                                    finish();
+                                                                }
+                                                            });
+
+                                                }
+                                            });
+                                    builder.create().show();
+                                }
+                            }
+                        }
+                    });
                 }
-                hideProgress();
-                finish();
             }
         });
     }

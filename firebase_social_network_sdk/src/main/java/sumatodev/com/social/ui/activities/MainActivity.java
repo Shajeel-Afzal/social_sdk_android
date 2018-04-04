@@ -59,11 +59,12 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
     private ProfileManager profileManager;
     private PostManager postManager;
+    private SearchAdapter searchAdapter;
     private int counter;
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
-    private SearchAdapter searchAdapter;
+
 
     public static void start(Context context) {
         Intent starter = new Intent(context, MainActivity.class);
@@ -76,8 +77,8 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         setContentView(R.layout.main_activity);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         mSearchView = findViewById(R.id.search_view);
+        setSupportActionBar(toolbar);
 
         profileManager = ProfileManager.getInstance(this);
         postManager = PostManager.getInstance(this);
@@ -96,16 +97,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         initSearchBar();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        updateNewPostCounter();
-
-    }
-
     private void initSearchBar() {
-
-        mSearchView.setAnimationDuration(100);
         mSearchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -115,7 +107,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (newText.length() > 0) {
-                    postManager.getSearchList(getApplicationContext(), newText.toLowerCase(), publicOnDataChangedListener());
+                    postManager.getSearchList(MainActivity.this, newText.toLowerCase(), publicOnDataChangedListener());
                 }
                 return false;
             }
@@ -126,11 +118,12 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 UsersPublic usersPublic = searchAdapter.getItemByPosition(position);
-                if (usersPublic.getId() != null) {
+                if (usersPublic.getId() != null && hasInternetConnection()) {
                     openProfileActivity(usersPublic.getId());
                 }
             }
         });
+
     }
 
     OnDataChangedListener<UsersPublic> publicOnDataChangedListener() {
@@ -144,6 +137,14 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             }
         };
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNewPostCounter();
+
+    }
+
 
     private void setOnLikeAddedListener() {
         DatabaseHelper.getInstance(this).onNewLikeAddedListener(new ChildEventListener() {
@@ -514,19 +515,17 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
     @Override
     public void onBackPressed() {
-
-        super.onBackPressed();
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-
+        if (mSearchView.isSearchOpen()) {
+            mSearchView.closeSearch();
+        } else {
+            super.onBackPressed();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
 
     @Override
     protected void onStop() {

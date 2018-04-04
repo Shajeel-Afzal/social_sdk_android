@@ -136,7 +136,6 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
             });
         }
 
-
        // commentManager.hasCurrentUserLikeComment(comment.getPostId(), comment.getId(), onObjectExistListener());
 
     }

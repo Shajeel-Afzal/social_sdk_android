@@ -50,7 +50,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.post_item_list_view, parent, false);
+        View view = inflater.inflate(R.layout.post_type_text_image, parent, false);
 
         return new PostViewHolder(view, createOnClickListener(), false);
     }

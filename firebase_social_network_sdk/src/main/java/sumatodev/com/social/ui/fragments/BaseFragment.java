@@ -93,7 +93,11 @@ public class BaseFragment extends Fragment {
         }
     }
 
-    private void openProfileActivity(String userId, View view) {
+    public void openProfileActivity(String userId) {
+        openProfileActivity(userId, null);
+    }
+
+    public void openProfileActivity(String userId, View view) {
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
         intent.putExtra(ProfileActivity.USER_ID_EXTRA_KEY, userId);
 

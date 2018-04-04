@@ -263,4 +263,5 @@ public class PostManager extends FirebaseListenersManager {
         ValueEventListener valueEventListener = reference.getSearchList(searchString, onDataChangedListener);
         addListenerToMap(context, valueEventListener);
     }
+
 }

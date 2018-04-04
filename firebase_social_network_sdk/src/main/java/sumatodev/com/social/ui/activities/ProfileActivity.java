@@ -223,7 +223,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         if (hasInternetConnection()) {
             statefulAccountView.showProgress();
             if (userID != null) {
-                profileManager.checkAccountStatus(ProfileActivity.this, userID, onObjectChangedListener());
+                profileManager.checkAccountStatus(userID, onObjectChangedListener());
             }
         }
     }

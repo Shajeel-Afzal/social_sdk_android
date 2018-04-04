@@ -41,6 +41,7 @@ public class Post implements Serializable, LazyLoading {
     private long likesCount;
     private long watchersCount;
     private boolean hasComplain;
+    private String postType;
     private CommentStatus commentStatus;
     private ItemType itemType;
 
@@ -150,6 +151,14 @@ public class Post implements Serializable, LazyLoading {
         this.commentStatus = status;
     }
 
+    public String getPostType() {
+        return postType;
+    }
+
+    public void setPostType(String postType) {
+        this.postType = postType;
+    }
+
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
@@ -163,6 +172,7 @@ public class Post implements Serializable, LazyLoading {
         result.put("likesCount", likesCount);
         result.put("watchersCount", watchersCount);
         result.put("hasComplain", hasComplain);
+        result.put("postType",postType);
         result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
         result.put("status", commentStatus);
 

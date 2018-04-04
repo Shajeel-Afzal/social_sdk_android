@@ -20,7 +20,8 @@ package sumatodev.com.social.enums;
  * Created by Alex on 21.07.16.
  */
 
-public enum ItemType {LOAD(10), ITEM(11);
+public enum ItemType {
+    LOAD(10), ITEM(11);
     private final int typeCode;
 
     ItemType(int typeCode) {

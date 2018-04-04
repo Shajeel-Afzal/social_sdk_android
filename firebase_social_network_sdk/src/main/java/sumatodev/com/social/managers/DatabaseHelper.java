@@ -153,7 +153,7 @@ public class DatabaseHelper {
 
         HashMap<String, Object> userPublicMap = new HashMap<>();
         userPublicMap.put("id", profile.getId());
-        userPublicMap.put("username", profile.getUsername());
+        userPublicMap.put("username", profile.getUsername().toLowerCase());
         if (profile.getPhotoUrl() != null) {
             userPublicMap.put("photoUrl", profile.getPhotoUrl());
         }
@@ -177,29 +177,6 @@ public class DatabaseHelper {
 
     }
 
-
-    public void createProfile(final Profile profile, final OnProfileCreatedListener onProfileCreatedListener) {
-
-        HashMap<String, Object> userPublicMap = new HashMap<>();
-        userPublicMap.put("username", profile.getUsername());
-        userPublicMap.put("photoUrl", profile.getPhotoUrl());
-
-        Map userPrivateMap = new ObjectMapper().convertValue(profile, Map.class);
-        Map<String, Object> result = new HashMap<>();
-
-        result.put(Consts.FIREBASE_LOCATION_USERS + "/" + profile.getId(), userPrivateMap);
-        result.put(Consts.FIREBASE_PUBLIC_USERS + "/" + profile.getId(), userPublicMap);
-
-        Task<Void> task = FirebaseUtils.getDatabaseRef().setValue(result);
-        task.addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                onProfileCreatedListener.onProfileCreated(task.isSuccessful());
-                addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), profile.getId());
-                LogUtil.logDebug(TAG, "createOrUpdateProfile, success: " + task.isSuccessful());
-            }
-        });
-    }
 
     public void updateRegistrationToken(final String token) {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -251,6 +228,13 @@ public class DatabaseHelper {
 
     public void createOrUpdatePost(Post post) {
         try {
+            if (post.getImagePath() != null) {
+                post.setPostType("image");
+            }
+            if (post.getTitle() != null && post.getImagePath() != null) {
+                post.setPostType("text_image");
+            }
+
             DatabaseReference databaseReference = database.getReference();
 
             Map<String, Object> postValues = post.toMap();
@@ -265,6 +249,9 @@ public class DatabaseHelper {
 
     public Task<Void> createNewPost(Post post) {
 
+        if (post.getTitle() != null) {
+            post.setPostType("text");
+        }
         DatabaseReference databaseReference = database.getReference();
 
         Map<String, Object> postValues = post.toMap();
@@ -789,18 +776,22 @@ public class DatabaseHelper {
                         lastItemCreatedDate = createdDate;
                     }
 
+
                     if (!hasComplain) {
                         Post post = new Post();
                         post.setId(key);
-                        if (mapObj.get("title") != null) {
+
+                        if (mapObj.containsKey("title")) {
                             post.setTitle((String) mapObj.get("title"));
                         }
-                        if (mapObj.get("imagePath") != null) {
+                        if (mapObj.containsKey("imagePath")) {
                             post.setImagePath((String) mapObj.get("imagePath"));
                             post.setImageTitle((String) mapObj.get("imageTitle"));
                         }
                         post.setAuthorId((String) mapObj.get("authorId"));
+                        post.setPostType((String) mapObj.get("postType"));
                         post.setCreatedDate(createdDate);
+
                         if (mapObj.containsKey("commentsCount")) {
                             post.setCommentsCount((long) mapObj.get("commentsCount"));
                         }
@@ -810,6 +801,7 @@ public class DatabaseHelper {
                         if (mapObj.containsKey("watchersCount")) {
                             post.setWatchersCount((long) mapObj.get("watchersCount"));
                         }
+
                         list.add(post);
                     }
                 }
@@ -833,7 +825,6 @@ public class DatabaseHelper {
     private boolean isPostValid(Map<String, Object> post) {
         return post.containsKey("title")
                 || post.containsKey("imagePath")
-                && post.containsKey("imageTitle")
                 && post.containsKey("authorId");
     }
 
@@ -890,16 +881,26 @@ public class DatabaseHelper {
         });
     }
 
-    public void setAccountStatusActive() {
+    public void setAccountStatusActive(final OnTaskCompleteListener onTaskCompleteListener) {
         DatabaseReference reference = database.getReference(Consts.FIREBASE_LOCATION_USERS)
                 .child(getCurrentUser()).child(Consts.ACCOUNT_STATUS);
-        reference.setValue(new AccountStatus(Consts.ACCOUNT_ACTIVE));
+        reference.setValue(new AccountStatus(Consts.ACCOUNT_ACTIVE)).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onTaskCompleteListener.onTaskComplete(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onTaskCompleteListener.onTaskComplete(false);
+            }
+        });
     }
 
-    public ValueEventListener checkAccountStatus(String userKey, final OnObjectChangedListener<AccountStatus> objectChangedListener) {
+    public void checkAccountStatus(String userKey, final OnObjectChangedListener<AccountStatus> objectChangedListener) {
         DatabaseReference reference = database.getReference(Consts.FIREBASE_LOCATION_USERS)
                 .child(userKey).child(Consts.ACCOUNT_STATUS);
-        ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "Account Status: " + dataSnapshot.getValue());
@@ -912,8 +913,6 @@ public class DatabaseHelper {
 
             }
         });
-        activeListeners.put(valueEventListener, reference);
-        return valueEventListener;
     }
 
     public ValueEventListener getCommentsList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
@@ -1059,7 +1058,6 @@ public class DatabaseHelper {
         activeListeners.put(valueEventListener, reference);
         return valueEventListener;
     }
-
 
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");

@@ -98,6 +98,7 @@ public class ProfileManager extends FirebaseListenersManager {
         });
     }
 
+
     public void createOrUpdateProfile(Profile profile, OnProfileCreatedListener onProfileCreatedListener) {
         createOrUpdateProfile(profile, null, onProfileCreatedListener);
     }
@@ -165,9 +166,8 @@ public class ProfileManager extends FirebaseListenersManager {
     }
 
 
-    public void checkAccountStatus(Context context, String userKey, OnObjectChangedListener<AccountStatus> objectChangedListener) {
-        ValueEventListener eventListener = databaseHelper.checkAccountStatus(userKey,objectChangedListener);
-        addListenerToMap(context, eventListener);
+    public void checkAccountStatus(String userKey, OnObjectChangedListener<AccountStatus> objectChangedListener) {
+        ApplicationHelper.getDatabaseHelper().checkAccountStatus(userKey, objectChangedListener);
 
     }
 

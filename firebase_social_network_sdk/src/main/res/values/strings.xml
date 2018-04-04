@@ -30,6 +30,7 @@
     <string name="text_pick_photo">Pick from Gallery</string>
     <string name="button_title_cancel">Cancel</string>
     <string name="button_ok">OK</string>
+    <string name="button_yes">Yes</string>
 
     <string name="hint_title">Title</string>
     <string name="hint_description">Description</string>
