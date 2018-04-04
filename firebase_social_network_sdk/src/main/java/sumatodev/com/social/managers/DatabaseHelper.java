@@ -235,6 +235,7 @@ public class DatabaseHelper {
                 post.setPostType("text_image");
             }
 
+            post.setCommentStatus(new CommentStatus(true));
             DatabaseReference databaseReference = database.getReference();
 
             Map<String, Object> postValues = post.toMap();
@@ -252,6 +253,7 @@ public class DatabaseHelper {
         if (post.getTitle() != null) {
             post.setPostType("text");
         }
+        post.setCommentStatus(new CommentStatus(true));
         DatabaseReference databaseReference = database.getReference();
 
         Map<String, Object> postValues = post.toMap();

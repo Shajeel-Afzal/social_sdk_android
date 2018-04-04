@@ -112,6 +112,22 @@ public class SignInActivity extends AppCompatActivity {
                                             });
                                     builder.create().show();
                                 }
+                            } else {
+
+                                DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                        .setAccountStatusActive(new OnTaskCompleteListener() {
+                                            @Override
+                                            public void onTaskComplete(boolean success) {
+                                                PreferencesUtil.setProfileCreated(SignInActivity.this, true);
+                                                PreferencesUtil.setProfileActive(SignInActivity.this, true);
+                                                sumatodev.com.social.ui.activities.MainActivity.start(SignInActivity.this);
+                                                DatabaseHelper.getInstance(SignInActivity.this.getApplicationContext())
+                                                        .addRegistrationToken(FirebaseInstanceId.getInstance().getToken(), userId);
+
+                                                hideProgress();
+                                                finish();
+                                            }
+                                        });
                             }
                         }
                     });

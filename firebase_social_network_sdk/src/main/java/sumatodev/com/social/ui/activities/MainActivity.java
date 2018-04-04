@@ -289,6 +289,22 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
+                public void onImageClick(int position, View view) {
+                    final Post post = postsAdapter.getItemByPosition(position);
+                    PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
+                            new OnObjectExistListener<Post>() {
+                                @Override
+                                public void onDataChanged(boolean exist) {
+                                    if (exist) {
+                                        openPostDetailsActivity(post, null);
+                                    } else {
+                                        showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
+                                    }
+                                }
+                            });
+                }
+
+                @Override
                 public void onListLoadingFinished() {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -380,21 +396,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         Intent intent = new Intent(MainActivity.this, PostDetailsActivity.class);
         intent.putExtra(PostDetailsActivity.POST_ID_EXTRA_KEY, post.getId());
 
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-
-            View imageView = v.findViewById(R.id.postImageView);
-            View authorImageView = v.findViewById(R.id.authorImageView);
-
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(MainActivity.this,
-                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
-                            //new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
-                    );
-            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
-        } else {
-            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
-        }
+        startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
     }
+
 
     public void showFloatButtonRelatedSnackBar(int messageId) {
         showSnackBar(floatingActionButton, messageId);

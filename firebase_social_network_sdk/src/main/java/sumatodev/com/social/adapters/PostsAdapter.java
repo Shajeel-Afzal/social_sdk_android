@@ -90,15 +90,15 @@ public class PostsAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        switch (viewType) {
-            case TEXT_VIEW:
-                return new PostHolders.TextHolder(inflater.inflate(R.layout.post_type_text, parent, false),callback);
-            case IMAGE_VIEW:
-                return new PostHolders.ImageHolder(inflater.inflate(R.layout.post_type_image, parent, false),callback);
-            case TEXT_IMAGE_VIEW:
-                return new PostHolders.TextImageHolder(inflater.inflate(R.layout.post_type_text_image, parent, false),callback);
+        if (viewType == TEXT_VIEW) {
+            return new PostHolders.TextHolder(inflater.inflate(R.layout.post_type_text, parent, false), callback);
+        } else if (viewType == IMAGE_VIEW) {
+            return new PostHolders.ImageHolder(inflater.inflate(R.layout.post_type_image, parent, false), callback);
+        } else if (viewType == TEXT_IMAGE_VIEW) {
+            return new PostHolders.TextImageHolder(inflater.inflate(R.layout.post_type_text_image, parent, false), callback);
+        } else {
+            return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
         }
-        return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
     }
 
     @Override
@@ -127,14 +127,18 @@ public class PostsAdapter extends BasePostsAdapter {
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
                 ((PostHolders.TextHolder) holder).bindData(getItemByPosition(position));
+
                 break;
             case IMAGE_VIEW:
                 ((PostHolders.ImageHolder) holder).bindData(getItemByPosition(position));
+
                 break;
             case TEXT_IMAGE_VIEW:
                 ((PostHolders.TextImageHolder) holder).bindData(getItemByPosition(position));
+
                 break;
         }
+
 //        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
 //            ((PostViewHolder) holder).bindData(postList.get(position));
 //
@@ -218,10 +222,11 @@ public class PostsAdapter extends BasePostsAdapter {
     public interface Callback {
         void onItemClick(int position, View view);
 
+        void onImageClick(int position, View view);
+
         void onListLoadingFinished();
 
         void onAuthorClick(int position, View view);
-
 
         void onCanceled(String message);
 

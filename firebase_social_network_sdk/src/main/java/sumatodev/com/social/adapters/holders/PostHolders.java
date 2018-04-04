@@ -211,7 +211,7 @@ public class PostHolders {
                     public void onClick(View v) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            callback.onItemClick(getAdapterPosition(), v);
+                            callback.onImageClick(getAdapterPosition(), v);
                         }
                     }
                 });
@@ -361,7 +361,7 @@ public class PostHolders {
                     public void onClick(View v) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            callback.onItemClick(getAdapterPosition(), v);
+                            callback.onImageClick(getAdapterPosition(), v);
                         }
                     }
                 });

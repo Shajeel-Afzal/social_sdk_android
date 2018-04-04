@@ -61,6 +61,7 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
             return TEXT_IMAGE_VIEW;
         }
         return postList.get(position).getItemType().getTypeCode();
+
     }
 
     public Post getItemByPosition(int position) {
