@@ -30,6 +30,10 @@ import sumatodev.com.social.utils.LogUtil;
 public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final String TAG = BasePostsAdapter.class.getSimpleName();
 
+    public static final int IMAGE_VIEW = 1;
+    public static final int TEXT_VIEW = 2;
+    public static final int TEXT_IMAGE_VIEW = 3;
+
     protected List<Post> postList = new LinkedList<>();
     protected BaseActivity activity;
     protected int selectedPostPosition = -1;
@@ -49,10 +53,17 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public int getItemViewType(int position) {
+        if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("text")) {
+            return TEXT_VIEW;
+        } else if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("image")) {
+            return IMAGE_VIEW;
+        } else if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("text_image")) {
+            return TEXT_IMAGE_VIEW;
+        }
         return postList.get(position).getItemType().getTypeCode();
     }
 
-    protected Post getItemByPosition(int position) {
+    public Post getItemByPosition(int position) {
         return postList.get(position);
     }
 

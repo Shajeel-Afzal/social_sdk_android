@@ -35,6 +35,7 @@ import java.util.List;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsAdapter;
 import sumatodev.com.social.adapters.SearchAdapter;
+import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.DatabaseHelper;
@@ -270,8 +271,10 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             recyclerView = findViewById(R.id.recycler_view);
             postsAdapter = new PostsAdapter(this, swipeContainer);
             postsAdapter.setCallback(new PostsAdapter.Callback() {
+
                 @Override
-                public void onItemClick(final Post post, final View view) {
+                public void onItemClick(int position, final View view) {
+                    final Post post = postsAdapter.getItemByPosition(position);
                     PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
                             new OnObjectExistListener<Post>() {
                                 @Override
@@ -291,11 +294,12 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
-                public void onAuthorClick(String authorId, View view) {
+                public void onAuthorClick(int position, View view) {
+                    final Post post = postsAdapter.getItemByPosition(position);
                     if (checkInternetConnection()) {
                         ProfileStatus status = profileManager.checkProfile();
                         if (status.equals(ProfileStatus.PROFILE_CREATED)) {
-                            openProfileActivity(authorId, view);
+                            openProfileActivity(post.getAuthorId(), view);
 
                         } else {
                             doAuthorization(status);
@@ -304,23 +308,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
-                public void onShareClick(final Post post, View view) {
-                    PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
-                            new OnObjectExistListener<Post>() {
-                                @Override
-                                public void onDataChanged(boolean exist) {
-                                    if (exist) {
-                                        openShareIntent(post);
-                                    } else {
-                                        showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
-                                    }
-                                }
-                            });
-                }
-
-                @Override
-                public void onPictureLongPress(String imageUrl, View view) {
-
+                public void onLikeClick(LikeController likeController, int position) {
+                    Post post = postsAdapter.getItemByPosition(position);
+                    likeController.handleLikeClickAction(MainActivity.this, post);
                 }
 
                 @Override
@@ -328,6 +318,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
                 }
+
             });
 
             LinearLayoutManager manager = new LinearLayoutManager(this);

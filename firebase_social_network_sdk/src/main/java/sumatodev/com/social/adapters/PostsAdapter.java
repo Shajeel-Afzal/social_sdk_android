@@ -28,7 +28,7 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.LoadViewHolder;
-import sumatodev.com.social.adapters.holders.PostViewHolder;
+import sumatodev.com.social.adapters.holders.PostHolders;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.enums.ItemType;
 import sumatodev.com.social.managers.PostManager;
@@ -45,12 +45,14 @@ import sumatodev.com.social.utils.PreferencesUtil;
 public class PostsAdapter extends BasePostsAdapter {
     public static final String TAG = PostsAdapter.class.getSimpleName();
 
+
     private Callback callback;
     private boolean isLoading = false;
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
     private SwipeRefreshLayout swipeContainer;
     private MainActivity mainActivity;
+
 
     public PostsAdapter(final MainActivity activity, SwipeRefreshLayout swipeContainer) {
         super(activity);
@@ -88,53 +90,15 @@ public class PostsAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == ItemType.ITEM.getTypeCode()) {
-            return new PostViewHolder(inflater.inflate(R.layout.post_type_text_image, parent, false),
-                    createOnClickListener());
-        } else {
-            return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
+        switch (viewType) {
+            case TEXT_VIEW:
+                return new PostHolders.TextHolder(inflater.inflate(R.layout.post_type_text, parent, false),callback);
+            case IMAGE_VIEW:
+                return new PostHolders.ImageHolder(inflater.inflate(R.layout.post_type_image, parent, false),callback);
+            case TEXT_IMAGE_VIEW:
+                return new PostHolders.TextImageHolder(inflater.inflate(R.layout.post_type_text_image, parent, false),callback);
         }
-    }
-
-    private PostViewHolder.OnClickListener createOnClickListener() {
-        return new PostViewHolder.OnClickListener() {
-            @Override
-            public void onItemClick(int position, View view) {
-                if (callback != null) {
-                    selectedPostPosition = position;
-                    callback.onItemClick(getItemByPosition(position), view);
-                }
-            }
-
-            @Override
-            public void onLikeClick(LikeController likeController, int position) {
-                Post post = getItemByPosition(position);
-                likeController.handleLikeClickAction(activity, post);
-            }
-
-            @Override
-            public void onAuthorClick(int position, View view) {
-                if (callback != null) {
-                    callback.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
-                }
-            }
-
-            @Override
-            public void onShareClick(int position, View view) {
-                if (callback != null) {
-                    selectedPostPosition = position;
-                    callback.onShareClick(getItemByPosition(position), view);
-                }
-            }
-
-            @Override
-            public void onPictureLongPress(int position, View view) {
-                if (callback != null) {
-                    selectedPostPosition = position;
-                    callback.onPictureLongPress(getItemByPosition(position).getImagePath(), view);
-                }
-            }
-        };
+        return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
     }
 
     @Override
@@ -157,11 +121,25 @@ public class PostsAdapter extends BasePostsAdapter {
 
 
         }
-        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
-            ((PostViewHolder) holder).bindData(postList.get(position));
 
-            Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
+        Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
+
+        switch (holder.getItemViewType()) {
+            case TEXT_VIEW:
+                ((PostHolders.TextHolder) holder).bindData(getItemByPosition(position));
+                break;
+            case IMAGE_VIEW:
+                ((PostHolders.ImageHolder) holder).bindData(getItemByPosition(position));
+                break;
+            case TEXT_IMAGE_VIEW:
+                ((PostHolders.TextImageHolder) holder).bindData(getItemByPosition(position));
+                break;
         }
+//        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
+//            ((PostViewHolder) holder).bindData(postList.get(position));
+//
+//            Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
+//        }
     }
 
     private void addList(List<Post> list) {
@@ -238,16 +216,15 @@ public class PostsAdapter extends BasePostsAdapter {
     }
 
     public interface Callback {
-        void onItemClick(Post post, View view);
+        void onItemClick(int position, View view);
 
         void onListLoadingFinished();
 
-        void onAuthorClick(String authorId, View view);
+        void onAuthorClick(int position, View view);
 
-        void onShareClick(Post post, View view);
 
         void onCanceled(String message);
 
-        void onPictureLongPress(String imageUrl, View view);
+        void onLikeClick(LikeController likeController, int position);
     }
 }
