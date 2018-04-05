@@ -144,7 +144,7 @@ public class EditPostActivity extends CreatePostActivity {
 
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
-            postManager.createOrUpdatePostWithImage(this,EditPostActivity.this, post);
+            postManager.createOrUpdatePostWithImage(this, EditPostActivity.this, post);
         } else {
             postManager.createOrUpdatePost(post);
             onPostSaved(true);
@@ -153,11 +153,15 @@ public class EditPostActivity extends CreatePostActivity {
 
     private void fillUIFields() {
         titleEditText.setText(post.getTitle());
-        loadPostDetailsImage();
+        if (post.getImagePath() != null) {
+            loadPostDetailsImage();
+        }
         hideProgress();
     }
 
     private void loadPostDetailsImage() {
+        imageLayout.setVisibility(View.VISIBLE);
+
         Glide.with(this)
                 .load(post.getImagePath())
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)

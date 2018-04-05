@@ -44,11 +44,9 @@ import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
-import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
-import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.DataShare;
@@ -70,7 +68,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
-    private String userImageUrl = null;
+    private int postSelectedPosition;
 
 
     public static void start(Context context) {
@@ -103,8 +101,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 //        setOnLikeAddedListener();
         initSearchBar();
 
-        profileManager.getProfileSingleValue(FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                profileOnObjectChangedListener());
     }
 
     private void initSearchBar() {
@@ -213,20 +209,21 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                     if (data != null) {
                         PostStatus postStatus = (PostStatus) data.getSerializableExtra(PostDetailsActivity.POST_STATUS_EXTRA_KEY);
                         if (postStatus.equals(PostStatus.REMOVED)) {
-                            postsAdapter.removeSelectedPost();
+                            postsAdapter.removeSelectedPost(postSelectedPosition);
                             showFloatButtonRelatedSnackBar(R.string.message_post_was_removed);
                         } else if (postStatus.equals(PostStatus.UPDATED)) {
                             postsAdapter.updateSelectedPost();
                         }
                     }
                     break;
-                case REQUEST_INVITE:
 
+                case REQUEST_INVITE:
                     String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
                     StringBuilder sb = new StringBuilder();
                     sb.append("Sent ").append(Integer.toString(ids.length)).append(" invitations: ");
                     for (String id : ids) sb.append("[").append(id).append("]");
                     Log.d(getString(R.string.app_name), sb.toString());
+                    break;
 
             }
         }
@@ -291,6 +288,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
                 @Override
                 public void onItemClick(int position, final View view) {
+                    postSelectedPosition = position;
                     final Post post = postsAdapter.getItemByPosition(position);
                     PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
                             new OnObjectExistListener<Post>() {
@@ -306,14 +304,14 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
 
                 @Override
-                public void onImageClick(int position, View view) {
+                public void onImageClick(int position, final View view) {
                     final Post post = postsAdapter.getItemByPosition(position);
                     PostManager.getInstance(MainActivity.this).isPostExistSingleValue(post.getId(),
                             new OnObjectExistListener<Post>() {
                                 @Override
                                 public void onDataChanged(boolean exist) {
                                     if (exist) {
-                                        openPostDetailsActivity(post, null);
+                                        openPostDetailsActivity(post, view);
                                     } else {
                                         showFloatButtonRelatedSnackBar(R.string.error_post_was_removed);
                                     }
@@ -413,7 +411,20 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         Intent intent = new Intent(MainActivity.this, PostDetailsActivity.class);
         intent.putExtra(PostDetailsActivity.POST_ID_EXTRA_KEY, post.getId());
 
-        startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            View imageView = v.findViewById(R.id.postImageView);
+            View authorImageView = v.findViewById(R.id.authorImageView);
+
+            ActivityOptions options = ActivityOptions.
+                    makeSceneTransitionAnimation(MainActivity.this,
+                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
+                            //new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
+                    );
+            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+        } else {
+            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
+        }
     }
 
 
@@ -528,17 +539,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 .build();
         startActivityForResult(intent, REQUEST_INVITE);
 
-    }
-
-    private OnObjectChangedListener<Profile> profileOnObjectChangedListener() {
-        return new OnObjectChangedListener<Profile>() {
-            @Override
-            public void onObjectChanged(Profile obj) {
-                if (obj != null) {
-                    userImageUrl = obj.getPhotoUrl();
-                }
-            }
-        };
     }
 
     @Override

@@ -209,9 +209,9 @@ public class PostsAdapter extends BasePostsAdapter {
         }
     }
 
-    public void removeSelectedPost() {
-        postList.remove(selectedPostPosition);
-        notifyItemRemoved(selectedPostPosition);
+    public void removeSelectedPost(int postSelectedPosition) {
+        postList.remove(postSelectedPosition);
+        notifyItemRemoved(postSelectedPosition);
     }
 
     @Override

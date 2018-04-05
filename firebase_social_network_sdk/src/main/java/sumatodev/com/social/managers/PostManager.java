@@ -93,7 +93,8 @@ public class PostManager extends FirebaseListenersManager {
         ApplicationHelper.getDatabaseHelper().getSinglePost(postId, onPostChangedListener);
     }
 
-    public void createOrUpdatePostWithImage(final Context context, final OnPostCreatedListener onPostCreatedListener, final Post post) {
+    public void createOrUpdatePostWithImage(final Context context, final OnPostCreatedListener onPostCreatedListener,
+                                            final Post post) {
         // Register observers to listen for when the download is done or if it fails
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         if (post.getId() == null) {
@@ -126,9 +127,9 @@ public class PostManager extends FirebaseListenersManager {
                         post.setImageTitle(imageTitle);
                         createOrUpdatePost(post);
 
+                        NotificationView.getInstance(context).setNotification(false, "Uploading Post Successful");
                         onPostCreatedListener.onPostSaved(true);
 
-                        NotificationView.getInstance(context).setNotification(false, "Uploading Post Successful");
                     }
                 });
             }

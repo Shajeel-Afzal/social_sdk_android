@@ -33,7 +33,13 @@
         <activity
             android:name=".ui.activities.CreatePostActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/label_create_post_activity" />
+            android:label="@string/label_create_post_activity">
+            <intent-filter android:label="Social App">
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".ui.activities.ImageDetailActivity"
             android:configChanges="orientation|screenSize"

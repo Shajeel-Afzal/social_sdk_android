@@ -18,7 +18,9 @@ package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -42,6 +44,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     private static final String TAG = CreatePostActivity.class.getSimpleName();
     public static final int CREATE_NEW_POST_REQUEST = 11;
     public static final String POST_DATA_KEY = "CreatePostActivity.POST_DATA_KEY";
+    public static final String CREATE_POST_INTENT_KEY = "CreatePostActivity.ShareIntentKey";
 
     protected FrameLayout imageLayout;
     protected ImageButton imageButton;
@@ -52,6 +55,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
+    private Intent shareIntent;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -92,6 +96,40 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         submitBtn.setOnClickListener(this);
 
+        initShareIntent();
+    }
+
+    private void initShareIntent() {
+        // Get intent, action and MIME type
+        shareIntent = getIntent();
+        String action = shareIntent.getAction();
+        String type = shareIntent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                // handleSendText(intent); // Handle text being sent
+            } else if (type.startsWith("image/")) {
+                handleSendImage(shareIntent); // Handle single image being sent
+            }
+        }
+    }
+
+    void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            // Update UI to reflect text being shared
+        }
+    }
+
+    void handleSendImage(Intent intent) {
+        Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+        if (imageUri != null) {
+            this.imageUri = imageUri;
+            imageLayout.setVisibility(View.VISIBLE);
+            loadImageToImageView();
+        } else {
+            imageLayout.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -108,7 +146,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     public void onImagePikedAction() {
         if (imageUri != null) {
             imageLayout.setVisibility(View.VISIBLE);
-        }else {
+        } else {
             imageLayout.setVisibility(View.GONE);
         }
         loadImageToImageView();
@@ -155,13 +193,29 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         }
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        //postManager.createOrUpdatePostWithImage(imageUri, CreatePostActivity.this, post);
+        if (Intent.ACTION_SEND.equals(shareIntent.getAction())) {
 
-        Intent intent = new Intent();
-        intent.putExtra(POST_DATA_KEY, post);
-        setResult(RESULT_OK, intent);
-        CreatePostActivity.this.finish();
-        hideProgress();
+            postManager.createOrUpdatePostWithImage(this, new OnPostCreatedListener() {
+                @Override
+                public void onPostSaved(boolean success) {
+                    Log.d(TAG,"post send successfully");
+                }
+            }, post);
+            handleSharePost();
+
+        } else {
+            Intent intent = new Intent();
+            setResult(RESULT_OK, intent.putExtra(POST_DATA_KEY, post));
+            CreatePostActivity.this.finish();
+            hideProgress();
+        }
+    }
+
+    private void handleSharePost() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     @Override
