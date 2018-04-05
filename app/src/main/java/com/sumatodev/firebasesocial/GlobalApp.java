@@ -1,6 +1,8 @@
 package com.sumatodev.firebasesocial;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 
@@ -27,5 +29,11 @@ public class GlobalApp extends Application {
                 });
         DatabaseHelper.getInstance(this).subscribeToNewPosts();
         ChatApplicationHelper.initDatabaseHelper(this);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
     }
 }

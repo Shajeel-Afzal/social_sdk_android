@@ -13,6 +13,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -42,9 +44,11 @@ import sumatodev.com.social.managers.DatabaseHelper;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.DataShare;
@@ -52,6 +56,7 @@ import sumatodev.com.social.utils.LogUtil;
 
 public class MainActivity extends BaseActivity implements OnPostCreatedListener {
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int REQUEST_INVITE = 33;
 
     private MaterialSearchView mSearchView;
     private PostsAdapter postsAdapter;
@@ -65,6 +70,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
+    private String userImageUrl = null;
 
 
     public static void start(Context context) {
@@ -96,6 +102,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
 
 //        setOnLikeAddedListener();
         initSearchBar();
+
+        profileManager.getProfileSingleValue(FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                profileOnObjectChangedListener());
     }
 
     private void initSearchBar() {
@@ -211,6 +220,14 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                         }
                     }
                     break;
+                case REQUEST_INVITE:
+
+                    String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Sent ").append(Integer.toString(ids.length)).append(" invitations: ");
+                    for (String id : ids) sb.append("[").append(id).append("]");
+                    Log.d(getString(R.string.app_name), sb.toString());
+
             }
         }
     }
@@ -505,7 +522,23 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     }
 
     private void sendInvitation() {
+        Intent intent = new AppInviteInvitation.IntentBuilder("Invite Friends")
+                .setMessage("Hey guys download this social app to share memories with friends....")
+                .setCallToActionText("Share")
+                .build();
+        startActivityForResult(intent, REQUEST_INVITE);
 
+    }
+
+    private OnObjectChangedListener<Profile> profileOnObjectChangedListener() {
+        return new OnObjectChangedListener<Profile>() {
+            @Override
+            public void onObjectChanged(Profile obj) {
+                if (obj != null) {
+                    userImageUrl = obj.getPhotoUrl();
+                }
+            }
+        };
     }
 
     @Override

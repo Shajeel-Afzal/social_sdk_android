@@ -12,6 +12,7 @@ buildscript {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
     }
+
 }
 android {
 
@@ -53,23 +54,21 @@ dependencies {
     compile 'com.google.firebase:firebase-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.android.gms:play-services-auth:' + project.GOOGLE_SERVICES_VERSION
     compile 'com.google.firebase:firebase-messaging:' + project.GOOGLE_SERVICES_VERSION
+    compile 'com.google.firebase:firebase-invites:' + project.GOOGLE_SERVICES_VERSION
     // FirebaseUI
     compile 'com.firebaseui:firebase-ui-auth:' + project.FIREBASE_UI_VERSION
     compile 'com.firebaseui:firebase-ui-database:' + project.FIREBASE_UI_VERSION
     //utils
     compile 'com.android.support:multidex:1.0.3'
-    compile 'com.mobsandgeeks:android-saripaar:2.0.0'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
     compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'de.hdodenhof:circleimageview:2.2.0'
     compile 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
-    compile 'io.reactivex.rxjava2:rxjava:2.1.9'
-    compile 'com.android.volley:volley:1.0.0'
-    compile 'cz.kinst.jakub:android-stateful-layout-simple:2.0.5'
     compile 'id.zelory:compressor:2.1.0'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
+
     implementation project(':social_chat_sdk')
 }
 // Bintray upload properties
