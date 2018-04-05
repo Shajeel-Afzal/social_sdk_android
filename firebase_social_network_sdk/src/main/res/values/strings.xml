@@ -253,5 +253,6 @@
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="comment_action_text">If you turn off comments no one will be able to comment on this post.</string>
     <string name="turn_on_off_comments">Turn On/Off Comments</string>
+    <string name="post_text_hint">Share your emotions...</string>
 
 </resources>

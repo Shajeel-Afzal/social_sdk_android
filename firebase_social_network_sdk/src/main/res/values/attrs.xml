@@ -16,4 +16,13 @@
         <attr name="shadow_color" format="color" />
         <attr name="shadow_radius" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="LineColorPicker">
+        <attr name="orientation" format="enum">
+            <enum name="horizontal" value="0" />
+            <enum name="vertical" value="1" />
+        </attr>
+        <attr name="colors" format="reference" />
+        <attr name="selectedColorIndex" format="integer" />
+    </declare-styleable>
 </resources>

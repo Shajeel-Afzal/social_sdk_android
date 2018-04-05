@@ -76,6 +76,7 @@ import sumatodev.com.social.model.CommentStatus;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.FileUtil;
@@ -793,6 +794,13 @@ public class DatabaseHelper {
                         post.setAuthorId((String) mapObj.get("authorId"));
                         post.setPostType((String) mapObj.get("postType"));
                         post.setCreatedDate(createdDate);
+
+                        if (mapObj.containsKey("postStyle")) {
+                            HashMap hashMap = (HashMap) mapObj.get("postStyle");
+                            Log.d(TAG, "Color Value: " + hashMap.get("bg_color"));
+                            long bg_color = (long) hashMap.get("bg_color");
+                            post.setPostStyle(new PostStyle((int) bg_color));
+                        }
 
                         if (mapObj.containsKey("commentsCount")) {
                             post.setCommentsCount((long) mapObj.get("commentsCount"));

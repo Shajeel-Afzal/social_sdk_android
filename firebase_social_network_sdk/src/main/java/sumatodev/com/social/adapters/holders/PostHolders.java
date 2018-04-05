@@ -1,7 +1,10 @@
 package sumatodev.com.social.adapters.holders;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -51,6 +54,7 @@ public class PostHolders {
         private ImageView authorImageView;
         private TextView authorName;
         private ViewGroup likeViewGroup;
+        private FrameLayout textLayout;
         private ImageView postShare;
 
         private ProfileManager profileManager;
@@ -73,6 +77,7 @@ public class PostHolders {
             authorImageView = view.findViewById(R.id.authorImageView);
             likeViewGroup = view.findViewById(R.id.likesContainer);
             postShare = view.findViewById(R.id.postShare);
+            textLayout = view.findViewById(R.id.textLayout);
 
             profileManager = ProfileManager.getInstance(context.getApplicationContext());
             postManager = PostManager.getInstance(context.getApplicationContext());
@@ -114,6 +119,26 @@ public class PostHolders {
         public void bindData(Post post) {
 
             likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
+
+            if (post.getPostStyle() != null) {
+
+                if (post.getPostStyle().bg_color == 0) {
+
+                } else {
+
+                    final float scale = context.getResources().getDisplayMetrics().density;
+                    int pixels = (int) (180 * scale + 0.5f);
+
+                    textLayout.setBackgroundColor(post.getPostStyle().bg_color);
+                    titleTextView.setHeight(pixels);
+                    titleTextView.setTextColor(Color.WHITE);
+                    titleTextView.setTextSize(24);
+                    titleTextView.setGravity(Gravity.CENTER);
+                    titleTextView.setMaxLines(3);
+                    titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                }
+
+            }
 
             if (post.getTitle() != null) {
 

@@ -4,9 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +24,7 @@ import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -411,17 +415,25 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         Intent intent = new Intent(MainActivity.this, PostDetailsActivity.class);
         intent.putExtra(PostDetailsActivity.POST_ID_EXTRA_KEY, post.getId());
 
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             View imageView = v.findViewById(R.id.postImageView);
             View authorImageView = v.findViewById(R.id.authorImageView);
 
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(MainActivity.this,
-                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
-                            //new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
-                    );
-            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            if (imageView != null) {
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(MainActivity.this,
+                                new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
+                                //new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
+                        );
+
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            } else {
+
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
+            }
+
         } else {
             startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
         }
@@ -554,6 +566,17 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         }
     }
 
+
+    private boolean hasImage(@NonNull ImageView view) {
+        Drawable drawable = view.getDrawable();
+        boolean hasImage = (drawable != null);
+
+        if (hasImage && (drawable instanceof BitmapDrawable)) {
+            hasImage = ((BitmapDrawable) drawable).getBitmap() != null;
+        }
+
+        return hasImage;
+    }
 
     @Override
     protected void onStop() {

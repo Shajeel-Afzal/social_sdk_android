@@ -18,9 +18,12 @@ package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -37,8 +40,11 @@ import sumatodev.com.social.R;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.ValidationUtil;
+import sumatodev.com.social.views.colorpicker.LineColorPicker;
+import sumatodev.com.social.views.colorpicker.OnColorChangedListener;
 
 public class CreatePostActivity extends PickImageActivity implements OnPostCreatedListener, View.OnClickListener {
     private static final String TAG = CreatePostActivity.class.getSimpleName();
@@ -52,10 +58,12 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     protected ProgressBar progressBar;
     protected EditText titleEditText;
     protected Button submitBtn;
+    private FrameLayout textLayout;
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
     private Intent shareIntent;
+    private LineColorPicker colorPicker;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -73,6 +81,8 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         imageLayout = findViewById(R.id.imageLayout);
         imageButton = findViewById(R.id.imageButton);
         submitBtn = findViewById(R.id.submitBtn);
+        textLayout = findViewById(R.id.textLayout);
+        colorPicker = findViewById(R.id.colorPicker);
 
         imageView = findViewById(R.id.imageView);
 
@@ -96,7 +106,42 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         submitBtn.setOnClickListener(this);
 
+        initPostBackgroundColor();
         initShareIntent();
+    }
+
+    private void initPostBackgroundColor() {
+        colorPicker.setOnColorChangedListener(new OnColorChangedListener() {
+            @Override
+            public void onColorChanged(int c) {
+                updateBackgroundColor(c);
+            }
+        });
+    }
+
+    private void updateBackgroundColor(int color) {
+        String hex = Integer.toHexString(color);
+        //hex = hex.toUpperCase();
+        Log.d(TAG, "Selected color:" + hex);
+        Log.d(TAG, "Selected color:" + colorPicker.getColor());
+
+        //apply background color
+        textLayout.setBackgroundColor(color);
+
+        //default color
+        if (hex.equals(Integer.toHexString(Color.WHITE))) {
+            titleEditText.setTypeface(Typeface.DEFAULT);
+            titleEditText.setTextColor(getResources().getColor(R.color.secondary_text));
+            titleEditText.setTextSize(20);
+            titleEditText.setGravity(Gravity.START | Gravity.TOP);
+        } else {
+            titleEditText.setTextColor(Color.WHITE);
+            titleEditText.setTextSize(24);
+            titleEditText.setGravity(Gravity.CENTER);
+            titleEditText.setMaxLines(3);
+            titleEditText.setTypeface(Typeface.DEFAULT_BOLD);
+        }
+
     }
 
     private void initShareIntent() {
@@ -191,6 +236,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
         }
+        post.setPostStyle(new PostStyle(colorPicker.getColor()));
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         if (Intent.ACTION_SEND.equals(shareIntent.getAction())) {
@@ -198,7 +244,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
             postManager.createOrUpdatePostWithImage(this, new OnPostCreatedListener() {
                 @Override
                 public void onPostSaved(boolean success) {
-                    Log.d(TAG,"post send successfully");
+                    Log.d(TAG, "post send successfully");
                 }
             }, post);
             handleSharePost();

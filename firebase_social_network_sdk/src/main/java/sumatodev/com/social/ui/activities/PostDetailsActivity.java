@@ -22,7 +22,9 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -39,6 +41,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,6 +55,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -130,6 +134,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private String postId;
 
+    private FrameLayout textLayout;
     private PostManager postManager;
     private CommentManager commentManager;
     private ProfileManager profileManager;
@@ -179,6 +184,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         warningCommentsTextView = findViewById(R.id.warningCommentsTextView);
         imageContainer = findViewById(R.id.imageContainer);
         sendButton = findViewById(R.id.sendButton);
+        textLayout = findViewById(R.id.textLayout);
 
         initRecyclerView();
 
@@ -369,6 +375,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private void afterPostLoaded() {
         isPostExist = true;
+        updatePostLayout();
         initLikes();
         fillPostFields();
         updateCounters();
@@ -419,6 +426,28 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         builder.show();
     }
 
+    private void updatePostLayout() {
+        if (post != null) {
+
+            if (post.getPostStyle() != null) {
+
+                if (post.getPostStyle().bg_color == 0) {
+                } else {
+                    final float scale = getResources().getDisplayMetrics().density;
+                    int pixels = (int) (180 * scale + 0.5f);
+
+                    textLayout.setBackgroundColor(post.getPostStyle().bg_color);
+                    titleTextView.setHeight(pixels);
+                    titleTextView.setTextColor(Color.WHITE);
+                    titleTextView.setTextSize(24);
+                    titleTextView.setGravity(Gravity.CENTER);
+                    titleTextView.setMaxLines(3);
+                    titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                }
+
+            }
+        }
+    }
 
     private void fillPostFields() {
         if (post != null) {
