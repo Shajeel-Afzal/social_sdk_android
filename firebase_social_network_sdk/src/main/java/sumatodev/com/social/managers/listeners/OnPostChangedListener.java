@@ -19,7 +19,7 @@ package sumatodev.com.social.managers.listeners;
 import sumatodev.com.social.model.Post;
 
 public interface OnPostChangedListener {
-    public void onObjectChanged(Post obj);
+    void onObjectChanged(Post obj);
 
-    public void onError(String errorText);
+    void onError(String errorText);
 }

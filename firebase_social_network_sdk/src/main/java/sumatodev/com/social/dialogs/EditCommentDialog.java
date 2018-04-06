@@ -62,7 +62,7 @@ public class EditCommentDialog extends DialogFragment {
         LayoutInflater layoutInflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.dialog_edit_comment, null);
 
-        final EditText editCommentEditText = (EditText) view.findViewById(R.id.editCommentEditText);
+        final EditText editCommentEditText = view.findViewById(R.id.editCommentEditText);
 
         if (commentText != null) {
             editCommentEditText.setText(commentText);

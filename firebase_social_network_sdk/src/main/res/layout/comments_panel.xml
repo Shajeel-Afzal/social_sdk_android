@@ -21,39 +21,29 @@
 
 
     <LinearLayout
-        android:id="@+id/likeContainer"
+        android:id="@+id/commentLikeContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="5dp"
         android:paddingStart="@dimen/large_intrinsic_padding"
-        tools:ignore="RtlSymmetry">
+        tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
         <ImageView
             android:id="@+id/likesImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_like"
-            tools:ignore="VectorDrawableCompat" />
+            android:contentDescription="@string/todo"
+            app:srcCompat="@drawable/ic_like" />
 
         <TextView
             android:id="@+id/likes_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/small_intrinsic_padding"
+            android:paddingStart="@dimen/small_intrinsic_padding"
             android:textAppearance="@style/TextAppearance.Second.Light" />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/action_reply"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:paddingStart="@dimen/large_intrinsic_padding"
-        android:text="Reply"
-        android:textAppearance="@style/TextAppearance.Second"
-        android:visibility="gone"
-        tools:ignore="RtlSymmetry" />
 </LinearLayout>

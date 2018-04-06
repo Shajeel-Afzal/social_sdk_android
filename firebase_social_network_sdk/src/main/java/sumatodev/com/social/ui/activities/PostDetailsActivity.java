@@ -75,6 +75,7 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
+import sumatodev.com.social.controllers.CommentLikeController;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;
@@ -90,6 +91,7 @@ import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
@@ -133,6 +135,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private MenuItem commentsOnOffAction;
 
     private String postId;
+    private int commentPosition;
 
     private FrameLayout textLayout;
     private PostManager postManager;
@@ -313,7 +316,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             @Override
             public void onLongItemClick(View view, int position) {
                 Comment selectedComment = commentsAdapter.getItemByPosition(position);
-                startActionMode(selectedComment);
+                startActionMode(selectedComment, position);
             }
 
             @Override
@@ -322,23 +325,31 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
             }
 
+            @Override
+            public void onCommentLikeClick(CommentLikeController likeController, int position) {
+                Comment comment = commentsAdapter.getItemByPosition(position);
+                likeController.handleLikeClickAction(PostDetailsActivity.this, comment);
+            }
+
         });
         commentsRecyclerView.setAdapter(commentsAdapter);
         commentsRecyclerView.setNestedScrollingEnabled(false);
         commentsRecyclerView.addItemDecoration(new DividerItemDecoration(commentsRecyclerView.getContext(),
                 ((LinearLayoutManager) commentsRecyclerView.getLayoutManager()).getOrientation()));
 
-        commentManager.getCommentsList(this, postId, createOnCommentsChangedDataListener());
+        commentManager.getComments(postId, createOnCommentsChangedDataListener());
+
+
     }
 
-    private void startActionMode(Comment selectedComment) {
+    private void startActionMode(Comment selectedComment, int position) {
         if (mActionMode != null) {
             return;
         }
 
         //check access to modify or remove post
         if (hasAccessToEditComment(selectedComment.getAuthorId()) || hasAccessToModifyPost()) {
-            mActionMode = startSupportActionMode(new ActionModeCallback(selectedComment));
+            mActionMode = startSupportActionMode(new ActionModeCallback(selectedComment, position));
         }
     }
 
@@ -429,23 +440,24 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private void updatePostLayout() {
         if (post != null) {
 
-            if (post.getPostStyle() != null) {
+            postManager.isCurrentPostColored(post.getId(), new OnObjectChangedListener<PostStyle>() {
+                @Override
+                public void onObjectChanged(PostStyle obj) {
+                    if (obj != null) {
 
-                if (post.getPostStyle().bg_color == 0) {
-                } else {
-                    final float scale = getResources().getDisplayMetrics().density;
-                    int pixels = (int) (180 * scale + 0.5f);
+                        final float scale = getResources().getDisplayMetrics().density;
+                        int pixels = (int) (180 * scale + 0.5f);
 
-                    textLayout.setBackgroundColor(post.getPostStyle().bg_color);
-                    titleTextView.setHeight(pixels);
-                    titleTextView.setTextColor(Color.WHITE);
-                    titleTextView.setTextSize(24);
-                    titleTextView.setGravity(Gravity.CENTER);
-                    titleTextView.setMaxLines(3);
-                    titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                        textLayout.setBackgroundColor(obj.bg_color);
+                        titleTextView.setHeight(pixels);
+                        titleTextView.setTextColor(Color.WHITE);
+                        titleTextView.setTextSize(24);
+                        titleTextView.setGravity(Gravity.CENTER);
+                        titleTextView.setMaxLines(3);
+                        titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                    }
                 }
-
-            }
+            });
         }
     }
 
@@ -909,6 +921,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentManager.removeComment(commentId, postId, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
+                commentsAdapter.removeComment(position);
                 hideProgress();
                 mode.finish(); // Action picked, so close the CAB
                 showSnackBar(R.string.message_comment_was_removed);
@@ -916,7 +929,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         });
     }
 
-    private void openEditCommentDialog(Comment comment) {
+    private void openEditCommentDialog(Comment comment, int position) {
+        commentPosition = position;
         EditCommentDialog editCommentDialog = new EditCommentDialog();
         Bundle args = new Bundle();
         args.putString(EditCommentDialog.COMMENT_TEXT_KEY, comment.getText());
@@ -930,6 +944,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentManager.updateComment(commentId, newText, postId, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
+                commentsAdapter.updateComment(commentPosition);
                 hideProgress();
                 showSnackBar(R.string.message_comment_was_edited);
             }
@@ -956,8 +971,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         Comment selectedComment;
         int position;
 
-        ActionModeCallback(Comment selectedComment) {
+        ActionModeCallback(Comment selectedComment, int position) {
             this.selectedComment = selectedComment;
+            this.position = position;
         }
 
         // Called when the action mode is created; startActionMode() was called
@@ -984,7 +1000,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int i = item.getItemId();
             if (i == R.id.editMenuItem) {
-                openEditCommentDialog(selectedComment);
+                openEditCommentDialog(selectedComment,position);
                 mode.finish(); // Action picked, so close the CAB
                 return true;
             } else if (i == R.id.deleteMenuItem) {

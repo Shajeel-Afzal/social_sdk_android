@@ -32,6 +32,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
@@ -56,15 +58,15 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
     private final ExpandableTextView commentTextView;
     private final TextView dateTextView;
     private final ProfileManager profileManager;
-    private TextView likes_count;
-    private ImageView like_action;
-    private ViewGroup likeContainer;
     private CommentsAdapter.Callback callback;
     private Context context;
     private CommentManager commentManager;
+    private TextView likes_count;
+    private ImageView like_action;
+    private ViewGroup commentLikeContainer;
     private CommentLikeController commentLikeController;
 
-    public CommentViewHolder(View itemView, final CommentsAdapter.Callback callback, final OnClickListener onClickListener) {
+    public CommentViewHolder(View itemView, final CommentsAdapter.Callback callback) {
         super(itemView);
 
         this.callback = callback;
@@ -75,9 +77,9 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         avatarImageView = itemView.findViewById(R.id.avatarImageView);
         commentTextView = itemView.findViewById(R.id.commentText);
         dateTextView = itemView.findViewById(R.id.dateTextView);
-//        like_action = itemView.findViewById(R.id.likesImageView);
-//        likes_count = itemView.findViewById(R.id.likes_count);
-//        likeContainer = itemView.findViewById(R.id.likeContainer);
+        like_action = itemView.findViewById(R.id.likesImageView);
+        likes_count = itemView.findViewById(R.id.likes_count);
+        commentLikeContainer = itemView.findViewById(R.id.commentLikeContainer);
 
         if (callback != null) {
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -92,25 +94,24 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                     return false;
                 }
             });
+
+            commentLikeContainer.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        callback.onCommentLikeClick(commentLikeController, position);
+                    }
+                }
+            });
         }
-//        if (onClickListener != null) {
-//            likeContainer.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    int position = getAdapterPosition();
-//                    if (position != RecyclerView.NO_POSITION) {
-//                        onClickListener.onLikeClick(commentLikeController, position);
-//                    }
-//                }
-//            });
-//        }
     }
 
     public void bindData(Comment comment) {
 
         Log.d("TAG", "Comments: " + comment.getId());
 
-       // commentLikeController = new CommentLikeController(context, comment, likes_count, like_action, true);
+        commentLikeController = new CommentLikeController(context, comment, likes_count, like_action, true);
 
         final String authorId = comment.getAuthorId();
         if (comment.getText() != null) {
@@ -121,8 +122,9 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
 
         }
 
-       // likes_count.setText(String.valueOf(comment.getLikesCount()));
-
+        if (comment.getLikesCount() > 0) {
+            likes_count.setText(String.valueOf(comment.getLikesCount()));
+        }
 
         if (authorId != null) {
             profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
@@ -136,7 +138,10 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
             });
         }
 
-       // commentManager.hasCurrentUserLikeComment(comment.getPostId(), comment.getId(), onObjectExistListener());
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            commentManager.hasCurrentUserLikeComment(context,comment.getPostId(), comment.getId(), onObjectExistListener());
+        }
 
     }
 
@@ -175,9 +180,5 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                 commentLikeController.initLike(exist);
             }
         };
-    }
-
-    public interface OnClickListener {
-        void onLikeClick(CommentLikeController likeController, int position);
     }
 }

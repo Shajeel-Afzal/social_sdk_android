@@ -30,6 +30,7 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
@@ -120,25 +121,33 @@ public class PostHolders {
 
             likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
-            if (post.getPostStyle() != null) {
+            if (post.getTitle() != null) {
 
-                if (post.getPostStyle().bg_color == 0) {
-
-                } else {
-
-                    final float scale = context.getResources().getDisplayMetrics().density;
-                    int pixels = (int) (180 * scale + 0.5f);
-
-                    textLayout.setBackgroundColor(post.getPostStyle().bg_color);
-                    titleTextView.setHeight(pixels);
-                    titleTextView.setTextColor(Color.WHITE);
-                    titleTextView.setTextSize(24);
-                    titleTextView.setGravity(Gravity.CENTER);
-                    titleTextView.setMaxLines(3);
-                    titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
-                }
+                String title = removeNewLinesDividers(post.getTitle());
+                titleTextView.setText(title);
 
             }
+
+            likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
+            commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
+            watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
+
+            CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
+            dateTextView.setText(date);
+
+            if (post.getAuthorId() != null) {
+                profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(context, authorImageView, authorName));
+            }
+
+            FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (firebaseUser != null) {
+                postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+            }
+        }
+
+        public void bindColoredPostData(Post post) {
+
+            likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
             if (post.getTitle() != null) {
 
@@ -155,16 +164,43 @@ public class PostHolders {
             dateTextView.setText(date);
 
             if (post.getAuthorId() != null) {
-                profileManager.getProfileSingleValue(post.getAuthorId(),
-                        createProfileChangeListener(context, authorImageView, authorName));
+                profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(context, authorImageView, authorName));
             }
 
             FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
             if (firebaseUser != null) {
-                postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(),
-                        createOnLikeObjectExistListener());
+                postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
             }
 
+            int bg_color = post.getPostStyle().bg_color;
+            String color = Integer.toHexString(bg_color);
+            if (!color.isEmpty()) {
+                postManager.isCurrentPostColored(post.getId(), isCurrentPostColored());
+            }
+
+        }
+
+        private OnObjectChangedListener<PostStyle> isCurrentPostColored() {
+            return new OnObjectChangedListener<PostStyle>() {
+                @Override
+                public void onObjectChanged(PostStyle obj) {
+                    if (obj != null) {
+
+                        final float scale = context.getResources().getDisplayMetrics().density;
+                        int pixels = (int) (180 * scale + 0.5f);
+
+                        textLayout.setBackgroundColor(obj.bg_color);
+                        titleTextView.setHeight(pixels);
+                        titleTextView.setTextColor(Color.WHITE);
+                        titleTextView.setTextSize(24);
+                        titleTextView.setGravity(Gravity.CENTER);
+                        titleTextView.setMaxLines(3);
+                        titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                    }
+
+
+                }
+            };
         }
 
         private OnObjectExistListener<Like> createOnLikeObjectExistListener() {

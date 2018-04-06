@@ -49,13 +49,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/dateTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:text="day ago"
-                    android:textAppearance="@style/TextAppearance.Second.Light" />
 
                 <TextView
                     android:id="@+id/expand_collapse"
@@ -68,6 +61,46 @@
 
             </RelativeLayout>
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/dateTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="day ago"
+                    android:textAppearance="@style/TextAppearance.Second.Light" />
+
+                <LinearLayout
+                    android:id="@+id/commentLikeContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toEndOf="@+id/dateTextView"
+                    android:layout_toRightOf="@+id/dateTextView"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="5dp"
+                    android:paddingStart="@dimen/large_intrinsic_padding"
+                    tools:ignore="RtlHardcoded,RtlSymmetry,UseCompoundDrawables">
+
+                    <ImageView
+                        android:id="@+id/likesImageView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/todo"
+                        app:srcCompat="@drawable/ic_like" />
+
+                    <TextView
+                        android:id="@+id/likes_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="@dimen/small_intrinsic_padding"
+                        android:textAppearance="@style/TextAppearance.Second.Light" />
+
+                </LinearLayout>
+            </RelativeLayout>
         </LinearLayout>
 
     </sumatodev.com.social.views.ExpandableTextView>

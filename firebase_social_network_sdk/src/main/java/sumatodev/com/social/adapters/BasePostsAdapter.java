@@ -33,6 +33,7 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public static final int IMAGE_VIEW = 1;
     public static final int TEXT_VIEW = 2;
     public static final int TEXT_IMAGE_VIEW = 3;
+    public static final int TEXT_COLORED_VIEW = 4;
 
     protected List<Post> postList = new LinkedList<>();
     protected BaseActivity activity;
@@ -53,11 +54,18 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
 
     @Override
     public int getItemViewType(int position) {
-        if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("text")) {
-            return TEXT_VIEW;
-        } else if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("image")) {
+        String postType = postList.get(position).getPostType();
+        String bg_color = postList.get(position).getPostStyle() == null ? null :
+                Integer.toHexString(postList.get(position).getPostStyle().bg_color);
+        if (postType != null && postType.equals("text")) {
+            if (bg_color != null) {
+                return TEXT_COLORED_VIEW;
+            } else {
+                return TEXT_VIEW;
+            }
+        } else if (postType != null && postType.equals("image")) {
             return IMAGE_VIEW;
-        } else if (postList.get(position).getPostType() != null && postList.get(position).getPostType().equals("text_image")) {
+        } else if (postType != null && postType.equals("text_image")) {
             return TEXT_IMAGE_VIEW;
         }
         return postList.get(position).getItemType().getTypeCode();

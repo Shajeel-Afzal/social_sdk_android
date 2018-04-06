@@ -19,7 +19,6 @@
 package sumatodev.com.social.adapters;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,17 +29,22 @@ import java.util.List;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.CommentViewHolder;
 import sumatodev.com.social.controllers.CommentLikeController;
+import sumatodev.com.social.managers.CommentManager;
+import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.ui.activities.PostDetailsActivity;
+import sumatodev.com.social.utils.LogUtil;
 
 /**
  * Created by alexey on 10.05.17.
  */
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
+    private static final String TAG = CommentsAdapter.class.getSimpleName();
     private List<Comment> list = new ArrayList<>();
     private Callback callback;
     private PostDetailsActivity activity;
+    protected int selectedCommentPosition = -1;
 
     public CommentsAdapter(PostDetailsActivity activity) {
         this.activity = activity;
@@ -48,19 +52,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
     @Override
     public CommentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.comment_list_item, parent, false);
-        return new CommentViewHolder(view, callback, clickListener());
-    }
-
-    private CommentViewHolder.OnClickListener clickListener() {
-        return new CommentViewHolder.OnClickListener() {
-            @Override
-            public void onLikeClick(CommentLikeController likeController, int position) {
-                Comment comment = getItemByPosition(position);
-                likeController.handleLikeClickAction(activity, comment);
-            }
-        };
+        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comment_list_item, parent, false);
+        return new CommentViewHolder(view, callback);
     }
 
     @Override
@@ -83,14 +76,42 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
         notifyDataSetChanged();
     }
 
+    public void removeComment(int position) {
+        list.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void updateComment(int commentPosition) {
+        Comment comment = getItemByPosition(commentPosition);
+        CommentManager.getInstance(activity).getSingleCommentValue(comment.getPostId(),comment.getId(),
+                commentChangedListener(commentPosition));
+    }
+
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    private OnCommentChangedListener commentChangedListener(final int position) {
+        return new OnCommentChangedListener() {
+            @Override
+            public void onObjectChanged(Comment obj) {
+                list.set(position, obj);
+                notifyItemChanged(position);
+            }
+
+            @Override
+            public void onError(String errorText) {
+                LogUtil.logDebug(TAG, errorText);
+            }
+        };
     }
 
     public interface Callback {
         void onLongItemClick(View view, int position);
 
         void onAuthorClick(String authorId, View view);
+
+        void onCommentLikeClick(CommentLikeController likeController, int position);
     }
 }

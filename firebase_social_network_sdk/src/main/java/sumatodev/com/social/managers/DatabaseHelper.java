@@ -63,6 +63,7 @@ import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.Consts;
+import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
@@ -351,7 +352,8 @@ public class DatabaseHelper {
     }
 
     public void updateComment(String commentId, String commentText, String postId, final OnTaskCompleteListener onTaskCompleteListener) {
-        DatabaseReference mCommentReference = database.getReference().child("post-comments").child(postId).child(commentId).child("text");
+        DatabaseReference mCommentReference = database.getReference().child("post-comments")
+                .child(postId).child(commentId).child("text");
         mCommentReference.setValue(commentText).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -739,7 +741,9 @@ public class DatabaseHelper {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (isPostValid((Map<String, Object>) dataSnapshot.getValue())) {
                     Post post = dataSnapshot.getValue(Post.class);
-                    post.setId(id);
+                    if (post != null) {
+                        post.setId(id);
+                    }
                     listener.onObjectChanged(post);
                 } else {
                     listener.onError(String.format(context.getString(R.string.error_general_post), id));
@@ -749,6 +753,26 @@ public class DatabaseHelper {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "getSinglePost(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
+    public void getSingleComment(String postId, final String id, final OnCommentChangedListener onCommentChangedListener) {
+        DatabaseReference reference = getDatabaseReference().child(Consts.POST_COMMENTS_REF)
+                .child(postId).child(id);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Comment comment = dataSnapshot.getValue(Comment.class);
+                if (comment != null) {
+                    comment.setId(id);
+                }
+                onCommentChangedListener.onObjectChanged(comment);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getSingleComment(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
     }
@@ -957,6 +981,35 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
+    public void getComments(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
+        DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<Comment> list = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Comment comment = snapshot.getValue(Comment.class);
+                    list.add(comment);
+                }
+
+                Collections.sort(list, new Comparator<Comment>() {
+                    @Override
+                    public int compare(Comment lhs, Comment rhs) {
+                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
+                    }
+                });
+
+                onDataChangedListener.onListChanged(list);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     public ValueEventListener hasCurrentUserLike(String postId, String userId, final OnObjectExistListener<Like> onObjectExistListener) {
         DatabaseReference databaseReference = database.getReference("post-likes").child(postId).child(userId);
         ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
@@ -991,10 +1044,28 @@ public class DatabaseHelper {
         });
     }
 
-    public void hasCurrentUserLikeCommentValue(String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
-        DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF)
-                .child(postId).child(commentId).child(getCurrentUser());
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+    public void isCurrentPostColored(String id, final OnObjectChangedListener<PostStyle> currentPostColored) {
+        DatabaseReference reference = database.getReference(Consts.POSTS_REF).child(id).child("postStyle");
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    PostStyle style = dataSnapshot.getValue(PostStyle.class);
+                    currentPostColored.onObjectChanged(style);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    public ValueEventListener hasCurrentUserLikeCommentValue(String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
+        DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF).child(postId)
+                .child(commentId).child(getCurrentUser());
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 onObjectExistListener.onDataChanged(dataSnapshot.exists());
@@ -1002,9 +1073,12 @@ public class DatabaseHelper {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                LogUtil.logError(TAG, "hasCurrentUserLikeCommentValue(), onCancelled", new Exception(databaseError.getMessage()));
+
             }
         });
+
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
     }
 
     public void addComplainToPost(Post post) {
@@ -1072,5 +1146,6 @@ public class DatabaseHelper {
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");
     }
+
 
 }

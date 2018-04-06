@@ -90,7 +90,7 @@ public class PostsAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TEXT_VIEW) {
+        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW) {
             return new PostHolders.TextHolder(inflater.inflate(R.layout.post_type_text, parent, false), callback);
         } else if (viewType == IMAGE_VIEW) {
             return new PostHolders.ImageHolder(inflater.inflate(R.layout.post_type_image, parent, false), callback);
@@ -127,7 +127,9 @@ public class PostsAdapter extends BasePostsAdapter {
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
                 ((PostHolders.TextHolder) holder).bindData(getItemByPosition(position));
-
+                break;
+            case TEXT_COLORED_VIEW:
+                ((PostHolders.TextHolder) holder).bindColoredPostData(getItemByPosition(position));
                 break;
             case IMAGE_VIEW:
                 ((PostHolders.ImageHolder) holder).bindData(getItemByPosition(position));

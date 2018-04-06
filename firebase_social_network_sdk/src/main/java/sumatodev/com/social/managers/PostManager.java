@@ -19,6 +19,7 @@ package sumatodev.com.social.managers;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -29,8 +30,10 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.UploadTask;
 
 import sumatodev.com.social.ApplicationHelper;
+import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.UploadImagePrefix;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
@@ -38,6 +41,7 @@ import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
@@ -215,12 +219,14 @@ public class PostManager extends FirebaseListenersManager {
         addListenerToMap(activityContext, valueEventListener);
     }
 
-    public void hasCurrentUserLikeSingleValue(String postId, String userId, final OnObjectExistListener<Like>
-            onObjectExistListener) {
+    public void hasCurrentUserLikeSingleValue(String postId, String userId, final OnObjectExistListener<Like> onObjectExistListener) {
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         databaseHelper.hasCurrentUserLikeSingleValue(postId, userId, onObjectExistListener);
     }
 
+    public void isCurrentPostColored(String id, OnObjectChangedListener<PostStyle> currentPostColored) {
+        ApplicationHelper.getDatabaseHelper().isCurrentPostColored(id,currentPostColored);
+    }
     public void isPostExistSingleValue(String postId, final OnObjectExistListener<Post> onObjectExistListener) {
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         databaseHelper.isPostExistSingleValue(postId, onObjectExistListener);
@@ -254,6 +260,7 @@ public class PostManager extends FirebaseListenersManager {
             postCounterWatcher.onPostCounterChanged(newPostsCounter);
         }
     }
+
 
     public interface PostCounterWatcher {
         void onPostCounterChanged(int newValue);

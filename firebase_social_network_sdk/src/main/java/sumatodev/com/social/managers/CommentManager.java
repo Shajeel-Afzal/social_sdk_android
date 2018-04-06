@@ -26,6 +26,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
+import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
@@ -65,6 +66,11 @@ public class CommentManager extends FirebaseListenersManager {
         addListenerToMap(activityContext, valueEventListener);
     }
 
+    public void getComments(String postId, OnDataChangedListener<Comment> onDataChangedListener) {
+        ApplicationHelper.getDatabaseHelper().getComments(postId, onDataChangedListener);
+    }
+
+
     public void removeComment(String commentId, final String postId, final OnTaskCompleteListener onTaskCompleteListener) {
         final DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
 
@@ -81,10 +87,10 @@ public class CommentManager extends FirebaseListenersManager {
             }
         });
     }
-    public void hasCurrentUserLikeComment(String postId, String commentId, final OnObjectExistListener<Like>
-            onObjectExistListener) {
-        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
-        databaseHelper.hasCurrentUserLikeCommentValue(postId, commentId, onObjectExistListener);
+
+    public void hasCurrentUserLikeComment(Context context, String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
+        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().hasCurrentUserLikeCommentValue(postId, commentId, onObjectExistListener);
+        addListenerToMap(context, valueEventListener);
     }
 
     public void updateComment(String commentId, String commentText, String postId, OnTaskCompleteListener onTaskCompleteListener) {
@@ -109,5 +115,9 @@ public class CommentManager extends FirebaseListenersManager {
                 onTaskCompleteListener.onTaskComplete(false);
             }
         });
+    }
+
+    public void getSingleCommentValue(String postId, String id, OnCommentChangedListener onCommentChangedListener) {
+        ApplicationHelper.getDatabaseHelper().getSingleComment(postId,id,onCommentChangedListener);
     }
 }
