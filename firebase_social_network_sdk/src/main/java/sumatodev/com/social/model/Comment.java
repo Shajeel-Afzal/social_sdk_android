@@ -17,14 +17,16 @@
 package sumatodev.com.social.model;
 
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import sumatodev.com.social.enums.ItemType;
 import sumatodev.com.social.utils.FormatterUtil;
 
-public class Comment {
+public class Comment implements Serializable, LazyLoading {
 
     private String id;
     private String postId;
@@ -32,16 +34,19 @@ public class Comment {
     private String authorId;
     private long likesCount;
     private long createdDate;
+    private ItemType itemType;
 
 
     public Comment() {
         // Default constructor required for calls to DataSnapshot.getValue(Comment.class)
+        this.createdDate = Calendar.getInstance().getTimeInMillis();
+        itemType = ItemType.ITEM;
     }
 
-    public Comment(String text) {
+    public Comment(ItemType itemType) {
 
-        this.text = text;
-        this.createdDate = Calendar.getInstance().getTimeInMillis();
+        this.itemType = itemType;
+        setId(itemType.toString());
     }
 
     public String getId() {
@@ -97,15 +102,23 @@ public class Comment {
         HashMap<String, Object> result = new HashMap<>();
 
         result.put("id", id);
-        result.put("postId",postId);
+        result.put("postId", postId);
         result.put("text", text);
         result.put("authorId", authorId);
         result.put("likesCount", likesCount);
         result.put("createdDate", createdDate);
-        result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
 
         return result;
     }
 
 
+    @Override
+    public ItemType getItemType() {
+        return itemType;
+    }
+
+    @Override
+    public void setItemType(ItemType itemType) {
+
+    }
 }

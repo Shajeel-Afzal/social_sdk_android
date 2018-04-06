@@ -28,7 +28,7 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.LoadViewHolder;
-import sumatodev.com.social.adapters.holders.PostHolders;
+import sumatodev.com.social.adapters.holders.PostViewHolder;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.enums.ItemType;
 import sumatodev.com.social.managers.PostManager;
@@ -45,14 +45,12 @@ import sumatodev.com.social.utils.PreferencesUtil;
 public class PostsAdapter extends BasePostsAdapter {
     public static final String TAG = PostsAdapter.class.getSimpleName();
 
-
     private Callback callback;
     private boolean isLoading = false;
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
     private SwipeRefreshLayout swipeContainer;
     private MainActivity mainActivity;
-
 
     public PostsAdapter(final MainActivity activity, SwipeRefreshLayout swipeContainer) {
         super(activity);
@@ -91,14 +89,44 @@ public class PostsAdapter extends BasePostsAdapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW) {
-            return new PostHolders.TextHolder(inflater.inflate(R.layout.post_type_text, parent, false), callback);
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_text, parent, false), createOnClickListener());
         } else if (viewType == IMAGE_VIEW) {
-            return new PostHolders.ImageHolder(inflater.inflate(R.layout.post_type_image, parent, false), callback);
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_image, parent, false), createOnClickListener());
         } else if (viewType == TEXT_IMAGE_VIEW) {
-            return new PostHolders.TextImageHolder(inflater.inflate(R.layout.post_type_text_image, parent, false), callback);
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_text_image, parent, false), createOnClickListener());
         } else {
             return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
         }
+    }
+
+    private PostViewHolder.OnClickListener createOnClickListener() {
+        return new PostViewHolder.OnClickListener() {
+            @Override
+            public void onItemClick(int position, View view) {
+                if (callback != null) {
+                    selectedPostPosition = position;
+                    callback.onItemClick(getItemByPosition(position), view);
+                }
+            }
+
+            @Override
+            public void onLikeClick(LikeController likeController, int position) {
+                Post post = getItemByPosition(position);
+                likeController.handleLikeClickAction(activity, post);
+            }
+
+            @Override
+            public void onAuthorClick(int position, View view) {
+                if (callback != null) {
+                    callback.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
+                }
+            }
+
+            @Override
+            public void onShareClick(int position, View view) {
+
+            }
+        };
     }
 
     @Override
@@ -118,34 +146,24 @@ public class PostsAdapter extends BasePostsAdapter {
                     }
                 }
             });
-
-
         }
-
-        Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
+        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
 
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
-                ((PostHolders.TextHolder) holder).bindData(getItemByPosition(position));
+                ((PostViewHolder) holder).bindTextPost(postList.get(position));
                 break;
             case TEXT_COLORED_VIEW:
-                ((PostHolders.TextHolder) holder).bindColoredPostData(getItemByPosition(position));
+                ((PostViewHolder) holder).bindColoredPost(postList.get(position));
                 break;
             case IMAGE_VIEW:
-                ((PostHolders.ImageHolder) holder).bindData(getItemByPosition(position));
-
+                ((PostViewHolder) holder).bindImagePost(postList.get(position));
                 break;
             case TEXT_IMAGE_VIEW:
-                ((PostHolders.TextImageHolder) holder).bindData(getItemByPosition(position));
-
+                ((PostViewHolder) holder).bindTextImagePost(postList.get(position));
                 break;
         }
 
-//        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
-//            ((PostViewHolder) holder).bindData(postList.get(position));
-//
-//            Log.d(TAG, "index: " + position + " id: " + postList.get(position).getId());
-//        }
     }
 
     private void addList(List<Post> list) {
@@ -185,6 +203,7 @@ public class PostsAdapter extends BasePostsAdapter {
 
                 if (!list.isEmpty()) {
                     addList(list);
+
                     if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity)) {
                         PreferencesUtil.setPostWasLoadedAtLeastOnce(mainActivity, true);
                     }
@@ -211,9 +230,9 @@ public class PostsAdapter extends BasePostsAdapter {
         }
     }
 
-    public void removeSelectedPost(int postSelectedPosition) {
-        postList.remove(postSelectedPosition);
-        notifyItemRemoved(postSelectedPosition);
+    public void removeSelectedPost() {
+        postList.remove(selectedPostPosition);
+        notifyItemRemoved(selectedPostPosition);
     }
 
     @Override
@@ -222,16 +241,12 @@ public class PostsAdapter extends BasePostsAdapter {
     }
 
     public interface Callback {
-        void onItemClick(int position, View view);
-
-        void onImageClick(int position, View view);
+        void onItemClick(Post post, View view);
 
         void onListLoadingFinished();
 
-        void onAuthorClick(int position, View view);
+        void onAuthorClick(String authorId, View view);
 
         void onCanceled(String message);
-
-        void onLikeClick(LikeController likeController, int position);
     }
 }

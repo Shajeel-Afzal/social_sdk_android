@@ -130,15 +130,20 @@
                 android:paddingLeft="@dimen/large_intrinsic_padding"
                 android:paddingRight="@dimen/large_intrinsic_padding">
 
+                <android.support.v4.widget.SwipeRefreshLayout
+                    android:id="@+id/swipeContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/commentsRecyclerView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone"
                     app:layoutManager="LinearLayoutManager"
                     tools:listitem="@layout/comment_list_item" />
 
+                </android.support.v4.widget.SwipeRefreshLayout>
                 <ProgressBar
                     android:id="@+id/commentsProgressBar"
                     android:layout_width="wrap_content"
@@ -202,7 +207,6 @@
             android:text="@string/send_comment_button_label"
             android:textColor="@android:color/white" />
     </LinearLayout>
-
 </RelativeLayout>
 
 

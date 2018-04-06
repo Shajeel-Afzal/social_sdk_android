@@ -20,8 +20,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -56,14 +59,15 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     protected ImageButton imageButton;
     protected ImageView imageView;
     protected ProgressBar progressBar;
-    protected EditText titleEditText;
+    public EditText titleEditText;
     protected Button submitBtn;
-    private FrameLayout textLayout;
+    public FrameLayout textLayout;
 
     protected PostManager postManager;
     protected boolean creatingPost = false;
     private Intent shareIntent;
-    private LineColorPicker colorPicker;
+    public LineColorPicker colorPicker;
+    public int selectedColor;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -110,6 +114,17 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         initShareIntent();
     }
 
+    private boolean hasImage(@NonNull ImageView view) {
+        Drawable drawable = view.getDrawable();
+        boolean hasImage = (drawable != null);
+
+        if (hasImage && (drawable instanceof BitmapDrawable)) {
+            hasImage = ((BitmapDrawable) drawable).getBitmap() != null;
+        }
+
+        return hasImage;
+    }
+
     private void initPostBackgroundColor() {
         colorPicker.setOnColorChangedListener(new OnColorChangedListener() {
             @Override
@@ -120,6 +135,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     }
 
     private void updateBackgroundColor(int color) {
+        selectedColor = color;
         String hex = Integer.toHexString(color);
         //hex = hex.toUpperCase();
         Log.d(TAG, "Selected color:" + hex);
@@ -169,10 +185,12 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     void handleSendImage(Intent intent) {
         Uri imageUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
         if (imageUri != null) {
+            colorPicker.setVisibility(View.GONE);
             this.imageUri = imageUri;
             imageLayout.setVisibility(View.VISIBLE);
             loadImageToImageView();
         } else {
+            colorPicker.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
         }
     }
@@ -190,8 +208,16 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     @Override
     public void onImagePikedAction() {
         if (imageUri != null) {
+            colorPicker.setVisibility(View.GONE);
             imageLayout.setVisibility(View.VISIBLE);
+
+            textLayout.setBackgroundColor(Color.TRANSPARENT);
+            titleEditText.setTypeface(Typeface.DEFAULT);
+            titleEditText.setTextColor(getResources().getColor(R.color.secondary_text));
+            titleEditText.setTextSize(20);
+            titleEditText.setGravity(Gravity.START | Gravity.TOP);
         } else {
+            colorPicker.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
         }
         loadImageToImageView();
@@ -217,7 +243,6 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
             cancel = true;
         }
 
-
         if (!cancel) {
             creatingPost = true;
             hideKeyboard();
@@ -235,8 +260,14 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         }
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
+        } else {
+            String hex = Integer.toHexString(selectedColor);
+            if (hex.equals(Integer.toHexString(Color.WHITE))) {
+                post.setPostStyle(new PostStyle(0));
+            } else {
+                post.setPostStyle(new PostStyle(selectedColor));
+            }
         }
-        post.setPostStyle(new PostStyle(colorPicker.getColor()));
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         if (Intent.ACTION_SEND.equals(shareIntent.getAction())) {

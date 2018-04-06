@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/circle_radius_colored"
-            android:minHeight="200dp"
+            android:minHeight="180dp"
             android:padding="10dp">
 
             <EditText
@@ -39,8 +39,7 @@
                 android:layout_height="40dp"
                 android:layout_gravity="bottom"
                 app:colors="@array/rainbow"
-                app:orientation="horizontal"
-                app:selectedColorIndex="3" />
+                app:orientation="horizontal" />
 
         </FrameLayout>
 

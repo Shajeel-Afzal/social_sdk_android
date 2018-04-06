@@ -426,12 +426,24 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             View imageView = v.findViewById(R.id.postImageView);
+            View authorImageView = v.findViewById(R.id.authorImageView);
 
-            ActivityOptions options = ActivityOptions.
-                    makeSceneTransitionAnimation(ProfileActivity.this,
-                            new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
-                    );
-            startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            if (imageView != null) {
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(ProfileActivity.this,
+                                new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
+                        );
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            } else if (authorImageView != null) {
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(ProfileActivity.this,
+                                new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
+                        );
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            }else {
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
+            }
+
         } else {
             startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
         }

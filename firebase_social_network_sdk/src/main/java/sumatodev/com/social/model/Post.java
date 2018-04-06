@@ -148,8 +148,8 @@ public class Post implements Serializable, LazyLoading {
         return commentStatus;
     }
 
-    public void setCommentStatus(CommentStatus status) {
-        this.commentStatus = status;
+    public void setCommentStatus(CommentStatus commentStatus) {
+        this.commentStatus = commentStatus;
     }
 
     public String getPostType() {
@@ -184,7 +184,7 @@ public class Post implements Serializable, LazyLoading {
         result.put("postType", postType);
         result.put("postStyle", postStyle);
         result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
-        result.put("status", commentStatus);
+        result.put("commentStatus", commentStatus);
 
 
         return result;

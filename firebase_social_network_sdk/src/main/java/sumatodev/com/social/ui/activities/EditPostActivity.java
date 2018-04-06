@@ -18,8 +18,11 @@ package sumatodev.com.social.ui.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,9 +35,12 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
 import sumatodev.com.social.R;
+import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.managers.PostManager;
+import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 
 public class EditPostActivity extends CreatePostActivity {
     private static final String TAG = EditPostActivity.class.getSimpleName();
@@ -49,6 +55,7 @@ public class EditPostActivity extends CreatePostActivity {
 
         post = (Post) getIntent().getSerializableExtra(POST_EXTRA_KEY);
         showProgress();
+        updatePostLayout();
         fillUIFields();
     }
 
@@ -142,6 +149,13 @@ public class EditPostActivity extends CreatePostActivity {
         showProgress(R.string.message_saving);
         post.setTitle(title);
 
+        String hex = Integer.toHexString(selectedColor);
+        if (hex.equals(Integer.toHexString(Color.WHITE))) {
+            post.setPostStyle(new PostStyle(0));
+        } else {
+            post.setPostStyle(new PostStyle(selectedColor));
+        }
+
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
             postManager.createOrUpdatePostWithImage(this, EditPostActivity.this, post);
@@ -151,8 +165,38 @@ public class EditPostActivity extends CreatePostActivity {
         }
     }
 
+    private void updatePostLayout() {
+        if (post != null) {
+            postManager.isCurrentPostColored(post.getId(), new OnObjectChangedListener<PostStyle>() {
+                @Override
+                public void onObjectChanged(PostStyle obj) {
+                    if (obj != null) {
+
+                        if (obj.bg_color == 0) {
+                            //default view
+                        } else {
+                            final float scale = getResources().getDisplayMetrics().density;
+                            int pixels = (int) (180 * scale + 0.5f);
+
+                            textLayout.setBackgroundColor(obj.bg_color);
+                            titleEditText.setHeight(pixels);
+                            titleEditText.setTextColor(Color.WHITE);
+                            titleEditText.setTextSize(24);
+                            titleEditText.setGravity(Gravity.CENTER);
+                            titleEditText.setMaxLines(3);
+                            titleEditText.setTypeface(Typeface.DEFAULT_BOLD);
+
+                            colorPicker.setSelectedColor(obj.bg_color);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     private void fillUIFields() {
         titleEditText.setText(post.getTitle());
+
         if (post.getImagePath() != null) {
             loadPostDetailsImage();
         }

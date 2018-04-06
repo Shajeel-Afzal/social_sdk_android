@@ -55,13 +55,12 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     @Override
     public int getItemViewType(int position) {
         String postType = postList.get(position).getPostType();
-        String bg_color = postList.get(position).getPostStyle() == null ? null :
-                Integer.toHexString(postList.get(position).getPostStyle().bg_color);
+        int bg_color = postList.get(position).getPostStyle() != null ? postList.get(position).getPostStyle().bg_color : 0;
         if (postType != null && postType.equals("text")) {
-            if (bg_color != null) {
-                return TEXT_COLORED_VIEW;
-            } else {
+            if (bg_color == 0) {
                 return TEXT_VIEW;
+            } else {
+                return TEXT_COLORED_VIEW;
             }
         } else if (postType != null && postType.equals("image")) {
             return IMAGE_VIEW;
@@ -94,8 +93,7 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public void updateSelectedPost() {
         if (selectedPostPosition != -1) {
             Post selectedPost = getItemByPosition(selectedPostPosition);
-            PostManager.getInstance(activity).getSinglePostValue(selectedPost.getId(),
-                    createOnPostChangeListener(selectedPostPosition));
+            PostManager.getInstance(activity).getSinglePostValue(selectedPost.getId(), createOnPostChangeListener(selectedPostPosition));
         }
     }
 }

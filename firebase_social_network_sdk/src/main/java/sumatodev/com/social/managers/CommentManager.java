@@ -27,6 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
+import sumatodev.com.social.managers.listeners.OnCommentListChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
@@ -66,8 +67,8 @@ public class CommentManager extends FirebaseListenersManager {
         addListenerToMap(activityContext, valueEventListener);
     }
 
-    public void getComments(String postId, OnDataChangedListener<Comment> onDataChangedListener) {
-        ApplicationHelper.getDatabaseHelper().getComments(postId, onDataChangedListener);
+    public void getComments(String postId, OnCommentListChangedListener<Comment> onDataChangedListener, long date) {
+        ApplicationHelper.getDatabaseHelper().getComments(postId, onDataChangedListener, date);
     }
 
 
@@ -118,6 +119,6 @@ public class CommentManager extends FirebaseListenersManager {
     }
 
     public void getSingleCommentValue(String postId, String id, OnCommentChangedListener onCommentChangedListener) {
-        ApplicationHelper.getDatabaseHelper().getSingleComment(postId,id,onCommentChangedListener);
+        ApplicationHelper.getDatabaseHelper().getSingleComment(postId, id, onCommentChangedListener);
     }
 }

@@ -64,6 +64,7 @@ import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
+import sumatodev.com.social.managers.listeners.OnCommentListChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
@@ -73,6 +74,7 @@ import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Comment;
+import sumatodev.com.social.model.CommentListResult;
 import sumatodev.com.social.model.CommentStatus;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
@@ -306,7 +308,8 @@ public class DatabaseHelper {
             String authorId = firebaseAuth.getCurrentUser().getUid();
             DatabaseReference mCommentsReference = database.getReference().child("post-comments/" + postId);
             String commentId = mCommentsReference.push().getKey();
-            Comment comment = new Comment(commentText);
+            Comment comment = new Comment();
+            comment.setText(commentText);
             comment.setId(commentId);
             comment.setPostId(postId);
             comment.setAuthorId(authorId);
@@ -684,6 +687,7 @@ public class DatabaseHelper {
         });
     }
 
+
     public void getPostListByUser(final OnDataChangedListener<Post> onDataChangedListener, String userId) {
         DatabaseReference databaseReference = database.getReference("posts");
         Query postsQuery;
@@ -710,15 +714,12 @@ public class DatabaseHelper {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
-                    if (isPostValid((Map<String, Object>) dataSnapshot.getValue())) {
-                        Post post = dataSnapshot.getValue(Post.class);
-                        if (post != null) {
-                            post.setId(id);
-                        }
-                        listener.onObjectChanged(post);
-                    } else {
-                        listener.onError(String.format(context.getString(R.string.error_general_post), id));
+                    Log.d(TAG, "Post Value: " + dataSnapshot.getValue());
+                    Post post = dataSnapshot.getValue(Post.class);
+                    if (post != null) {
+                        post.setId(id);
                     }
+                    listener.onObjectChanged(post);
                 } else {
                     listener.onObjectChanged(null);
                 }
@@ -821,11 +822,14 @@ public class DatabaseHelper {
 
                         if (mapObj.containsKey("postStyle")) {
                             HashMap hashMap = (HashMap) mapObj.get("postStyle");
-                            Log.d(TAG, "Color Value: " + hashMap.get("bg_color"));
                             long bg_color = (long) hashMap.get("bg_color");
                             post.setPostStyle(new PostStyle((int) bg_color));
                         }
 
+                        if (mapObj.containsKey("commentStatus")) {
+                            HashMap hashMap = (HashMap) mapObj.get("commentStatus");
+                            post.setCommentStatus(new CommentStatus((boolean) hashMap.get("commentStatus")));
+                        }
                         if (mapObj.containsKey("commentsCount")) {
                             post.setCommentsCount((long) mapObj.get("commentsCount"));
                         }
@@ -981,34 +985,87 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public void getComments(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
+    public void getComments(final String postId, final OnCommentListChangedListener<Comment> onCommentListChangedListener, final Long date) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
 
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+        Query postsQuery;
+        if (date == 0) {
+            postsQuery = databaseReference.limitToLast(Constants.Post.POST_AMOUNT_ON_PAGE).orderByChild("createdDate");
+        } else {
+            postsQuery = databaseReference.limitToLast(Constants.Post.POST_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdDate");
+        }
+
+        postsQuery.keepSynced(true);
+        postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                List<Comment> list = new ArrayList<>();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Comment comment = snapshot.getValue(Comment.class);
-                    list.add(comment);
+                Log.d(TAG, "getCommentsList: " + dataSnapshot.getValue());
+                Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
+                CommentListResult result = parseCommentList(objectMap);
+
+                if (result.getComments().isEmpty() && result.isMoreDataAvailable()) {
+                    getComments(postId, onCommentListChangedListener, result.getLastItemCreatedDate() - 1);
+                } else {
+                    onCommentListChangedListener.onListChanged(parseCommentList(objectMap));
                 }
-
-                Collections.sort(list, new Comparator<Comment>() {
-                    @Override
-                    public int compare(Comment lhs, Comment rhs) {
-                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
-                    }
-                });
-
-                onDataChangedListener.onListChanged(list);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                LogUtil.logError(TAG, "getComments(), onCancelled", new Exception(databaseError.getMessage()));
+                onCommentListChangedListener.onCanceled(context.getString(R.string.permission_denied_error));
             }
         });
     }
+
+    private CommentListResult parseCommentList(Map<String, Object> objectMap) {
+        CommentListResult result = new CommentListResult();
+        List<Comment> list = new ArrayList<>();
+        boolean isMoreDataAvailable = true;
+        long lastItemCreatedDate = 0;
+
+        if (objectMap != null) {
+            isMoreDataAvailable = Constants.Post.POST_AMOUNT_ON_PAGE == objectMap.size();
+
+            for (String key : objectMap.keySet()) {
+                Object obj = objectMap.get(key);
+                if (obj instanceof Map) {
+                    Map<String, Object> mapObj = (Map<String, Object>) obj;
+
+                    long createdDate = (long) mapObj.get("createdDate");
+
+
+                    if (lastItemCreatedDate == 0 || lastItemCreatedDate > createdDate) {
+                        lastItemCreatedDate = createdDate;
+                    }
+
+                    Comment comment = new Comment();
+                    comment.setId(key);
+                    comment.setPostId((String) mapObj.get("postId"));
+                    comment.setText((String) mapObj.get("text"));
+                    comment.setCreatedDate(createdDate);
+                    comment.setLikesCount((long) mapObj.get("likesCount"));
+                    comment.setAuthorId((String) mapObj.get("authorId"));
+
+                    list.add(comment);
+                }
+            }
+
+            Collections.sort(list, new Comparator<Comment>() {
+                @Override
+                public int compare(Comment lhs, Comment rhs) {
+                    return ((Long) rhs.getCreatedDate()).compareTo(lhs.getCreatedDate());
+                }
+            });
+
+            result.setComments(list);
+            result.setLastItemCreatedDate(lastItemCreatedDate);
+            result.setMoreDataAvailable(isMoreDataAvailable);
+        }
+
+        return result;
+    }
+
 
     public ValueEventListener hasCurrentUserLike(String postId, String userId, final OnObjectExistListener<Like> onObjectExistListener) {
         DatabaseReference databaseReference = database.getReference("post-likes").child(postId).child(userId);

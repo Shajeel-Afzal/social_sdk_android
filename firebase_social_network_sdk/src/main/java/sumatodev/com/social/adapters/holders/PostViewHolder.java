@@ -18,7 +18,11 @@
 package sumatodev.com.social.adapters.holders;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -43,6 +47,7 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Utils;
@@ -67,6 +72,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private FrameLayout imageLayout;
     private final TextView authorName;
     private ImageView postShare;
+    private FrameLayout textLayout;
     private ProgressBar progressBar;
 
     private ProfileManager profileManager;
@@ -95,23 +101,13 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         imageLayout = view.findViewById(R.id.imageLayout);
         postShare = view.findViewById(R.id.postShare);
         progressBar = view.findViewById(R.id.progressBar);
+        textLayout = view.findViewById(R.id.textLayout);
 
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
 
 
         view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int position = getAdapterPosition();
-                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
-                    onClickListener.onItemClick(getAdapterPosition(), v);
-                }
-            }
-        });
-
-
-        postImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int position = getAdapterPosition();
@@ -153,13 +149,126 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    public void bindData(Post post) {
+    public void bindTextPost(Post post) {
+
+        Log.d(TAG,"Text Data: " + post.getTitle());
+        likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
+
+
+        if (post.getTitle() != null) {
+            String title = removeNewLinesDividers(post.getTitle());
+            titleTextView.setText(title);
+
+        }
+
+        likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
+        commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
+        watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
+
+        CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
+        dateTextView.setText(date);
+
+        if (post.getAuthorId() != null) {
+            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
+        }
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+        }
+    }
+
+    public void bindColoredPost(Post post) {
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
 
         if (post.getTitle() != null) {
-            titleTextView.setVisibility(View.VISIBLE);
+            String title = removeNewLinesDividers(post.getTitle());
+            titleTextView.setText(title);
+
+        }
+
+        likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
+        commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
+        watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
+
+        CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
+        dateTextView.setText(date);
+
+        if (post.getAuthorId() != null) {
+            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
+        }
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+        }
+
+        int bg_color = post.getPostStyle().bg_color;
+        String color = Integer.toHexString(bg_color);
+        if (!color.isEmpty()) {
+            postManager.isCurrentPostColored(post.getId(), isCurrentPostColored());
+        }
+    }
+
+    public void bindImagePost(Post post) {
+
+        likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
+
+
+        likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
+        commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
+        watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
+
+        CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
+        dateTextView.setText(date);
+
+        if (post.getImagePath() != null) {
+
+            String imageUrl = post.getImagePath();
+            int width = Utils.getDisplayWidth(context);
+            int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);
+
+            // Displayed and saved to cache image, as needs for post detail.
+            Glide.with(context)
+                    .load(imageUrl)
+                    .centerCrop()
+                    .override(width, height)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .crossFade()
+                    .error(R.drawable.ic_stub)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(postImageView);
+        }
+
+        if (post.getAuthorId() != null) {
+            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
+        }
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+        }
+    }
+
+    public void bindTextImagePost(Post post){
+
+        likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
+
+
+        if (post.getTitle() != null) {
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
@@ -173,7 +282,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         dateTextView.setText(date);
 
         if (post.getImagePath() != null) {
-            imageLayout.setVisibility(View.VISIBLE);
 
             String imageUrl = post.getImagePath();
             int width = Utils.getDisplayWidth(context);
@@ -218,6 +326,29 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         return text.substring(0, decoratedTextLength).replaceAll("\n", " ").trim();
     }
 
+    private OnObjectChangedListener<PostStyle> isCurrentPostColored() {
+        return new OnObjectChangedListener<PostStyle>() {
+            @Override
+            public void onObjectChanged(PostStyle obj) {
+                if (obj != null) {
+
+                    final float scale = context.getResources().getDisplayMetrics().density;
+                    int pixels = (int) (180 * scale + 0.5f);
+
+                    textLayout.setBackgroundColor(obj.bg_color);
+                    titleTextView.setHeight(pixels);
+                    titleTextView.setTextColor(Color.WHITE);
+                    titleTextView.setTextSize(24);
+                    titleTextView.setGravity(Gravity.CENTER);
+                    titleTextView.setMaxLines(3);
+                    titleTextView.setTypeface(Typeface.DEFAULT_BOLD);
+                }
+
+
+            }
+        };
+    }
+
     private OnObjectChangedListener<Profile> createProfileChangeListener(final ImageView authorImageView, final TextView authorName) {
         return new OnObjectChangedListener<Profile>() {
             @Override
@@ -255,6 +386,5 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         void onShareClick(int position, View view);
 
-        void onPictureLongPress(int position, View view);
     }
 }

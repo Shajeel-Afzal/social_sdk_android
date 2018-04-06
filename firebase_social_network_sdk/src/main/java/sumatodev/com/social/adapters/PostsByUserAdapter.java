@@ -17,11 +17,13 @@
 package sumatodev.com.social.adapters;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import sumatodev.com.social.R;
+import sumatodev.com.social.adapters.holders.LoadViewHolder;
 import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.adapters.holders.PostViewHolder;
 import sumatodev.com.social.controllers.LikeController;
@@ -50,9 +52,15 @@ public class PostsByUserAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.post_type_text_image, parent, false);
-
-        return new PostViewHolder(view, createOnClickListener(), false);
+        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW) {
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_text, parent, false), createOnClickListener());
+        } else if (viewType == IMAGE_VIEW) {
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_image, parent, false), createOnClickListener());
+        } else if (viewType == TEXT_IMAGE_VIEW) {
+            return new PostViewHolder(inflater.inflate(R.layout.post_type_text_image, parent, false), createOnClickListener());
+        } else {
+            return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
+        }
     }
 
     private PostViewHolder.OnClickListener createOnClickListener() {
@@ -81,16 +89,28 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
             }
 
-            @Override
-            public void onPictureLongPress(int position, View view) {
-
-            }
         };
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        ((PostViewHolder) holder).bindData(postList.get(position));
+        //((PostViewHolder) holder).bindData(postList.get(position));
+        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
+
+        switch (holder.getItemViewType()) {
+            case TEXT_VIEW:
+                ((PostViewHolder) holder).bindTextPost(postList.get(position));
+                break;
+            case TEXT_COLORED_VIEW:
+                ((PostViewHolder) holder).bindColoredPost(postList.get(position));
+                break;
+            case IMAGE_VIEW:
+                ((PostViewHolder) holder).bindImagePost(postList.get(position));
+                break;
+            case TEXT_IMAGE_VIEW:
+                ((PostViewHolder) holder).bindTextImagePost(postList.get(position));
+                break;
+        }
     }
 
     private void setList(List<Post> list) {
