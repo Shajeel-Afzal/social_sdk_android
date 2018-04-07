@@ -36,7 +36,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import sumatodev.com.social.R;
-import sumatodev.com.social.adapters.CommentsAdapter;
 import sumatodev.com.social.controllers.CommentLikeController;
 import sumatodev.com.social.managers.CommentManager;
 import sumatodev.com.social.managers.ProfileManager;
@@ -54,22 +53,21 @@ import sumatodev.com.social.views.ExpandableTextView;
 
 public class CommentViewHolder extends RecyclerView.ViewHolder {
 
+    private static final String TAG = CommentViewHolder.class.getSimpleName();
     private final ImageView avatarImageView;
     private final ExpandableTextView commentTextView;
     private final TextView dateTextView;
     private final ProfileManager profileManager;
-    private CommentsAdapter.Callback callback;
     private Context context;
-    private CommentManager commentManager;
     private TextView likes_count;
     private ImageView like_action;
     private ViewGroup commentLikeContainer;
     private CommentLikeController commentLikeController;
+    private CommentManager commentManager;
 
-    public CommentViewHolder(View itemView, final CommentsAdapter.Callback callback) {
+    public CommentViewHolder(View itemView, final OnClickListener onClickListener) {
         super(itemView);
 
-        this.callback = callback;
         this.context = itemView.getContext();
         profileManager = ProfileManager.getInstance(itemView.getContext().getApplicationContext());
         commentManager = CommentManager.getInstance(itemView.getContext().getApplicationContext());
@@ -81,13 +79,13 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         likes_count = itemView.findViewById(R.id.likes_count);
         commentLikeContainer = itemView.findViewById(R.id.commentLikeContainer);
 
-        if (callback != null) {
+        if (onClickListener != null) {
             itemView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        callback.onLongItemClick(v, position);
+                        onClickListener.onLongItemClick(v, position);
                         return true;
                     }
 
@@ -100,7 +98,17 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        callback.onCommentLikeClick(commentLikeController, position);
+                        onClickListener.onLikeClick(commentLikeController, position);
+                    }
+                }
+            });
+
+            avatarImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        onClickListener.onAuthorClick(position, v);
                     }
                 }
             });
@@ -109,44 +117,30 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
 
     public void bindData(Comment comment) {
 
-        Log.d("TAG", "Comments: " + comment.getId());
-
+        Log.d(TAG, "Comments: " + comment.getId());
         commentLikeController = new CommentLikeController(context, comment, likes_count, like_action, true);
 
         final String authorId = comment.getAuthorId();
-        if (comment.getText() != null) {
-            commentTextView.setText(comment.getText());
+        if (authorId != null)
+            profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
+                    avatarImageView, comment.getText()));
 
-            CharSequence date = FormatterUtil.getRelativeTimeSpanString(context, comment.getCreatedDate());
-            dateTextView.setText(date);
-
-        }
+        commentTextView.setText(comment.getText());
 
         if (comment.getLikesCount() > 0) {
             likes_count.setText(String.valueOf(comment.getLikesCount()));
         }
 
-        if (authorId != null) {
-            profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
-                    avatarImageView, comment.getText()));
-
-            avatarImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    callback.onAuthorClick(authorId, v);
-                }
-            });
-        }
+        CharSequence date = FormatterUtil.getRelativeTimeSpanString(context, comment.getCreatedDate());
+        dateTextView.setText(date);
 
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         if (firebaseUser != null) {
-            commentManager.hasCurrentUserLikeComment(context,comment.getPostId(), comment.getId(), onObjectExistListener());
+            commentManager.hasCurrentUserLikeComment(comment, onObjectExistListener());
         }
-
     }
 
-    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView,
-                                                                           final ImageView avatarImageView, final String comment) {
+    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView, final ImageView avatarImageView, final String comment) {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(Profile obj) {
@@ -180,5 +174,13 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                 commentLikeController.initLike(exist);
             }
         };
+    }
+
+    public interface OnClickListener {
+        void onLongItemClick(View view, int position);
+
+        void onLikeClick(CommentLikeController likeController, int position);
+
+        void onAuthorClick(int position, View view);
     }
 }

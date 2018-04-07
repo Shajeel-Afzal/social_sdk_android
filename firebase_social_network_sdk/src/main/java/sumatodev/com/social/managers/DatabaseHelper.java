@@ -64,7 +64,6 @@ import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
-import sumatodev.com.social.managers.listeners.OnCommentListChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
@@ -985,35 +984,74 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public void getComments(final String postId, final OnCommentListChangedListener<Comment> onCommentListChangedListener, final Long date) {
+    public void getComments(final String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
-
-        Query postsQuery;
-        if (date == 0) {
-            postsQuery = databaseReference.limitToLast(Constants.Post.POST_AMOUNT_ON_PAGE).orderByChild("createdDate");
-        } else {
-            postsQuery = databaseReference.limitToLast(Constants.Post.POST_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdDate");
-        }
-
-        postsQuery.keepSynced(true);
-        postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "getCommentsList: " + dataSnapshot.getValue());
-                Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
-                CommentListResult result = parseCommentList(objectMap);
-
-                if (result.getComments().isEmpty() && result.isMoreDataAvailable()) {
-                    getComments(postId, onCommentListChangedListener, result.getLastItemCreatedDate() - 1);
-                } else {
-                    onCommentListChangedListener.onListChanged(parseCommentList(objectMap));
+                List<Comment> list = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Comment comment = snapshot.getValue(Comment.class);
+                    list.add(comment);
                 }
+
+                Collections.sort(list, new Comparator<Comment>() {
+                    @Override
+                    public int compare(Comment lhs, Comment rhs) {
+                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
+                    }
+                });
+
+                onDataChangedListener.onListChanged(list);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                LogUtil.logError(TAG, "getComments(), onCancelled", new Exception(databaseError.getMessage()));
-                onCommentListChangedListener.onCanceled(context.getString(R.string.permission_denied_error));
+
+            }
+        });
+    }
+
+    public void getCommentList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
+        DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
+        final List<Comment> list = new ArrayList<>();
+
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if (dataSnapshot != null) {
+                    Comment comment = dataSnapshot.getValue(Comment.class);
+                    list.add(comment);
+                }
+
+                Collections.sort(list, new Comparator<Comment>() {
+                    @Override
+                    public int compare(Comment lhs, Comment rhs) {
+                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
+                    }
+                });
+
+                onDataChangedListener.onListChanged(list);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
@@ -1119,10 +1157,11 @@ public class DatabaseHelper {
         });
     }
 
-    public ValueEventListener hasCurrentUserLikeCommentValue(String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
-        DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF).child(postId)
-                .child(commentId).child(getCurrentUser());
-        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+    public void hasCurrentUserLikeCommentValue(Comment comment,
+                                                             final OnObjectExistListener<Like> onObjectExistListener) {
+        DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF).child(comment.getPostId())
+                .child(comment.getId()).child(getCurrentUser());
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 onObjectExistListener.onDataChanged(dataSnapshot.exists());
@@ -1130,12 +1169,23 @@ public class DatabaseHelper {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                LogUtil.logError(TAG, "hasCurrentUserLikeSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
-
-        activeListeners.put(valueEventListener, databaseReference);
-        return valueEventListener;
+//        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                onObjectExistListener.onDataChanged(dataSnapshot.exists());
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+//
+//        activeListeners.put(valueEventListener, databaseReference);
+//        return valueEventListener;
     }
 
     public void addComplainToPost(Post post) {

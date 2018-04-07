@@ -22,6 +22,7 @@ import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.ui.activities.BaseActivity;
+import sumatodev.com.social.ui.activities.MainActivity;
 import sumatodev.com.social.ui.activities.PostDetailsActivity;
 
 /**
@@ -32,7 +33,7 @@ public class CommentLikeController {
 
     private static final int ANIMATION_DURATION = 300;
 
-    public static enum AnimationType {
+    public enum AnimationType {
         COLOR_ANIM, BOUNCE_ANIM
     }
 
@@ -40,34 +41,30 @@ public class CommentLikeController {
     private String postId;
     private String commentId;
 
-    private AnimationType likeAnimationType = AnimationType.COLOR_ANIM;
+    private AnimationType likeAnimationType = AnimationType.BOUNCE_ANIM;
 
-
-    private TextView likes_count;
+    private TextView likeCounterTextView;
     private ImageView likesImageView;
-
 
     private boolean isListView = false;
 
     private boolean isLiked = false;
     private boolean updatingLikeCounter = true;
 
-
-    public CommentLikeController(Context context, Comment comment, TextView likes_count,
-                                 ImageView like_action, boolean isListView) {
+    public CommentLikeController(Context context, Comment comment, TextView likeCounterTextView,
+                                 ImageView likesImageView, boolean isListView) {
         this.context = context;
         this.postId = comment.getPostId();
         this.commentId = comment.getId();
-        this.likes_count = likes_count;
-        this.likesImageView = like_action;
+        this.likeCounterTextView = likeCounterTextView;
+        this.likesImageView = likesImageView;
         this.isListView = isListView;
     }
 
-
-    private void likeClickAction(long prevValue) {
-
+    public void likeClickAction(long prevValue) {
         if (!updatingLikeCounter) {
             startAnimateLikeButton(likeAnimationType);
+
             if (!isLiked) {
                 addLike(prevValue);
             } else {
@@ -76,25 +73,24 @@ public class CommentLikeController {
         }
     }
 
-
-    private void likeClickActionLocal(Comment comment) {
+    public void likeClickActionLocal(Comment comment) {
         setUpdatingLikeCounter(false);
         likeClickAction(comment.getLikesCount());
-        updateLocalCommentLikeCounter(comment);
+        updateLocalPostLikeCounter(comment);
     }
 
     private void addLike(long prevValue) {
         updatingLikeCounter = true;
         isLiked = true;
-        likes_count.setText(String.valueOf(prevValue + 1));
+        likeCounterTextView.setText(String.valueOf(prevValue + 1));
         ApplicationHelper.getDatabaseHelper().updateCommentLike(postId, commentId);
     }
 
     private void removeLike(long prevValue) {
         updatingLikeCounter = true;
         isLiked = false;
-        likes_count.setText(String.valueOf(prevValue - 1));
-        ApplicationHelper.getDatabaseHelper().removeCommentLike(postId, commentId);
+        likeCounterTextView.setText(String.valueOf(prevValue - 1));
+        ApplicationHelper.getDatabaseHelper().removeCommentLike(postId,commentId);
     }
 
     private void startAnimateLikeButton(AnimationType animationType) {
@@ -107,6 +103,7 @@ public class CommentLikeController {
                 break;
         }
     }
+
     private void bounceAnimateImageView() {
         AnimatorSet animatorSet = new AnimatorSet();
 
@@ -164,17 +161,36 @@ public class CommentLikeController {
         return Color.argb(alpha, red, green, blue);
     }
 
+    public AnimationType getLikeAnimationType() {
+        return likeAnimationType;
+    }
+
+    public void setLikeAnimationType(AnimationType likeAnimationType) {
+        this.likeAnimationType = likeAnimationType;
+    }
+
+    public boolean isLiked() {
+        return isLiked;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
+    }
+
+    public boolean isUpdatingLikeCounter() {
+        return updatingLikeCounter;
+    }
+
     public void setUpdatingLikeCounter(boolean updatingLikeCounter) {
         this.updatingLikeCounter = updatingLikeCounter;
     }
-
 
     public void initLike(boolean isLiked) {
         likesImageView.setImageResource(isLiked ? R.drawable.ic_like_active : R.drawable.ic_like);
         this.isLiked = isLiked;
     }
 
-    private void updateLocalCommentLikeCounter(Comment comment) {
+    private void updateLocalPostLikeCounter(Comment comment) {
         if (isLiked) {
             comment.setLikesCount(comment.getLikesCount() + 1);
         } else {
@@ -183,24 +199,7 @@ public class CommentLikeController {
     }
 
     public void handleLikeClickAction(final BaseActivity baseActivity, final Comment comment) {
-        PostManager.getInstance(baseActivity.getApplicationContext()).isPostExistSingleValue(comment.getPostId(),
-                new OnObjectExistListener<Post>() {
-                    @Override
-                    public void onDataChanged(boolean exist) {
-                        if (exist) {
-                            if (baseActivity.hasInternetConnection()) {
-                                checkCommentExist(baseActivity, comment);
-                            } else {
-                                showWarningMessage(baseActivity, R.string.internet_connection_failed);
-                            }
-                        } else {
-                            showWarningMessage(baseActivity, R.string.message_post_was_removed);
-                        }
-                    }
-                });
-    }
 
-    private void checkCommentExist(final BaseActivity baseActivity, final Comment comment) {
         CommentManager.getInstance(baseActivity.getApplicationContext())
                 .isCommentExist(comment.getPostId(), comment.getId(), new OnObjectExistListener<Comment>() {
                     @Override
@@ -226,7 +225,6 @@ public class CommentLikeController {
         }
     }
 
-
     private void doHandleLikeClickAction(BaseActivity baseActivity, Comment comment) {
         ProfileStatus profileStatus = ProfileManager.getInstance(baseActivity).checkProfile();
 
@@ -239,25 +237,5 @@ public class CommentLikeController {
         } else {
             baseActivity.doAuthorization(profileStatus);
         }
-    }
-
-    public AnimationType getLikeAnimationType() {
-        return likeAnimationType;
-    }
-
-    public void setLikeAnimationType(AnimationType likeAnimationType) {
-        this.likeAnimationType = likeAnimationType;
-    }
-
-    public boolean isLiked() {
-        return isLiked;
-    }
-
-    public void setLiked(boolean liked) {
-        isLiked = liked;
-    }
-
-    public boolean isUpdatingLikeCounter() {
-        return updatingLikeCounter;
     }
 }

@@ -27,7 +27,6 @@ import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
-import sumatodev.com.social.managers.listeners.OnCommentListChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
@@ -67,8 +66,8 @@ public class CommentManager extends FirebaseListenersManager {
         addListenerToMap(activityContext, valueEventListener);
     }
 
-    public void getComments(String postId, OnCommentListChangedListener<Comment> onDataChangedListener, long date) {
-        ApplicationHelper.getDatabaseHelper().getComments(postId, onDataChangedListener, date);
+    public void getComments(String postId, OnDataChangedListener<Comment> onDataChangedListener) {
+        ApplicationHelper.getDatabaseHelper().getCommentList(postId, onDataChangedListener);
     }
 
 
@@ -89,9 +88,11 @@ public class CommentManager extends FirebaseListenersManager {
         });
     }
 
-    public void hasCurrentUserLikeComment(Context context, String postId, String commentId, final OnObjectExistListener<Like> onObjectExistListener) {
-        ValueEventListener valueEventListener = ApplicationHelper.getDatabaseHelper().hasCurrentUserLikeCommentValue(postId, commentId, onObjectExistListener);
-        addListenerToMap(context, valueEventListener);
+    public void hasCurrentUserLikeComment(Comment comment,
+                                          final OnObjectExistListener<Like> onObjectExistListener) {
+        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+        databaseHelper.hasCurrentUserLikeCommentValue(comment, onObjectExistListener);
+
     }
 
     public void updateComment(String commentId, String commentText, String postId, OnTaskCompleteListener onTaskCompleteListener) {

@@ -392,7 +392,15 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
             View imageView = v.findViewById(R.id.postImageView);
             View authorImageView = v.findViewById(R.id.authorImageView);
 
-            if (imageView != null) {
+            if (imageView != null && authorImageView != null) {
+
+                ActivityOptions options = ActivityOptions.
+                        makeSceneTransitionAnimation(MainActivity.this,
+                                new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name)),
+                                new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
+                        );
+                startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+            } else if (imageView != null) {
                 ActivityOptions options = ActivityOptions.
                         makeSceneTransitionAnimation(MainActivity.this,
                                 new android.util.Pair<>(imageView, getString(R.string.post_image_transition_name))
@@ -404,6 +412,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                                 new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
                         );
                 startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
+
             } else {
                 startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
             }

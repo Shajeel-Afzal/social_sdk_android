@@ -44,7 +44,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
     private List<Comment> list = new ArrayList<>();
     private Callback callback;
     private PostDetailsActivity activity;
-    protected int selectedCommentPosition = -1;
+    private int selectedCommentPosition = -1;
 
     public CommentsAdapter(PostDetailsActivity activity) {
         this.activity = activity;
@@ -52,15 +52,41 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
     @Override
     public CommentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comment_list_item, parent, false);
-        return new CommentViewHolder(view, callback);
+        final View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.comment_list_item, parent, false);
+        return new CommentViewHolder(view, onClickListener());
+    }
+
+    private CommentViewHolder.OnClickListener onClickListener(){
+        return new CommentViewHolder.OnClickListener() {
+            @Override
+            public void onLongItemClick(View view, int position) {
+                selectedCommentPosition = position;
+                if (callback != null) {
+                    callback.onLongItemClick(view, position);
+                }
+            }
+
+            @Override
+            public void onLikeClick(CommentLikeController likeController, int position) {
+                    Comment comment = getItemByPosition(position);
+                    likeController.handleLikeClickAction(activity, comment);
+
+            }
+
+            @Override
+            public void onAuthorClick(int position, View view) {
+                if (callback != null) {
+                    callback.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
+                }
+            }
+        };
     }
 
     @Override
     public void onBindViewHolder(CommentViewHolder holder, int position) {
         holder.itemView.setLongClickable(true);
         holder.bindData(getItemByPosition(position));
-
     }
 
     public Comment getItemByPosition(int position) {
@@ -76,20 +102,26 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
         notifyDataSetChanged();
     }
 
-    public void removeComment(int position) {
-        list.remove(position);
-        notifyItemRemoved(position);
-    }
-
-    public void updateComment(int commentPosition) {
-        Comment comment = getItemByPosition(commentPosition);
-        CommentManager.getInstance(activity).getSingleCommentValue(comment.getPostId(),comment.getId(),
-                commentChangedListener(commentPosition));
-    }
-
     @Override
     public int getItemCount() {
         return list.size();
+    }
+
+    public void cleanSelectedPosition() {
+        selectedCommentPosition = -1;
+    }
+
+    public void removeComment() {
+        list.remove(selectedCommentPosition);
+        notifyItemRemoved(selectedCommentPosition);
+    }
+
+    public void updateComment() {
+        if (selectedCommentPosition != -1) {
+            Comment comment = getItemByPosition(selectedCommentPosition);
+            CommentManager.getInstance(activity).getSingleCommentValue(comment.getPostId(), comment.getId(),
+                    commentChangedListener(selectedCommentPosition));
+        }
     }
 
     private OnCommentChangedListener commentChangedListener(final int position) {
@@ -111,7 +143,5 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
         void onLongItemClick(View view, int position);
 
         void onAuthorClick(String authorId, View view);
-
-        void onCommentLikeClick(CommentLikeController likeController, int position);
     }
 }

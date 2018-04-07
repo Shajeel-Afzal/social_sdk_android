@@ -34,13 +34,11 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.transition.Transition;
@@ -66,7 +64,6 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -80,7 +77,6 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
-import sumatodev.com.social.adapters.holders.CommentAdapter;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;
@@ -141,7 +137,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private MenuItem commentsOnOffAction;
 
     private String postId;
-    private int commentPosition;
 
     private FrameLayout textLayout;
     private PostManager postManager;
@@ -156,7 +151,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private CommentsAdapter commentsAdapter;
     private ActionMode mActionMode;
     private boolean isEnterTransitionFinished = false;
-    private CommentAdapter commentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +210,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 }
             });
         }
+
+        initRecyclerView();
 
         postManager.getPost(this, postId, createOnPostChangeListener());
 
@@ -339,60 +335,35 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private void initRecyclerView() {
 
-        if (post != null) {
-            SwipeRefreshLayout swipeContainer = findViewById(R.id.swipeContainer);
-            commentAdapter = new CommentAdapter(PostDetailsActivity.this, post.getId());
-            commentAdapter.setCallback(new CommentAdapter.Callback() {
-                @Override
-                public void onItemClick(Comment comment, View view) {
+        commentsAdapter = new CommentsAdapter(PostDetailsActivity.this);
+        commentsAdapter.setCallback(new CommentsAdapter.Callback() {
+            @Override
+            public void onLongItemClick(View view, int position) {
+                Comment selectedComment = commentsAdapter.getItemByPosition(position);
+                startActionMode(selectedComment);
+            }
 
-                }
+            @Override
+            public void onAuthorClick(String authorId, View view) {
+                openProfileActivity(authorId, view);
+            }
+        });
+        commentsRecyclerView.setAdapter(commentsAdapter);
+        commentsRecyclerView.setNestedScrollingEnabled(false);
+        commentsRecyclerView.addItemDecoration(new DividerItemDecoration(commentsRecyclerView.getContext(),
+                ((LinearLayoutManager) commentsRecyclerView.getLayoutManager()).getOrientation()));
 
-                @Override
-                public void onListLoadingFinished() {
-                    commentsProgressBar.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onAuthorClick(String authorId, View view) {
-
-                }
-
-                @Override
-                public void onCanceled(String message) {
-                    commentsProgressBar.setVisibility(View.GONE);
-                    Toast.makeText(PostDetailsActivity.this, message, Toast.LENGTH_LONG).show();
-                }
-            });
-
-            commentsRecyclerView.setNestedScrollingEnabled(false);
-            commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            ((SimpleItemAnimator) commentsRecyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
-
-            commentsRecyclerView.addItemDecoration(new DividerItemDecoration(commentsRecyclerView.getContext(),
-                    ((LinearLayoutManager) commentsRecyclerView.getLayoutManager()).getOrientation()));
-
-           commentsRecyclerView.setAdapter(commentAdapter);
-           commentAdapter.loadFirstPage();
-
-           commentsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-               @Override
-               public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                   super.onScrolled(recyclerView, dx, dy);
-               }
-           });
-        }
+        commentManager.getComments(postId, createOnCommentsChangedDataListener());
 
     }
 
-    private void startActionMode(Comment selectedComment, int position) {
+    private void startActionMode(Comment selectedComment) {
         if (mActionMode != null) {
             return;
         }
-
         //check access to modify or remove post
         if (hasAccessToEditComment(selectedComment.getAuthorId()) || hasAccessToModifyPost()) {
-            mActionMode = startSupportActionMode(new ActionModeCallback(selectedComment, position));
+            mActionMode = startSupportActionMode(new ActionModeCallback(selectedComment));
         }
     }
 
@@ -435,7 +406,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         updateCounters();
         initLikeButtonState();
         updateOptionMenuVisibility();
-        initRecyclerView();
         updateCommentStatus();
     }
 
@@ -725,6 +695,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             return;
         }
 
+
         String commentText = commentEditText.getText().toString();
 
         if (commentText.length() > 0 && isPostExist) {
@@ -732,6 +703,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 @Override
                 public void onTaskComplete(boolean success) {
                     if (success) {
+                        commentsAdapter.cleanSelectedPosition();
                         scrollToFirstComment();
                     }
                 }
@@ -974,7 +946,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentManager.removeComment(commentId, postId, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
-                //commentsAdapter.removeComment(position);
+                commentsAdapter.removeComment();
                 hideProgress();
                 mode.finish(); // Action picked, so close the CAB
                 showSnackBar(R.string.message_comment_was_removed);
@@ -982,8 +954,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         });
     }
 
-    private void openEditCommentDialog(Comment comment, int position) {
-        commentPosition = position;
+    private void openEditCommentDialog(Comment comment) {
         EditCommentDialog editCommentDialog = new EditCommentDialog();
         Bundle args = new Bundle();
         args.putString(EditCommentDialog.COMMENT_TEXT_KEY, comment.getText());
@@ -997,7 +968,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentManager.updateComment(commentId, newText, postId, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
-                //commentsAdapter.updateComment(commentPosition);
+                commentsAdapter.updateComment();
                 hideProgress();
                 showSnackBar(R.string.message_comment_was_edited);
             }
@@ -1024,9 +995,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         Comment selectedComment;
         int position;
 
-        ActionModeCallback(Comment selectedComment, int position) {
+        ActionModeCallback(Comment selectedComment) {
             this.selectedComment = selectedComment;
-            this.position = position;
         }
 
         // Called when the action mode is created; startActionMode() was called
@@ -1053,7 +1023,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int i = item.getItemId();
             if (i == R.id.editMenuItem) {
-                openEditCommentDialog(selectedComment, position);
+                openEditCommentDialog(selectedComment);
                 mode.finish(); // Action picked, so close the CAB
                 return true;
             } else if (i == R.id.deleteMenuItem) {
