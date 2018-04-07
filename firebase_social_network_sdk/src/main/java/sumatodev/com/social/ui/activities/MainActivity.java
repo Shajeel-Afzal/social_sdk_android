@@ -325,6 +325,13 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
                 }
+
+                @Override
+                public void onLinkClick(String linkUrl) {
+                    if (!linkUrl.isEmpty()) {
+                        openUrlActivity(linkUrl);
+                    }
+                }
             });
 
 
@@ -343,6 +350,12 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
             });
         }
+    }
+
+    private void openUrlActivity(String linkUrl) {
+        Intent intent = new Intent(MainActivity.this, LinkActivity.class);
+        intent.putExtra(LinkActivity.URL_REF, linkUrl);
+        startActivity(intent);
     }
 
     private void openShareIntent(Post post) {

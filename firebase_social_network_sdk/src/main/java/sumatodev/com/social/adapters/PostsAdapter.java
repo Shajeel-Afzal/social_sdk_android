@@ -126,6 +126,13 @@ public class PostsAdapter extends BasePostsAdapter {
             public void onShareClick(int position, View view) {
 
             }
+
+            @Override
+            public void onLinkClick(String linkUrl) {
+                if (callback != null) {
+                    callback.onLinkClick(linkUrl);
+                }
+            }
         };
     }
 
@@ -248,5 +255,7 @@ public class PostsAdapter extends BasePostsAdapter {
         void onAuthorClick(String authorId, View view);
 
         void onCanceled(String message);
+
+        void onLinkClick(String linkUrl);
     }
 }

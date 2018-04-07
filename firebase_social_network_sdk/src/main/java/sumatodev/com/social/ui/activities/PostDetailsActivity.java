@@ -72,6 +72,9 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.klinker.android.link_builder.Link;
+import com.klinker.android.link_builder.LinkBuilder;
+import com.klinker.android.link_builder.TouchableMovementMethod;
 
 import java.util.List;
 
@@ -96,6 +99,7 @@ import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
+import sumatodev.com.social.utils.Regex;
 import sumatodev.com.social.utils.Utils;
 
 public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback {
@@ -456,6 +460,19 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             if (post.getTitle() != null) {
                 titleTextView.setVisibility(View.VISIBLE);
                 titleTextView.setText(post.getTitle());
+
+                Link link = new Link(Regex.WEB_URL_PATTERN)
+                        .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                            @Override
+                            public void onClick(String s) {
+                                if (!s.isEmpty()) {
+                                    openUrlActivity(s);
+                                }
+                            }
+                        });
+
+                LinkBuilder.on(titleTextView).addLink(link).build();
+                titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
             }
 
             if (post.getImagePath() != null) {
@@ -467,6 +484,11 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         }
     }
 
+    private void openUrlActivity(String linkUrl) {
+        Intent intent = new Intent(PostDetailsActivity.this, LinkActivity.class);
+        intent.putExtra(LinkActivity.URL_REF, linkUrl);
+        startActivity(intent);
+    }
     private void updateLayout() {
         if (post != null) {
             if (post.getPostStyle() != null) {

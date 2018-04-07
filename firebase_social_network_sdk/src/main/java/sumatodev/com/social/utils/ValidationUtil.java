@@ -19,6 +19,9 @@ package sumatodev.com.social.utils;
 import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.util.Log;
+
+import java.util.regex.Pattern;
 
 import sumatodev.com.social.Constants;
 
@@ -26,7 +29,7 @@ import sumatodev.com.social.Constants;
  * Created by Kristina on 8/8/15.
  */
 public class ValidationUtil {
-    private static final String [] IMAGE_TYPE = new String[]{"jpg", "png", "jpeg", "bmp", "jp2", "psd", "tif", "gif"};
+    private static final String[] IMAGE_TYPE = new String[]{"jpg", "png", "jpeg", "bmp", "jp2", "psd", "tif", "gif"};
 
     public static boolean isEmailValid(String email) {
         String stricterFilterString = "[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}";
@@ -90,7 +93,7 @@ public class ValidationUtil {
         return false;
     }
 
-    public static boolean hasExtension(String path){
+    public static boolean hasExtension(String path) {
         String extension = null;
         String filenameArray[] = path.split("\\.");
 
@@ -104,9 +107,31 @@ public class ValidationUtil {
         return false;
     }
 
-    public static boolean containsInvalidSymbol(String name){
+    public static boolean containsInvalidSymbol(String name) {
         return name.contains("@");
     }
+
+    public static void containUrl(String string) {
+
+        String[] parts = string.split("\\s+");
+
+        // get every part
+        for (String item : parts) {
+            if (urlPattern.matcher(item).matches()) {
+                //it's a good url
+                System.out.print("<a href=\"" + item + "\">" + item + "</a> ");
+            } else {
+                // it isn't a url
+                System.out.print(item + " ");
+            }
+        }
+    }
+
+    private static final Pattern urlPattern = Pattern.compile(
+            "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"
+                    + "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"
+                    + "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
 
     public static boolean checkImageMinSize(Rect rect) {
         return rect.height() >= Constants.Profile.MIN_AVATAR_SIZE && rect.width() >= Constants.Profile.MIN_AVATAR_SIZE;

@@ -89,6 +89,11 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
             }
 
+            @Override
+            public void onLinkClick(String linkUrl) {
+
+            }
+
         };
     }
 

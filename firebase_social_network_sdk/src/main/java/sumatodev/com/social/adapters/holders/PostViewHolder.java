@@ -21,7 +21,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +28,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -37,6 +37,9 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.klinker.android.link_builder.Link;
+import com.klinker.android.link_builder.LinkBuilder;
+import com.klinker.android.link_builder.TouchableMovementMethod;
 
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
@@ -50,6 +53,7 @@ import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
+import sumatodev.com.social.utils.Regex;
 import sumatodev.com.social.utils.Utils;
 
 /**
@@ -79,14 +83,17 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private PostManager postManager;
 
     private LikeController likeController;
+    private OnClickListener onClickListener;
 
     public PostViewHolder(View view, final OnClickListener onClickListener) {
         this(view, onClickListener, true);
+        this.onClickListener = onClickListener;
     }
 
     public PostViewHolder(View view, final OnClickListener onClickListener, boolean isAuthorNeeded) {
         super(view);
         this.context = view.getContext();
+        this.onClickListener = onClickListener;
 
         authorName = view.findViewById(R.id.author_mame_tv);
         postImageView = view.findViewById(R.id.postImageView);
@@ -151,13 +158,29 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
     public void bindTextPost(Post post) {
 
-        Log.d(TAG,"Text Data: " + post.getTitle());
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
 
         if (post.getTitle() != null) {
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
+
+
+            Link link = new Link(Regex.WEB_URL_PATTERN)
+                    .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                        @Override
+                        public void onClick(String s) {
+                            if (onClickListener != null) {
+                                int position = getAdapterPosition();
+                                if (position != RecyclerView.NO_POSITION) {
+                                    onClickListener.onLinkClick(s);
+                                }
+                            }
+                        }
+                    });
+
+            LinkBuilder.on(titleTextView).addLink(link).build();
+            titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
 
         }
 
@@ -187,6 +210,22 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
+
+            Link link = new Link(Regex.WEB_URL_PATTERN)
+                    .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                        @Override
+                        public void onClick(String s) {
+                            if (onClickListener != null) {
+                                int position = getAdapterPosition();
+                                if (position != RecyclerView.NO_POSITION) {
+                                    onClickListener.onLinkClick(s);
+                                }
+                            }
+                        }
+                    });
+
+            LinkBuilder.on(titleTextView).addLink(link).build();
+            titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
         }
 
         likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
@@ -263,7 +302,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bindTextImagePost(Post post){
+    public void bindTextImagePost(Post post) {
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
@@ -272,6 +311,22 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
+
+            Link link = new Link(Regex.WEB_URL_PATTERN)
+                    .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                        @Override
+                        public void onClick(String s) {
+                            if (onClickListener != null) {
+                                int position = getAdapterPosition();
+                                if (position != RecyclerView.NO_POSITION) {
+                                    onClickListener.onLinkClick(s);
+                                }
+                            }
+                        }
+                    });
+
+            LinkBuilder.on(titleTextView).addLink(link).build();
+            titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
         }
 
         likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
@@ -386,5 +441,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
         void onShareClick(int position, View view);
 
+        void onLinkClick(String linkUrl);
     }
 }

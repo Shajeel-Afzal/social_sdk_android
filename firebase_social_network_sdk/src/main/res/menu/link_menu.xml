@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/actionBack"
+        android:icon="@drawable/ic_arrow_back_black_24dp"
+        android:title="@string/go_back"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
+
+    <item
+        android:id="@+id/actionForward"
+        android:icon="@drawable/ic_arrow_forward_black_24dp"
+        android:title="@string/go_forward"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/openExternal"
+        android:title="@string/open_with"
+        app:showAsAction="never" />
+</menu>

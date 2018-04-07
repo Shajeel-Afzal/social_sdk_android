@@ -255,5 +255,8 @@
     <string name="turn_on_off_comments">Turn On/Off Comments</string>
     <string name="post_text_hint">Share your emotions...</string>
     <string name="todo">TODO</string>
+    <string name="go_back">Go Back</string>
+    <string name="go_forward">Go Forward</string>
+    <string name="open_with">Open With</string>
 
 </resources>

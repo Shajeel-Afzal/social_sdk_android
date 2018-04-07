@@ -35,7 +35,9 @@
             android:label="@string/label_create_post_activity">
             <intent-filter android:label="Social App">
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
@@ -85,6 +87,7 @@
         <activity android:name=".ui.activities.UsersActivity" />
         <activity android:name=".ui.activities.FollowersActivity" />
         <activity android:name=".ui.activities.FollowingActivity" />
+        <activity android:name=".ui.activities.LinkActivity"></activity>
     </application>
 
 </manifest>
