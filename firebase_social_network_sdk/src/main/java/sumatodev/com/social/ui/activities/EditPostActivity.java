@@ -35,7 +35,6 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 
 import sumatodev.com.social.R;
-import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
@@ -157,6 +156,7 @@ public class EditPostActivity extends CreatePostActivity {
         }
 
         if (imageUri != null) {
+            post.setPostStyle(new PostStyle(0));
             post.setImagePath(String.valueOf(imageUri));
             postManager.createOrUpdatePostWithImage(this, EditPostActivity.this, post);
         } else {
@@ -204,6 +204,7 @@ public class EditPostActivity extends CreatePostActivity {
     }
 
     private void loadPostDetailsImage() {
+        colorPicker.setVisibility(View.GONE);
         imageLayout.setVisibility(View.VISIBLE);
 
         Glide.with(this)
