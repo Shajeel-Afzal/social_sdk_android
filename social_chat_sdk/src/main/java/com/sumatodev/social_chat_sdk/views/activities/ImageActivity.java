@@ -40,7 +40,6 @@ public class ImageActivity extends AppCompatActivity implements View.OnClickList
 
         if (getIntent() != null) {
             imageUri = getIntent().getStringExtra("imageUrl");
-            Toast.makeText(this, "imageUrl:" + imageUri, Toast.LENGTH_SHORT).show();
             Log.d(TAG, "ImageUrl: " + imageUri);
         }
         loadImage();

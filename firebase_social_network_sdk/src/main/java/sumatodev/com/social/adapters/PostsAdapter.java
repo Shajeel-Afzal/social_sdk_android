@@ -35,7 +35,7 @@ import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
-import sumatodev.com.social.ui.activities.MainActivity;
+import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.utils.PreferencesUtil;
 
 /**
@@ -50,9 +50,9 @@ public class PostsAdapter extends BasePostsAdapter {
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
     private SwipeRefreshLayout swipeContainer;
-    private MainActivity mainActivity;
+    private BaseActivity mainActivity;
 
-    public PostsAdapter(final MainActivity activity, SwipeRefreshLayout swipeContainer) {
+    public PostsAdapter(final BaseActivity activity, SwipeRefreshLayout swipeContainer) {
         super(activity);
         this.mainActivity = activity;
         this.swipeContainer = swipeContainer;
@@ -77,7 +77,7 @@ public class PostsAdapter extends BasePostsAdapter {
             cleanSelectedPostInformation();
         } else {
             swipeContainer.setRefreshing(false);
-            mainActivity.showFloatButtonRelatedSnackBar(R.string.internet_connection_failed);
+            mainActivity.showSnackBar(R.string.internet_connection_failed);
         }
     }
 
@@ -149,7 +149,7 @@ public class PostsAdapter extends BasePostsAdapter {
                         notifyItemInserted(postList.size());
                         loadNext(lastLoadedItemCreatedDate - 1);
                     } else {
-                        mainActivity.showFloatButtonRelatedSnackBar(R.string.internet_connection_failed);
+                        mainActivity.showSnackBar(R.string.internet_connection_failed);
                     }
                 }
             });
@@ -175,6 +175,7 @@ public class PostsAdapter extends BasePostsAdapter {
 
     private void addList(List<Post> list) {
         this.postList.addAll(list);
+        callback.onPostsListChanged(list.size());
         notifyDataSetChanged();
         isLoading = false;
     }
@@ -187,7 +188,7 @@ public class PostsAdapter extends BasePostsAdapter {
     private void loadNext(final long nextItemCreatedDate) {
 
         if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity) && !activity.hasInternetConnection()) {
-            mainActivity.showFloatButtonRelatedSnackBar(R.string.internet_connection_failed);
+            mainActivity.showSnackBar(R.string.internet_connection_failed);
             hideProgress();
             callback.onListLoadingFinished();
             return;
@@ -228,6 +229,7 @@ public class PostsAdapter extends BasePostsAdapter {
         };
 
         PostManager.getInstance(activity).getPostsList(onPostsDataChangedListener, nextItemCreatedDate);
+
     }
 
     private void hideProgress() {
@@ -239,6 +241,7 @@ public class PostsAdapter extends BasePostsAdapter {
 
     public void removeSelectedPost() {
         postList.remove(selectedPostPosition);
+        callback.onPostsListChanged(postList.size());
         notifyItemRemoved(selectedPostPosition);
     }
 
@@ -257,5 +260,7 @@ public class PostsAdapter extends BasePostsAdapter {
         void onCanceled(String message);
 
         void onLinkClick(String linkUrl);
+
+        void onPostsListChanged(int postsCount);
     }
 }

@@ -33,6 +33,7 @@ public class LinkActivity extends BaseActivity {
         actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
         }
 
         superProgressBar = findViewById(R.id.myProgressBar);
@@ -46,6 +47,10 @@ public class LinkActivity extends BaseActivity {
                 initWebView(urlLink);
             } else {
                 initWebView(urlLink);
+            }
+
+            if (actionBar != null) {
+                actionBar.setTitle(urlLink);
             }
         }
     }

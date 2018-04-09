@@ -52,12 +52,11 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
     @Override
     public CommentViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.comment_list_item, parent, false);
+        final View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comment_list_item, parent, false);
         return new CommentViewHolder(view, onClickListener());
     }
 
-    private CommentViewHolder.OnClickListener onClickListener(){
+    private CommentViewHolder.OnClickListener onClickListener() {
         return new CommentViewHolder.OnClickListener() {
             @Override
             public void onLongItemClick(View view, int position) {
@@ -69,8 +68,8 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
             @Override
             public void onLikeClick(CommentLikeController likeController, int position) {
-                    Comment comment = getItemByPosition(position);
-                    likeController.handleLikeClickAction(activity, comment);
+                Comment comment = getItemByPosition(position);
+                likeController.handleLikeClickAction(activity, comment);
 
             }
 

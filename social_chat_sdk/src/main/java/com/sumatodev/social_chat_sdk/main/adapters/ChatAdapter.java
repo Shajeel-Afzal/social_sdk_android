@@ -25,14 +25,13 @@ import java.util.List;
  * Created by Ali on 12/03/2018.
  */
 
-public class ChatAdpater extends ChatBaseAdapter {
+public class ChatAdapter extends ChatBaseAdapter {
 
-    private static final String TAG = ChatAdpater.class.getName();
+    private static final String TAG = ChatAdapter.class.getName();
     private final static int MY_VIEW = 0;
     private final static int USER_VIEW = 1;
 
     private String userKey;
-
     private Callback callback;
     private boolean isLoading = false;
     private boolean isMoreDataAvailable = true;
@@ -40,7 +39,7 @@ public class ChatAdpater extends ChatBaseAdapter {
     private SwipeRefreshLayout swipeContainer;
     private ChatActivity chatActivity;
 
-    public ChatAdpater(ChatActivity activity, String userKey, SwipeRefreshLayout swipeContainer) {
+    public ChatAdapter(ChatActivity activity, String userKey, SwipeRefreshLayout swipeContainer) {
         super(activity);
         this.chatActivity = activity;
         this.userKey = userKey;
@@ -79,12 +78,13 @@ public class ChatAdpater extends ChatBaseAdapter {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
         if (viewType == MY_VIEW) {
-            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_view, parent, false), callback);
+            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_textview, parent, false), callback);
         } else if (viewType == USER_VIEW) {
-            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_view, parent, false),
+            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_textview, parent, false),
                     callback);
+        } else {
+            return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
         }
-        return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
 
     }
 
@@ -107,16 +107,18 @@ public class ChatAdpater extends ChatBaseAdapter {
             });
         }
 
-        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
-            if (holder.getItemViewType() == MY_VIEW) {
+        switch (holder.getItemViewType()) {
+            case MY_VIEW:
                 ((ChatMyHolder) holder).textLayout.setLongClickable(true);
                 ((ChatMyHolder) holder).setData(messageList.get(position));
-            } else if (holder.getItemViewType() == USER_VIEW) {
+                break;
+            case USER_VIEW:
                 ((ChatUserHolder) holder).textLayout.setLongClickable(true);
                 ((ChatUserHolder) holder).bindData(messageList.get(position));
-            }
-            Log.d(TAG, "index: " + position + " id: " + messageList.get(position).getId());
+                break;
         }
+
+        Log.d(TAG, "index: " + position + " id: " + messageList.get(position).getId());
     }
 
     private void addList(List<Message> list) {
@@ -131,7 +133,7 @@ public class ChatAdpater extends ChatBaseAdapter {
 
     private void loadNext(final long nextItemCreatedDate) {
 
-        if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(chatActivity) && !activity.hasInternetConnection()) {
+        if (!PreferencesUtil.isMessageWasLoadedAtLeastOnce(chatActivity) && !activity.hasInternetConnection()) {
             activity.showSnackBar(R.string.internet_connection_failed);
             hideProgress();
             callback.onListLoadingFinished();
@@ -155,8 +157,8 @@ public class ChatAdpater extends ChatBaseAdapter {
 
                 if (!list.isEmpty()) {
                     addList(list);
-                    if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(activity)) {
-                        PreferencesUtil.setPostWasLoadedAtLeastOnce(activity, true);
+                    if (!PreferencesUtil.isMessageWasLoadedAtLeastOnce(activity)) {
+                        PreferencesUtil.setMessageWasLoadedAtLeastOnce(activity, true);
                     }
                 } else {
                     isLoading = false;
@@ -171,7 +173,7 @@ public class ChatAdpater extends ChatBaseAdapter {
             }
         };
 
-        MessagesManager.getInstance(activity).getMessageList(activity, userKey, onMessageListChangedListener, nextItemCreatedDate);
+        MessagesManager.getInstance(activity).getMessageList(userKey, onMessageListChangedListener, nextItemCreatedDate);
     }
 
     private void hideProgress() {

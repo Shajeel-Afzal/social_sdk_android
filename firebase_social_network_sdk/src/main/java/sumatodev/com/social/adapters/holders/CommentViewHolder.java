@@ -125,7 +125,9 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
             profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
                     avatarImageView, comment.getText()));
 
-        commentTextView.setText(comment.getText());
+        if (comment.getText() != null) {
+            commentTextView.setText(comment.getText());
+        }
 
         if (comment.getLikesCount() > 0) {
             likes_count.setText(String.valueOf(comment.getLikesCount()));

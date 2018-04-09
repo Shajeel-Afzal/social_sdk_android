@@ -3,7 +3,6 @@ package com.sumatodev.social_chat_sdk.main.adapters.holders;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,7 +15,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.ChatAdpater;
+import com.sumatodev.social_chat_sdk.main.adapters.ChatAdapter;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 
 
@@ -32,10 +31,10 @@ public class ChatMyHolder extends RecyclerView.ViewHolder {
     public LinearLayout textLayout;
     private ImageView messageImage;
     private ProgressBar progressBar;
-    private ChatAdpater.Callback callback;
+    private ChatAdapter.Callback callback;
 
 
-    public ChatMyHolder(View itemView, ChatAdpater.Callback callback) {
+    public ChatMyHolder(View itemView, ChatAdapter.Callback callback) {
         super(itemView);
         this.callback = callback;
         bindViews(itemView);
@@ -43,6 +42,7 @@ public class ChatMyHolder extends RecyclerView.ViewHolder {
     }
 
     private void bindViews(View itemView) {
+
         messageText = itemView.findViewById(R.id.messageText);
         textTime = itemView.findViewById(R.id.textTime);
         textLayout = itemView.findViewById(R.id.textLayout);

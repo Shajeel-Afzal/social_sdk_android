@@ -5,28 +5,21 @@
     android:background="@color/white">
 
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id="@+id/swipeContainer"
+    <cz.kinst.jakub.view.SimpleStatefulLayout
+        android:id="@+id/stateful_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/input">
+        android:layout_above="@+id/input"
+        android:background="@android:color/white"
+        app:emptyLayout="@layout/empty_layout">
 
-        <cz.kinst.jakub.view.SimpleStatefulLayout
-            android:id="@+id/stateful_view"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/white"
-            app:emptyLayout="@layout/empty_layout">
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:divider="@null"
-                android:padding="10dp"
-                android:paddingBottom="@dimen/intrinsic_padding" />
-        </cz.kinst.jakub.view.SimpleStatefulLayout>
-    </android.support.v4.widget.SwipeRefreshLayout>
+            android:divider="@null"
+            android:paddingBottom="@dimen/intrinsic_padding" />
+    </cz.kinst.jakub.view.SimpleStatefulLayout>
 
     <View
         android:layout_width="match_parent"

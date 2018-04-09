@@ -15,7 +15,7 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.ChatAdpater;
+import com.sumatodev.social_chat_sdk.main.adapters.ChatAdapter;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.Message;
@@ -38,10 +38,10 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
     private ImageView messageImage;
     private ProgressBar progressBar;
     private MessagesManager messagesManager;
-    private ChatAdpater.Callback callback;
+    private ChatAdapter.Callback callback;
 
 
-    public ChatUserHolder(View itemView, final ChatAdpater.Callback callback) {
+    public ChatUserHolder(View itemView, final ChatAdapter.Callback callback) {
         super(itemView);
 
         this.callback = callback;

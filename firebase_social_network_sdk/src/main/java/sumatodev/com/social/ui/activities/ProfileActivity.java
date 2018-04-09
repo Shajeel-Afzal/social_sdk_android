@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -40,6 +41,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,20 +71,20 @@ import java.util.HashMap;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
-import sumatodev.com.social.adapters.PostsByUserAdapter;
+import sumatodev.com.social.adapters.PostsAdapter;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
-import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Follow;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
 import sumatodev.com.social.utils.NotificationView;
@@ -99,7 +102,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private TextView postsCounterTextView, userFollowers, userFollowings;
-    private TextView postsLabelTextView;
+    private TextView postsLabelTextView,newPostsCounterTextView;
     private SimpleStatefulLayout statefulLayout, statefulAccountView;
     private Button followBtn;
     private LinearLayout dataLayout;
@@ -114,14 +117,16 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private String currentUserId;
     private String userID;
 
-    private PostsByUserAdapter postsAdapter;
+    private PostsAdapter mPostsAdapter;
+    //private PostsByUserAdapter postsAdapter;
     private SwipeRefreshLayout swipeContainer;
     //private TextView likesCountersTextView;
     private ProfileManager profileManager;
     private PostManager postManager;
-    private NotificationView notificationView;
     private DatabaseReference mFriendsRef;
     private boolean mProcessClick = false;
+    private boolean counterAnimationInProgress = false;
+    private PostManager.PostCounterWatcher postCounterWatcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,16 +153,14 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
         postManager = PostManager.getInstance(this);
         profileManager = ProfileManager.getInstance(this);
-        notificationView = new NotificationView(this);
         // Set up the login form.
-
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        postCounterWatcher = new PostManager.PostCounterWatcher() {
             @Override
-            public void onRefresh() {
-                onRefreshAction();
+            public void onPostCounterChanged(int newValue) {
+                updateNewPostCounter();
             }
-        });
-
+        };
+        postManager.setPostCounterWatcher(postCounterWatcher);
         //supportPostponeEnterTransition();
 
     }
@@ -169,6 +172,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         imageView = findViewById(R.id.imageView);
         //nameEditText = findViewById(R.id.nameEditText);
         postsCounterTextView = findViewById(R.id.postsCounterTextView);
+        newPostsCounterTextView = findViewById(R.id.newPostsCounterTextView);
         followBtn = findViewById(R.id.followBtn);
         //likesCountersTextView = findViewById(R.id.likesCountersTextView);
         postsLabelTextView = findViewById(R.id.postsLabelTextView);
@@ -226,6 +230,12 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                 profileManager.checkAccountStatus(userID, onObjectChangedListener());
             }
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateNewPostCounter();
     }
 
     private OnObjectChangedListener<AccountStatus> onObjectChangedListener() {
@@ -314,10 +324,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                     if (data != null) {
                         PostStatus postStatus = (PostStatus) data.getSerializableExtra(PostDetailsActivity.POST_STATUS_EXTRA_KEY);
                         if (postStatus.equals(PostStatus.REMOVED)) {
-                            postsAdapter.removeSelectedPost();
+                            mPostsAdapter.removeSelectedPost();
 
                         } else if (postStatus.equals(PostStatus.UPDATED)) {
-                            postsAdapter.updateSelectedPost();
+                            mPostsAdapter.updateSelectedPost();
                         }
                     }
                     break;
@@ -329,7 +339,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
         if (post != null) {
             postManager.createOrUpdatePostWithImage(this, ProfileActivity.this, post);
-            notificationView.setNotification(true, "Uploading Post");
         }
 
     }
@@ -338,10 +347,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     public void onPostSaved(boolean success) {
         hideProgress();
         if (success) {
-            notificationView.setNotification(false, "Uploading Post Successful");
-            postsAdapter.loadPosts();
+            refreshPostList();
             setResult(RESULT_OK);
-            //showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
             LogUtil.logDebug(TAG, "Post was created");
         } else {
             showSnackBar(R.string.error_fail_create_post);
@@ -349,30 +356,55 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
         }
     }
 
-    private void onRefreshAction() {
-        postsAdapter.loadPosts();
+
+    private void refreshPostList() {
+        mPostsAdapter.loadFirstPage();
+        if (mPostsAdapter.getItemCount() > 0) {
+            recyclerView.scrollToPosition(0);
+        }
     }
 
     private void loadPostsList() {
         if (recyclerView == null) {
             statefulLayout.showProgress();
 
-            recyclerView = findViewById(R.id.recycler_view);
-            postsAdapter = new PostsByUserAdapter(this, userID);
-            postsAdapter.setCallBack(new PostsByUserAdapter.CallBack() {
+
+            newPostsCounterTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onItemClick(final Post post, final View view) {
-                    PostManager.getInstance(ProfileActivity.this).isPostExistSingleValue(post.getId(),
-                            new OnObjectExistListener<Post>() {
-                                @Override
-                                public void onDataChanged(boolean exist) {
-                                    if (exist) {
-                                        openPostDetailsActivity(post, view);
-                                    } else {
-                                        showSnackBar(R.string.error_post_was_removed);
-                                    }
-                                }
-                            });
+                public void onClick(View v) {
+                    //refresh Post List
+                    refreshPostList();
+                }
+            });
+
+            recyclerView = findViewById(R.id.recycler_view);
+            mPostsAdapter = new PostsAdapter(this, swipeContainer);
+            mPostsAdapter.setCallback(new PostsAdapter.Callback() {
+                @Override
+                public void onItemClick(Post post, View view) {
+
+                }
+
+                @Override
+                public void onListLoadingFinished() {
+                    statefulLayout.showContent();
+                }
+
+                @Override
+                public void onAuthorClick(String authorId, View view) {
+
+                }
+
+                @Override
+                public void onCanceled(String message) {
+                    statefulLayout.showEmpty();
+                    statefulLayout.setEmptyText(message);
+                    Toast.makeText(ProfileActivity.this, message, Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onLinkClick(String linkUrl) {
+
                 }
 
                 @Override
@@ -380,30 +412,81 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                     String postsLabel = getResources().getQuantityString(R.plurals.posts_counter_format, postsCount, postsCount);
                     postsCounterTextView.setText(buildCounterSpannable(postsLabel, postsCount));
 
+                    postsCounterTextView.setVisibility(View.VISIBLE);
+
                     if (postsCount > 0) {
                         postsLabelTextView.setVisibility(View.VISIBLE);
-                        statefulLayout.showContent();
-                    } else if (postsCount < 0) {
-                        statefulLayout.setEmptyText("no posts to show");
-                        statefulLayout.showEmpty();
                     }
-
-                    swipeContainer.setRefreshing(false);
-                }
-
-                @Override
-                public void onPostLoadingCanceled() {
-                    swipeContainer.setRefreshing(false);
-                    statefulLayout.setEmptyText("loading canceled");
-                    statefulLayout.showEmpty();
                 }
             });
 
+
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             ((SimpleItemAnimator) recyclerView.getItemAnimator()).setSupportsChangeAnimations(false);
-            recyclerView.setAdapter(postsAdapter);
-            postsAdapter.loadPosts();
+            recyclerView.setAdapter(mPostsAdapter);
+            mPostsAdapter.loadFirstPage();
+            updateNewPostCounter();
+
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    hideCounterView();
+                    super.onScrolled(recyclerView, dx, dy);
+                }
+            });
         }
+    }
+
+
+    private void updateNewPostCounter() {
+        Handler mainHandler = new Handler(this.getMainLooper());
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                int newPostsQuantity = postManager.getNewPostsCounter();
+
+                if (newPostsCounterTextView != null) {
+                    if (newPostsQuantity > 0) {
+                        showCounterView();
+
+                        String counterFormat = getResources().getQuantityString(R.plurals.new_posts_counter_format, newPostsQuantity, newPostsQuantity);
+                        newPostsCounterTextView.setText(String.format(counterFormat, newPostsQuantity));
+                    } else {
+                        hideCounterView();
+                    }
+                }
+            }
+        });
+    }
+
+    private void hideCounterView() {
+        if (!counterAnimationInProgress && newPostsCounterTextView.getVisibility() == View.VISIBLE) {
+            counterAnimationInProgress = true;
+            AlphaAnimation alphaAnimation = AnimationUtils.hideViewByAlpha(newPostsCounterTextView);
+            alphaAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    counterAnimationInProgress = false;
+                    newPostsCounterTextView.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+
+            alphaAnimation.start();
+        }
+    }
+
+    private void showCounterView() {
+        AnimationUtils.showViewByScaleAndVisibility(newPostsCounterTextView);
     }
 
     private Spannable buildCounterSpannable(String label, int value) {
@@ -440,7 +523,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                 new android.util.Pair<>(authorImageView, getString(R.string.post_author_image_transition_name))
                         );
                 startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST, options.toBundle());
-            }else {
+            } else {
                 startActivityForResult(intent, PostDetailsActivity.UPDATE_POST_REQUEST);
             }
 
@@ -696,6 +779,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,
                                     (int) totalFollowings);
                             userFollowings.setText(buildCounterSpannable(following, (int) totalFollowings));
+
+
                         }
                     }
 

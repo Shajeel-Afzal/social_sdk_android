@@ -31,6 +31,9 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.ProfileStatus;
@@ -53,6 +56,15 @@ public class BaseActivity extends AppCompatActivity {
 
     protected boolean isActive() {
         return mIsActive;
+    }
+
+    public String getCurrentUser(){
+        FirebaseUser firebaseUser= FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser!=null){
+            return firebaseUser.getUid();
+        }else {
+            return null;
+        }
     }
 
     @Override

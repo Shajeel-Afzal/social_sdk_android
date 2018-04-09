@@ -5,7 +5,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,7 +26,8 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.ChatAdpater;
+import com.sumatodev.social_chat_sdk.main.adapters.MessagesAdapter;
+import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
@@ -40,6 +41,7 @@ import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 
@@ -59,10 +61,11 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
 
     private SimpleStatefulLayout mStatefulLayout;
     private ActionMode actionMode;
-    private ChatAdpater adpater;
-    private SwipeRefreshLayout swipeContainer;
+    private MessagesAdapter messagesAdapter;
     private RecyclerView recyclerView;
-    private LinearLayoutManager layoutManager;
+
+    private static final int TIME_OUT_LOADING_MESSAGES = 30000;
+    private boolean attemptToLoadMessages = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,6 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
         input.setAttachmentsListener(this);
 
         recyclerView = findViewById(R.id.recyclerView);
-        swipeContainer = findViewById(R.id.swipeContainer);
         mStatefulLayout = findViewById(R.id.stateful_view);
 
 
@@ -96,6 +98,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
             Toast.makeText(this, "open Profile", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void setupActionBar() {
         actionBar = getSupportActionBar();
@@ -114,18 +117,18 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
 
                 userImage_c.setOnClickListener(this);
                 messagesManager.getUsersPublicProfile(ChatActivity.this, userKey,
-                        createProfileChangeListener(userName_c, userImage_c));
+                        createProfileChangeListener());
             }
         }
     }
 
-    private OnObjectChangedListener<UsersPublic> createProfileChangeListener(final TextView userName, final ImageView authorImageView) {
+    private OnObjectChangedListener<UsersPublic> createProfileChangeListener() {
         return new OnObjectChangedListener<UsersPublic>() {
             @Override
             public void onObjectChanged(final UsersPublic obj) {
 
                 if (obj.getUsername() != null) {
-                    userName.setText(obj.getUsername());
+                    userName_c.setText(obj.getUsername());
                 }
                 if (obj.getStatus() != null) {
                     status_c.setVisibility(View.VISIBLE);
@@ -144,7 +147,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                             .placeholder(R.drawable.imageview_user_thumb)
                             .transform(new RoundedCornersTransform())
                             .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(authorImageView, new Callback() {
+                            .into(userImage_c, new Callback() {
                                 @Override
                                 public void onSuccess() {
 
@@ -156,7 +159,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                                     Picasso.with(ChatActivity.this).load(obj.getPhotoUrl())
                                             .placeholder(R.drawable.imageview_user_thumb)
                                             .transform(new RoundedCornersTransform())
-                                            .into(authorImageView);
+                                            .into(userImage_c);
                                 }
                             });
                 }
@@ -274,61 +277,69 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
 
 
     private void initRecyclerView() {
-
         mStatefulLayout.showProgress();
 
-        adpater = new ChatAdpater(this, userKey, swipeContainer);
-        adpater.setCallback(new ChatAdpater.Callback() {
+        messagesAdapter = new MessagesAdapter(this);
+        messagesAdapter.setCallback(new MessagesAdapter.Callback() {
             @Override
-            public void onLongItemClick(View view, int postion) {
-                Message selectedMessage = adpater.getItemByPosition(postion);
-                startActionMode(selectedMessage);
+            public void onItemLongClick(int position, View view) {
+                Message message = messagesAdapter.getItemByPosition(position);
+                startActionMode(message);
             }
 
             @Override
-            public void onListLoadingFinished() {
-                mStatefulLayout.showContent();
-            }
-
-            @Override
-            public void onAuthorClick(String authorId, View view) {
-                if (hasInternetConnection()) {
-                    Toast.makeText(ChatActivity.this, "image clicked", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCanceled(String message) {
-                mStatefulLayout.showEmpty();
-                mStatefulLayout.setEmptyText(message);
-            }
-
-            @Override
-            public void onImageClick(String image) {
-                if (image != null) {
-                   openImageDetailActivity(image);
+            public void onUserImageClick(String userKey, View view) {
+                if (userKey != null && hasInternetConnection()) {
+                    Toast.makeText(ChatActivity.this, userKey, Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        layoutManager = new LinearLayoutManager(this);
+        recyclerView.setAdapter(messagesAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adpater);
-        adpater.loadFirstPage();
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-            }
-        });
+        messagesManager.getChatList(userKey, messageOnDataChangedListener());
     }
 
     private void openImageDetailActivity(String image) {
         Intent intent = new Intent(ChatActivity.this, ShowImageActivity.class);
         intent.putExtra(ShowImageActivity.IMAGE_URL_EXTRA_KEY, image);
         startActivity(intent);
+    }
+
+
+    private OnDataChangedListener<Message> messageOnDataChangedListener() {
+
+        attemptToLoadMessages = true;
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (attemptToLoadMessages) {
+                    mStatefulLayout.showContent();
+                }
+            }
+        }, TIME_OUT_LOADING_MESSAGES);
+
+        return new OnDataChangedListener<Message>() {
+            @Override
+            public void onListChanged(List<Message> list) {
+                attemptToLoadMessages = false;
+                mStatefulLayout.showContent();
+                recyclerView.setVisibility(View.VISIBLE);
+                messagesAdapter.setList(list);
+                messagesAdapter.cleanSelectedPosition();
+            }
+
+            @Override
+            public void onCancel(String message) {
+                recyclerView.setVisibility(View.GONE);
+                mStatefulLayout.showEmpty();
+                mStatefulLayout.setEmptyText(message);
+            }
+        };
     }
 
 
@@ -346,9 +357,8 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
     private class ActionModeCallback implements ActionMode.Callback {
 
         Message selectedMessage;
-        int position;
 
-        public ActionModeCallback(Message selectedMessage) {
+        ActionModeCallback(Message selectedMessage) {
             this.selectedMessage = selectedMessage;
         }
 
@@ -368,7 +378,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             int id = item.getItemId();
             if (id == R.id.action_delete) {
-                removeMessage(selectedMessage.getId(), mode, position);
+                removeMessage(selectedMessage.getId(), mode);
                 return true;
             } else if (id == R.id.action_copy) {
                 copySelectedMessage(selectedMessage.getText());
@@ -384,13 +394,14 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
         }
     }
 
-    private void removeMessage(String messageId, final ActionMode mode, int position) {
+    private void removeMessage(String messageId, final ActionMode mode) {
         showProgress(R.string.deleting_message);
 
         messagesManager.removeMessage(messageId, userKey, new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
                 if (success) {
+                    messagesAdapter.removeMessage();
                     hideProgress();
                     mode.finish();
                 }

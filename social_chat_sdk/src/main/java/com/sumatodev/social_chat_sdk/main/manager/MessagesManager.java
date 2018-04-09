@@ -127,10 +127,15 @@ public class MessagesManager extends FirebaseListenersManager {
 
     }
 
-    public void getMessageList(Context context, String userKey, OnMessageListChangedListener<Message> listener, long date) {
-        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,
-                listener, date);
-        addListenerToMap(context, valueEventListener);
+    public void getMessageList(String userKey, OnMessageListChangedListener<Message> listener, long date) {
+//        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,
+//                listener, date);
+//        addListenerToMap(context, valueEventListener);
+        ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,listener,date);
+    }
+
+    public void getChatList(String userKey,OnDataChangedListener<Message> onMessageListChangedListener) {
+        ChatApplicationHelper.getDatabaseHelper().getChatList(userKey,onMessageListChangedListener);
     }
 
     public void removeMessage(String messageId, String userKey, final OnTaskCompleteListener onTaskCompleteListener) {

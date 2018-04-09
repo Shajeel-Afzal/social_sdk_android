@@ -43,8 +43,9 @@ public abstract class ChatBaseAdapter extends RecyclerView.Adapter<RecyclerView.
             return MY_VIEW;
         } else if (userKey != null && !userKey.equalsIgnoreCase(activity.getCurrent_uid())) {
             return USER_VIEW;
+        } else {
+            return messageList.get(position).getItemType().getTypeCode();
         }
-        return messageList.get(position).getItemType().getTypeCode();
     }
 
     public Message getItemByPosition(int position) {

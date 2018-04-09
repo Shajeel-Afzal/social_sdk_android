@@ -234,6 +234,18 @@
                     android:paddingBottom="@dimen/intrinsic_padding" />
 
             </android.support.v4.widget.SwipeRefreshLayout>
+
+            <TextView
+                android:id="@+id/newPostsCounterTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/posts_counter_bg"
+                android:gravity="center_vertical"
+                android:padding="@dimen/intrinsic_padding"
+                android:textColor="@android:color/white"
+                android:visibility="gone" />
         </RelativeLayout>
     </cz.kinst.jakub.view.SimpleStatefulLayout>
 </android.support.design.widget.CoordinatorLayout>

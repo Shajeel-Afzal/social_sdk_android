@@ -25,7 +25,7 @@ public class PreferencesUtil {
 
     private static final String SHARED_PREFERENCES_NAME = "sumatodev.com.social";
     private static final String PREF_PARAM_IS_PROFILE_CREATED = "isProfileCreated";
-    private static final String PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE = "isPostsWasLoadedAtLeastOnce";
+    private static final String PREF_PARAM_IS_MESSAGE_WAS_LOADED_AT_LEAST_ONCE = "isMessageWasLoadedAtLeastOnce";
 
     private static SharedPreferences getSharedPreferences(Context context) {
         return context.getSharedPreferences(SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
@@ -35,19 +35,21 @@ public class PreferencesUtil {
         return getSharedPreferences(context).getBoolean(PREF_PARAM_IS_PROFILE_CREATED, false);
     }
 
-    public static Boolean isPostWasLoadedAtLeastOnce(Context context) {
-        return getSharedPreferences(context).getBoolean(PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE, false);
+    public static Boolean isMessageWasLoadedAtLeastOnce(Context context) {
+        return getSharedPreferences(context).getBoolean(PREF_PARAM_IS_MESSAGE_WAS_LOADED_AT_LEAST_ONCE, false);
     }
+
+    public static void setMessageWasLoadedAtLeastOnce(Context context, Boolean isMessageWasLoadedAtLeastOnce) {
+        getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_MESSAGE_WAS_LOADED_AT_LEAST_ONCE,
+                isMessageWasLoadedAtLeastOnce).apply();
+    }
+
 
     public static void setProfileCreated(Context context, Boolean isProfileCreated) {
         getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_PROFILE_CREATED, isProfileCreated).apply();
     }
 
-    public static void setPostWasLoadedAtLeastOnce(Context context, Boolean isPostWasLoadedAtLeastOnce) {
-        getSharedPreferences(context).edit().putBoolean(PREF_PARAM_IS_POSTS_WAS_LOADED_AT_LEAST_ONCE, isPostWasLoadedAtLeastOnce).apply();
-    }
-
-    public static void clearPreferences(Context context){
+    public static void clearPreferences(Context context) {
         final SharedPreferences.Editor editor = getSharedPreferences(context).edit();
         editor.clear();
         editor.apply();

@@ -71,7 +71,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private TextView newPostsCounterTextView;
     private PostManager.PostCounterWatcher postCounterWatcher;
     private boolean counterAnimationInProgress = false;
-    private int postSelectedPosition;
 
 
     public static void start(Context context) {
@@ -331,6 +330,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                     if (!linkUrl.isEmpty()) {
                         openUrlActivity(linkUrl);
                     }
+                }
+
+                @Override
+                public void onPostsListChanged(int postsCount) {
+
                 }
             });
 

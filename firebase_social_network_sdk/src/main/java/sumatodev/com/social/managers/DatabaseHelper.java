@@ -984,33 +984,6 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public void getComments(final String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
-        DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                List<Comment> list = new ArrayList<>();
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    Comment comment = snapshot.getValue(Comment.class);
-                    list.add(comment);
-                }
-
-                Collections.sort(list, new Comparator<Comment>() {
-                    @Override
-                    public int compare(Comment lhs, Comment rhs) {
-                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
-                    }
-                });
-
-                onDataChangedListener.onListChanged(list);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
 
     public void getCommentList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);

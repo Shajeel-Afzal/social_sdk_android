@@ -10,6 +10,7 @@ import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -272,7 +273,7 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public ValueEventListener getMessageList(final String userKey, final OnMessageListChangedListener<Message> listener, final long date) {
+    public void getMessageList(final String userKey, final OnMessageListChangedListener<Message> listener, final long date) {
 
         DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
 
@@ -283,7 +284,7 @@ public class DatabaseHelper {
             chatQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
         }
 
-        ValueEventListener eventListener = chatQuery.addValueEventListener(new ValueEventListener() {
+        chatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 HashMap<String, Object> hashMap = (HashMap<String, Object>) dataSnapshot.getValue();
@@ -302,9 +303,6 @@ public class DatabaseHelper {
                 listener.onCanceled(context.getString(R.string.permission_denied_error));
             }
         });
-
-        activeListeners.put(eventListener, databaseReference);
-        return eventListener;
     }
 
     private MessageListResult parceMessageList(HashMap<String, Object> hashMap) {
@@ -329,8 +327,12 @@ public class DatabaseHelper {
 
                     Message message = new Message();
                     message.setId(key);
-                    message.setText((String) mapObj.get("text"));
-                    message.setImageUrl((String) mapObj.get("imageUrl"));
+                    if (mapObj.containsKey("text")) {
+                        message.setText((String) mapObj.get("text"));
+                    }
+                    if (mapObj.containsKey("imageUrl")) {
+                        message.setImageUrl((String) mapObj.get("imageUrl"));
+                    }
                     message.setCreatedAt(createdDate);
                     message.setFromUserId((String) mapObj.get("fromUserId"));
 
@@ -350,6 +352,51 @@ public class DatabaseHelper {
             result.setMoreDataAvailable(isMoreDataAvailable);
         }
         return result;
+    }
+
+    public void getChatList(String userKey, final OnDataChangedListener<Message> onMessageListChangedListener) {
+
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
+
+        final List<Message> list = new ArrayList<>();
+        databaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if (dataSnapshot.getValue() != null) {
+                    Message message = dataSnapshot.getValue(Message.class);
+                    list.add(message);
+                }
+
+                Collections.sort(list, new Comparator<Message>() {
+                    @Override
+                    public int compare(Message o1, Message o2) {
+                        return ((Long) o2.getCreatedAt()).compareTo((Long) o1.getCreatedAt());
+                    }
+                });
+
+                onMessageListChangedListener.onListChanged(list);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onMessageListChangedListener.onCancel(databaseError.getMessage());
+            }
+        });
     }
 
     public ValueEventListener getLastMessage(String userKey, final OnObjectChangedListener<Message> onObjectChangedListener) {
@@ -396,5 +443,4 @@ public class DatabaseHelper {
 
         reference.setValue(new Status(status));
     }
-
 }
