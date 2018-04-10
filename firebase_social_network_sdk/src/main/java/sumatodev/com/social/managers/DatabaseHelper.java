@@ -233,8 +233,7 @@ public class DatabaseHelper {
         try {
             if (post.getImagePath() != null) {
                 post.setPostType("image");
-            }
-            if (post.getTitle() != null && post.getImagePath() != null) {
+            } else if (post.getTitle() != null && post.getImagePath() != null) {
                 post.setPostType("text_image");
             }
 
@@ -825,6 +824,9 @@ public class DatabaseHelper {
                             post.setPostStyle(new PostStyle((int) bg_color));
                         }
 
+                        if (mapObj.containsKey("link")){
+                            post.setLink((String)mapObj.get("link"));
+                        }
                         if (mapObj.containsKey("commentStatus")) {
                             HashMap hashMap = (HashMap) mapObj.get("commentStatus");
                             post.setCommentStatus(new CommentStatus((boolean) hashMap.get("commentStatus")));
@@ -861,6 +863,7 @@ public class DatabaseHelper {
 
     private boolean isPostValid(Map<String, Object> post) {
         return post.containsKey("title")
+                || post.containsKey("link")
                 || post.containsKey("imagePath")
                 && post.containsKey("authorId");
     }
@@ -1131,7 +1134,7 @@ public class DatabaseHelper {
     }
 
     public void hasCurrentUserLikeCommentValue(Comment comment,
-                                                             final OnObjectExistListener<Like> onObjectExistListener) {
+                                               final OnObjectExistListener<Like> onObjectExistListener) {
         DatabaseReference databaseReference = database.getReference(Consts.COMMENTS_LIKES_REF).child(comment.getPostId())
                 .child(comment.getId()).child(getCurrentUser());
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {

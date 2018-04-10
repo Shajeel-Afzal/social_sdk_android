@@ -34,6 +34,7 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public static final int TEXT_VIEW = 2;
     public static final int TEXT_IMAGE_VIEW = 3;
     public static final int TEXT_COLORED_VIEW = 4;
+    public static final int LINK_VIEW = 5;
 
     protected List<Post> postList = new LinkedList<>();
     protected BaseActivity activity;
@@ -62,6 +63,8 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
             } else {
                 return TEXT_COLORED_VIEW;
             }
+        } else if (postType != null && postType.equals("link")) {
+            return LINK_VIEW;
         } else if (postType != null && postType.equals("image")) {
             return IMAGE_VIEW;
         } else if (postType != null && postType.equals("text_image")) {

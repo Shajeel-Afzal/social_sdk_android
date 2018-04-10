@@ -33,7 +33,6 @@ public class LinkActivity extends BaseActivity {
         actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
         }
 
         superProgressBar = findViewById(R.id.myProgressBar);

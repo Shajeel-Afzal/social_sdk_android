@@ -88,7 +88,7 @@ public class PostsAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW) {
+        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW || viewType == LINK_VIEW) {
             return new PostViewHolder(inflater.inflate(R.layout.post_type_text, parent, false), createOnClickListener());
         } else if (viewType == IMAGE_VIEW) {
             return new PostViewHolder(inflater.inflate(R.layout.post_type_image, parent, false), createOnClickListener());
@@ -154,20 +154,23 @@ public class PostsAdapter extends BasePostsAdapter {
                 }
             });
         }
-        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
+        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getLink());
 
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
-                ((PostViewHolder) holder).bindTextPost(postList.get(position));
+                ((PostViewHolder) holder).bindTextPost(getItemByPosition(position));
                 break;
             case TEXT_COLORED_VIEW:
-                ((PostViewHolder) holder).bindColoredPost(postList.get(position));
+                ((PostViewHolder) holder).bindColoredPost(getItemByPosition(position));
+                break;
+            case LINK_VIEW:
+                ((PostViewHolder) holder).bindLink(getItemByPosition(position));
                 break;
             case IMAGE_VIEW:
-                ((PostViewHolder) holder).bindImagePost(postList.get(position));
+                ((PostViewHolder) holder).bindImagePost(getItemByPosition(position));
                 break;
             case TEXT_IMAGE_VIEW:
-                ((PostViewHolder) holder).bindTextImagePost(postList.get(position));
+                ((PostViewHolder) holder).bindTextImagePost(getItemByPosition(position));
                 break;
         }
 

@@ -21,18 +21,28 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.codewaves.youtubethumbnailview.ThumbnailLoader;
+import com.codewaves.youtubethumbnailview.ThumbnailLoadingListener;
+import com.codewaves.youtubethumbnailview.downloader.OembedVideoInfoDownloader;
+import com.klinker.android.link_builder.Link;
+import com.klinker.android.link_builder.LinkBuilder;
+import com.klinker.android.link_builder.TouchableMovementMethod;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.managers.PostManager;
@@ -40,6 +50,7 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostStyle;
+import sumatodev.com.social.utils.Regex;
 
 public class EditPostActivity extends CreatePostActivity {
     private static final String TAG = EditPostActivity.class.getSimpleName();
@@ -56,6 +67,57 @@ public class EditPostActivity extends CreatePostActivity {
         showProgress();
         updatePostLayout();
         fillUIFields();
+
+
+        thumbnailLink.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.toString().length() > 0) {
+                    updateVideoThumbnail(s.toString());
+                }
+            }
+        });
+    }
+
+    private void updateVideoThumbnail(final String string) {
+
+        ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
+        thumbnail.loadThumbnail(string, new ThumbnailLoadingListener() {
+            @Override
+            public void onLoadingStarted(@NonNull String url, @NonNull View view) {
+
+            }
+
+            @Override
+            public void onLoadingComplete(@NonNull String url, @NonNull View view) {
+
+            }
+
+            @Override
+            public void onLoadingCanceled(@NonNull String url, @NonNull View view) {
+            }
+
+            @Override
+            public void onLoadingFailed(@NonNull String url, @NonNull View view, Throwable error) {
+                Toast.makeText(EditPostActivity.this, "url not valid", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        thumbnail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openUrlActivity(string);
+            }
+        });
     }
 
     @Override
@@ -84,8 +146,8 @@ public class EditPostActivity extends CreatePostActivity {
     }
 
     @Override
-    protected void savePost(final String title) {
-        doSavePost(title);
+    protected void savePost(final String title, String link) {
+        doSavePost(title, link);
     }
 
     private void addCheckIsPostChangedListener() {
@@ -144,9 +206,15 @@ public class EditPostActivity extends CreatePostActivity {
         startActivity(intent);
     }
 
-    private void doSavePost(String title) {
+    private void doSavePost(String title, String link) {
         showProgress(R.string.message_saving);
-        post.setTitle(title);
+
+        if (!title.isEmpty()) {
+            post.setTitle(title);
+        }
+        if (!link.isEmpty()) {
+            post.setLink(link);
+        }
 
         String hex = Integer.toHexString(selectedColor);
         if (hex.equals(Integer.toHexString(Color.WHITE))) {
@@ -195,12 +263,52 @@ public class EditPostActivity extends CreatePostActivity {
     }
 
     private void fillUIFields() {
-        titleEditText.setText(post.getTitle());
+
+        if (post.getTitle() != null) {
+            titleEditText.setText(post.getTitle());
+        }
+
+        if (post.getLink() != null) {
+            fillLinkData();
+        }
 
         if (post.getImagePath() != null) {
             loadPostDetailsImage();
         }
         hideProgress();
+    }
+
+    private void fillLinkData() {
+        if (post.getLink() != null) {
+
+            colorPicker.setVisibility(View.GONE);
+            textLayout.setMinimumHeight(0);
+
+            imageButton.setVisibility(View.GONE);
+            thumbnailView.setVisibility(View.VISIBLE);
+
+            thumbnailLink.setText(post.getLink());
+
+            Link link = new Link(Regex.WEB_URL_PATTERN);
+
+            LinkBuilder.on(thumbnailLink).addLink(link).build();
+            thumbnailLink.setMovementMethod(TouchableMovementMethod.getInstance());
+
+            ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
+            thumbnail.loadThumbnail(post.getLink());
+            thumbnail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openUrlActivity(post.getLink());
+                }
+            });
+        }
+    }
+
+    private void openUrlActivity(String linkUrl) {
+        Intent intent = new Intent(EditPostActivity.this, LinkActivity.class);
+        intent.putExtra(LinkActivity.URL_REF, linkUrl);
+        startActivity(intent);
     }
 
     private void loadPostDetailsImage() {

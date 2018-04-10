@@ -20,11 +20,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -34,10 +31,17 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.codewaves.youtubethumbnailview.ThumbnailLoader;
+import com.codewaves.youtubethumbnailview.ThumbnailView;
+import com.codewaves.youtubethumbnailview.downloader.OembedVideoInfoDownloader;
 import com.google.firebase.auth.FirebaseAuth;
+import com.klinker.android.link_builder.Link;
+import com.klinker.android.link_builder.LinkBuilder;
+import com.klinker.android.link_builder.TouchableMovementMethod;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.managers.PostManager;
@@ -45,6 +49,7 @@ import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.utils.LogUtil;
+import sumatodev.com.social.utils.Regex;
 import sumatodev.com.social.utils.ValidationUtil;
 import sumatodev.com.social.views.colorpicker.LineColorPicker;
 import sumatodev.com.social.views.colorpicker.OnColorChangedListener;
@@ -63,32 +68,29 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     protected Button submitBtn;
     public FrameLayout textLayout;
 
+    public LinearLayout thumbnailView;
+    public EditText thumbnailLink;
+    public ThumbnailView thumbnail;
+
     protected PostManager postManager;
     protected boolean creatingPost = false;
     private Intent shareIntent;
     public LineColorPicker colorPicker;
     public int selectedColor;
+    private String shareUrl;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_post_activity);
+        findViews();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
         postManager = PostManager.getInstance(CreatePostActivity.this);
 
-        titleEditText = findViewById(R.id.titleEditText);
-        progressBar = findViewById(R.id.progressBar);
-        imageLayout = findViewById(R.id.imageLayout);
-        imageButton = findViewById(R.id.imageButton);
-        submitBtn = findViewById(R.id.submitBtn);
-        textLayout = findViewById(R.id.textLayout);
-        colorPicker = findViewById(R.id.colorPicker);
-
-        imageView = findViewById(R.id.imageView);
 
         imageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,16 +116,20 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         initShareIntent();
     }
 
-    private boolean hasImage(@NonNull ImageView view) {
-        Drawable drawable = view.getDrawable();
-        boolean hasImage = (drawable != null);
-
-        if (hasImage && (drawable instanceof BitmapDrawable)) {
-            hasImage = ((BitmapDrawable) drawable).getBitmap() != null;
-        }
-
-        return hasImage;
+    private void findViews() {
+        titleEditText = findViewById(R.id.titleEditText);
+        progressBar = findViewById(R.id.progressBar);
+        imageLayout = findViewById(R.id.imageLayout);
+        imageButton = findViewById(R.id.imageButton);
+        submitBtn = findViewById(R.id.submitBtn);
+        textLayout = findViewById(R.id.textLayout);
+        colorPicker = findViewById(R.id.colorPicker);
+        thumbnailView = findViewById(R.id.thumbnailView);
+        thumbnailLink = findViewById(R.id.thumbnailLink);
+        imageView = findViewById(R.id.imageView);
+        thumbnail = findViewById(R.id.thumbnail);
     }
+
 
     private void initPostBackgroundColor() {
         colorPicker.setOnColorChangedListener(new OnColorChangedListener() {
@@ -168,7 +174,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         if (Intent.ACTION_SEND.equals(action) && type != null) {
             if ("text/plain".equals(type)) {
-                // handleSendText(intent); // Handle text being sent
+                handleSendText(shareIntent); // Handle text being sent
             } else if (type.startsWith("image/")) {
                 handleSendImage(shareIntent); // Handle single image being sent
             }
@@ -178,7 +184,8 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     void handleSendText(Intent intent) {
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
         if (sharedText != null) {
-            // Update UI to reflect text being shared
+            shareUrl = sharedText;
+            checkUrlThumbnail(sharedText);
         }
     }
 
@@ -193,6 +200,42 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
             colorPicker.setVisibility(View.VISIBLE);
             imageLayout.setVisibility(View.GONE);
         }
+    }
+
+    private void checkUrlThumbnail(final String shareUrl) {
+        if (!shareUrl.isEmpty()) {
+            colorPicker.setVisibility(View.GONE);
+            textLayout.setMinimumHeight(0);
+
+            thumbnailView.setVisibility(View.VISIBLE);
+            imageButton.setVisibility(View.GONE);
+
+            thumbnailLink.setText(shareUrl);
+
+            Link link = new Link(Regex.WEB_URL_PATTERN)
+                    .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                        @Override
+                        public void onClick(String s) {
+                            openUrl(shareUrl);
+                        }
+                    });
+
+            LinkBuilder.on(thumbnailLink).addLink(link).build();
+            thumbnailLink.setMovementMethod(TouchableMovementMethod.getInstance());
+
+            ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
+            thumbnail.loadThumbnail(shareUrl);
+            thumbnail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openUrl(shareUrl);
+                }
+            });
+        }
+    }
+
+    private void openUrl(String url) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
     @Override
@@ -233,6 +276,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         }
 
         String title = titleEditText.getText().toString().trim();
+        String link = thumbnailLink.getText().toString().trim();
 
         View focusView = null;
         boolean cancel = false;
@@ -246,18 +290,22 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         if (!cancel) {
             creatingPost = true;
             hideKeyboard();
-            savePost(title);
+            savePost(title, link);
         } else if (focusView != null) {
             focusView.requestFocus();
         }
     }
 
-    protected void savePost(String title) {
+    protected void savePost(String title, String link) {
         showProgress(R.string.message_creating_post);
         Post post = new Post();
         if (!title.isEmpty()) {
             post.setTitle(title);
         }
+        if (!link.isEmpty()) {
+            post.setLink(link);
+        }
+
         if (imageUri != null) {
             post.setImagePath(String.valueOf(imageUri));
         } else {
@@ -268,6 +316,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
                 post.setPostStyle(new PostStyle(selectedColor));
             }
         }
+
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         if (Intent.ACTION_SEND.equals(shareIntent.getAction())) {
@@ -328,9 +377,9 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         boolean valid = true;
         String title = titleEditText.getText().toString().trim();
 
-        if (title.isEmpty() && imageUri == null) {
+        if (title.isEmpty() && imageUri == null && shareUrl.isEmpty()) {
             valid = false;
-        } else if (!title.isEmpty() || imageUri != null) {
+        } else if (!title.isEmpty() || imageUri != null && !shareUrl.isEmpty()) {
             valid = true;
         }
 

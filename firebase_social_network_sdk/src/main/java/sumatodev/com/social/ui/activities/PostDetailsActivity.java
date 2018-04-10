@@ -59,6 +59,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -70,6 +71,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.codewaves.youtubethumbnailview.ThumbnailLoader;
+import com.codewaves.youtubethumbnailview.ThumbnailView;
+import com.codewaves.youtubethumbnailview.downloader.OembedVideoInfoDownloader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.klinker.android.link_builder.Link;
@@ -142,6 +146,10 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private String postId;
 
+    private LinearLayout thumbnailView;
+    private TextView thumbnailText;
+    private ThumbnailView thumbnail;
+
     private FrameLayout textLayout;
     private PostManager postManager;
     private CommentManager commentManager;
@@ -193,6 +201,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         imageContainer = findViewById(R.id.imageContainer);
         sendButton = findViewById(R.id.sendButton);
         textLayout = findViewById(R.id.textLayout);
+        thumbnail = findViewById(R.id.thumbnail);
+        thumbnailView = findViewById(R.id.thumbnailView);
+        thumbnailText = findViewById(R.id.thumbnailLink);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && isAuthorAnimationRequired) {
             authorImageView.setScaleX(0);
@@ -473,6 +484,36 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
                 LinkBuilder.on(titleTextView).addLink(link).build();
                 titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
+            } else {
+                titleTextView.setVisibility(View.GONE);
+            }
+
+            if (post.getLink() != null) {
+
+                thumbnailView.setVisibility(View.VISIBLE);
+                thumbnailText.setText(post.getLink());
+
+                Link link = new Link(Regex.WEB_URL_PATTERN)
+                        .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                            @Override
+                            public void onClick(String s) {
+                                openUrlActivity(s);
+                            }
+                        });
+
+                LinkBuilder.on(thumbnailText).addLink(link).build();
+                thumbnailText.setMovementMethod(TouchableMovementMethod.getInstance());
+
+                ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
+                thumbnail.loadThumbnail(post.getLink());
+                thumbnail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openUrlActivity(post.getLink());
+                    }
+                });
+
+
             }
 
             if (post.getImagePath() != null) {
@@ -489,6 +530,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         intent.putExtra(LinkActivity.URL_REF, linkUrl);
         startActivity(intent);
     }
+
     private void updateLayout() {
         if (post != null) {
             if (post.getPostStyle() != null) {

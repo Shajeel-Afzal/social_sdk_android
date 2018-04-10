@@ -19,8 +19,8 @@ package sumatodev.com.social.utils;
 import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.util.Log;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import sumatodev.com.social.Constants;
@@ -39,6 +39,28 @@ public class ValidationUtil {
     public static boolean isOnlyLatinLetters(String text) {
         String regular = "[a-zA-Z]+";
         return text.matches(regular);
+    }
+
+    public static boolean isYouTubeUrl(String url) {
+        String regular = "http(?:s?):\\/\\/(?:www\\.)?youtu(?:be\\.com\\/watch\\?v=|\\.be\\/)([\\w\\-\\_]*)(&(amp;)?\u200C\u200B[\\w\\?\u200C\u200B=]*)?";
+        return url.matches(regular);
+    }
+
+    public static String getYoutubeThumbnailUrlFromVideoUrl(String videoUrl) {
+        return "http://img.youtube.com/vi/"+getYoutubeVideoIdFromUrl(videoUrl) + "/0.jpg";
+    }
+
+    public static String getYoutubeVideoIdFromUrl(String inUrl) {
+        if (inUrl.toLowerCase().contains("youtu.be")) {
+            return inUrl.substring(inUrl.lastIndexOf("/") + 1);
+        }
+        String pattern = "(?<=watch\\?v=|/videos/|embed\\/)[^#\\&\\?]*";
+        Pattern compiledPattern = Pattern.compile(pattern);
+        Matcher matcher = compiledPattern.matcher(inUrl);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return null;
     }
 
     public static boolean isMonthValid(String monthString) {

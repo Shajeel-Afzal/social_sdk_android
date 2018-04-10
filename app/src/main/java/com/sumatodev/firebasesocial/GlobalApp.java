@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 
+import com.codewaves.youtubethumbnailview.ThumbnailLoader;
+import com.codewaves.youtubethumbnailview.downloader.OembedVideoInfoDownloader;
 import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 
 import sumatodev.com.social.ApplicationHelper;
@@ -29,6 +31,7 @@ public class GlobalApp extends Application {
                 });
         DatabaseHelper.getInstance(this).subscribeToNewPosts();
         ChatApplicationHelper.initDatabaseHelper(this);
+        //ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
     }
 
     @Override

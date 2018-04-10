@@ -11,6 +11,7 @@ buildscript {
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+
     }
 
 }
@@ -69,6 +70,7 @@ dependencies {
     compile 'id.zelory:compressor:2.1.0'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     compile 'com.klinkerapps:link_builder:2.0.3'
+    compile 'com.codewaves.youtubethumbnailview:library:0.9.2'
 
     implementation project(':social_chat_sdk')
 }

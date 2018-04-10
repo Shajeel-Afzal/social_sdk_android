@@ -71,6 +71,52 @@
 
             </FrameLayout>
 
+
+            <LinearLayout
+                android:id="@+id/thumbnailView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/thumbnailLink"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/large_intrinsic_padding"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="18sp" />
+
+                <com.codewaves.youtubethumbnailview.ThumbnailView
+                    android:id="@+id/thumbnail"
+                    android:layout_width="160dp"
+                    android:layout_height="100dp"
+                    android:background="@android:color/black"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    app:youtube_minThumbnailWidth="320"
+                    app:youtube_timeBackgroundColor="#80000000"
+                    app:youtube_timeColor="@android:color/white"
+                    app:youtube_timeMarginBottom="10dp"
+                    app:youtube_timeMarginRight="10dp"
+                    app:youtube_timePaddingBottom="0dp"
+                    app:youtube_timePaddingLeft="5dp"
+                    app:youtube_timePaddingRight="5dp"
+                    app:youtube_timePaddingTop="0dp"
+                    app:youtube_timeTextSize="14sp"
+                    app:youtube_timeVisible="true"
+                    app:youtube_titleBackgroundColor="#80000000"
+                    app:youtube_titleColor="@android:color/white"
+                    app:youtube_titleMaxLines="1"
+                    app:youtube_titlePaddingBottom="5dp"
+                    app:youtube_titlePaddingLeft="10dp"
+                    app:youtube_titlePaddingRight="10dp"
+                    app:youtube_titlePaddingTop="5dp"
+                    app:youtube_titleTextSize="14sp"
+                    app:youtube_titleVisible="true" />
+            </LinearLayout>
+
             <include
                 android:id="@+id/countersContainer"
                 layout="@layout/counters_panel"

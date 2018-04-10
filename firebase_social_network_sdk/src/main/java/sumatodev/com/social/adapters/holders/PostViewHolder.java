@@ -26,15 +26,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.codewaves.youtubethumbnailview.ThumbnailLoader;
+import com.codewaves.youtubethumbnailview.ThumbnailView;
+import com.codewaves.youtubethumbnailview.downloader.OembedVideoInfoDownloader;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.klinker.android.link_builder.Link;
@@ -79,6 +82,10 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
     private FrameLayout textLayout;
     private ProgressBar progressBar;
 
+    private LinearLayout thumbnailView;
+    private TextView thumbnailText;
+    private ThumbnailView thumbnail;
+
     private ProfileManager profileManager;
     private PostManager postManager;
 
@@ -109,6 +116,9 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         postShare = view.findViewById(R.id.postShare);
         progressBar = view.findViewById(R.id.progressBar);
         textLayout = view.findViewById(R.id.textLayout);
+        thumbnail = view.findViewById(R.id.thumbnail);
+        thumbnailView = view.findViewById(R.id.thumbnailView);
+        thumbnailText = view.findViewById(R.id.thumbnailLink);
 
         profileManager = ProfileManager.getInstance(context.getApplicationContext());
         postManager = PostManager.getInstance(context.getApplicationContext());
@@ -181,6 +191,71 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
             LinkBuilder.on(titleTextView).addLink(link).build();
             titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
+        }
+
+        likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
+        commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
+        watcherCounterTextView.setText(String.valueOf(post.getWatchersCount()));
+
+        CharSequence date = FormatterUtil.getRelativeTimeSpanStringShort(context, post.getCreatedDate());
+        dateTextView.setText(date);
+
+        if (post.getAuthorId() != null) {
+            profileManager.getProfileSingleValue(post.getAuthorId(), createProfileChangeListener(authorImageView, authorName));
+        }
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            postManager.hasCurrentUserLikeSingleValue(post.getId(), firebaseUser.getUid(), createOnLikeObjectExistListener());
+        }
+    }
+
+    public void bindLink(final Post post) {
+
+        likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
+
+        if (post.getTitle() != null) {
+            textLayout.setVisibility(View.VISIBLE);
+            String title = removeNewLinesDividers(post.getTitle());
+            titleTextView.setText(title);
+        } else {
+            textLayout.setVisibility(View.GONE);
+        }
+
+        if (post.getLink() != null) {
+
+            thumbnailView.setVisibility(View.VISIBLE);
+            thumbnailText.setText(post.getLink());
+
+            Link link = new Link(Regex.WEB_URL_PATTERN)
+                    .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
+                        @Override
+                        public void onClick(String s) {
+                            if (onClickListener != null) {
+                                int position = getAdapterPosition();
+                                if (position != RecyclerView.NO_POSITION) {
+                                    onClickListener.onLinkClick(s);
+                                }
+                            }
+                        }
+                    });
+
+            LinkBuilder.on(thumbnailText).addLink(link).build();
+            thumbnailText.setMovementMethod(TouchableMovementMethod.getInstance());
+
+            ThumbnailLoader.initialize().setVideoInfoDownloader(new OembedVideoInfoDownloader());
+            thumbnail.loadThumbnail(post.getLink());
+            thumbnail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onClickListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            onClickListener.onLinkClick(post.getLink());
+                        }
+                    }
+                }
+            });
 
         }
 
@@ -201,7 +276,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public void bindColoredPost(Post post) {
+    public void bindColoredPost(final Post post) {
 
         likeController = new LikeController(context, post, likeCounterTextView, likesImageView, true);
 
@@ -226,7 +301,10 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
             LinkBuilder.on(titleTextView).addLink(link).build();
             titleTextView.setMovementMethod(TouchableMovementMethod.getInstance());
+
+
         }
+
 
         likeCounterTextView.setText(String.valueOf(post.getLikesCount()));
         commentsCountTextView.setText(String.valueOf(post.getCommentsCount()));
@@ -249,6 +327,16 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         if (!color.isEmpty()) {
             postManager.isCurrentPostColored(post.getId(), isCurrentPostColored());
         }
+
+        textLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onItemClick(getAdapterPosition(), v);
+                }
+            }
+        });
     }
 
     public void bindImagePost(Post post) {

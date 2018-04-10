@@ -16,6 +16,8 @@
 
 package sumatodev.com.social.model;
 
+import com.google.firebase.database.Exclude;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +34,6 @@ public class Post implements Serializable, LazyLoading {
 
     private String id;
     private String title;
-    private String description;
     private long createdDate;
     private String imagePath;
     private String imageTitle;
@@ -41,6 +42,7 @@ public class Post implements Serializable, LazyLoading {
     private long likesCount;
     private long watchersCount;
     private boolean hasComplain;
+    private String link;
     private String postType;
     private PostStyle postStyle;
     private CommentStatus commentStatus;
@@ -72,13 +74,6 @@ public class Post implements Serializable, LazyLoading {
         this.title = title;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getImagePath() {
         return imagePath;
@@ -168,11 +163,20 @@ public class Post implements Serializable, LazyLoading {
         this.postStyle = postStyle;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+        this.postType = "link";
+    }
+
+    @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
 
         result.put("title", title);
-        result.put("description", description);
         result.put("createdDate", createdDate);
         result.put("imagePath", imagePath);
         result.put("imageTitle", imageTitle);
@@ -181,6 +185,7 @@ public class Post implements Serializable, LazyLoading {
         result.put("likesCount", likesCount);
         result.put("watchersCount", watchersCount);
         result.put("hasComplain", hasComplain);
+        result.put("link", link);
         result.put("postType", postType);
         result.put("postStyle", postStyle);
         result.put("createdDateText", FormatterUtil.getFirebaseDateFormat().format(new Date(createdDate)));
