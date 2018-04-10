@@ -15,7 +15,6 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.ChatAdapter;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 
 
@@ -29,19 +28,13 @@ public class ChatMyHolder extends RecyclerView.ViewHolder {
     public TextView textTime;
     private Context context;
     public LinearLayout textLayout;
-    private ImageView messageImage;
+    public ImageView messageImage;
     private ProgressBar progressBar;
-    private ChatAdapter.Callback callback;
 
 
-    public ChatMyHolder(View itemView, ChatAdapter.Callback callback) {
+    public ChatMyHolder(View itemView, final OnClickListener onClickListener) {
         super(itemView);
-        this.callback = callback;
-        bindViews(itemView);
         this.context = itemView.getContext();
-    }
-
-    private void bindViews(View itemView) {
 
         messageText = itemView.findViewById(R.id.messageText);
         textTime = itemView.findViewById(R.id.textTime);
@@ -49,69 +42,79 @@ public class ChatMyHolder extends RecyclerView.ViewHolder {
         messageImage = itemView.findViewById(R.id.messageImage);
         progressBar = itemView.findViewById(R.id.progressBar);
 
-        if (callback != null) {
-            textLayout.setOnLongClickListener(new View.OnLongClickListener() {
+        itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onItemLongClick(position, v);
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        if (messageImage != null) {
+            messageImage.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public boolean onLongClick(View v) {
+                public void onClick(View v) {
                     int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        callback.onLongItemClick(v, position);
-                        return true;
+                    if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                        onClickListener.onImageClick(position, v);
                     }
-                    return false;
                 }
             });
         }
     }
 
-    public void setData(final Message model) {
+    public void bindTextData(final Message model) {
 
         if (model != null) {
 
             textTime.setText(DateUtils.formatDateTime(context, (long) model.getCreatedAt(),
                     DateUtils.FORMAT_SHOW_TIME));
 
-            if (model.getText() != null) {
-                messageText.setVisibility(View.VISIBLE);
-                messageText.setText(model.getText());
-            }
 
-            if (model.getImageUrl() != null) {
+            messageText.setText(model.getText());
 
-                messageImage.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
-
-                Glide.with(context)
-                        .load(model.getImageUrl())
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
-                        .fitCenter()
-                        .listener(new RequestListener<String, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                progressBar.setVisibility(View.GONE);
-                                return false;
-                            }
-                        })
-                        .into(messageImage);
-
-                messageImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (callback != null) {
-                            callback.onImageClick(model.getImageUrl());
-                        }
-                    }
-                });
-            }
         }
 
     }
 
+    public void bindImageData(Message message) {
 
+        textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
+                DateUtils.FORMAT_SHOW_TIME));
+
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        Glide.with(context)
+                .load(message.getImageUrl())
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .fitCenter()
+                .listener(new RequestListener<String, GlideDrawable>() {
+                    @Override
+                    public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                        progressBar.setVisibility(View.GONE);
+                        return false;
+                    }
+                })
+                .into(messageImage);
+
+
+    }
+
+
+    public interface OnClickListener {
+        void onItemLongClick(int position, View view);
+
+        void onImageClick(int position, View view);
+    }
 }

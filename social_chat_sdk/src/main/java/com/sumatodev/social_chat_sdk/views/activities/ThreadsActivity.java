@@ -76,6 +76,16 @@ public class ThreadsActivity extends BaseActivity {
                 ThreadsModel model = threadAdapter.getItemByPosition(position);
                 startActionMode(model);
             }
+
+            @Override
+            public void onListChanged(int threadsCount) {
+                if (threadsCount == 0) {
+                    mStatefulLayout.showEmpty();
+                    mStatefulLayout.setEmptyText("Empty Conversations");
+                } else {
+                    mStatefulLayout.showContent();
+                }
+            }
         });
 
         recycleView.setAdapter(threadAdapter);

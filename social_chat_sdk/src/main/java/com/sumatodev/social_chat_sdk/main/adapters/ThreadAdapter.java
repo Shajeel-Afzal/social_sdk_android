@@ -51,6 +51,7 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     public void setList(List<ThreadsModel> list) {
         this.list = list;
+        callback.onListChanged(list.size());
         notifyDataSetChanged();
     }
 
@@ -63,5 +64,7 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         void onItemClick(String userKey, View view);
 
         void onItemLongClick(int position, View view);
+
+        void onListChanged(int threadsCount);
     }
 }

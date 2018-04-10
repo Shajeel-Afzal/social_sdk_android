@@ -10,4 +10,5 @@
 
     <dimen name="intrinsic_padding">8dp</dimen>
     <dimen name="progress_bar_size">50dp</dimen>
+    <dimen name="chat_padding">10dp</dimen>
 </resources>

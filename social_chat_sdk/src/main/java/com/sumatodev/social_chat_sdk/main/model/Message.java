@@ -4,8 +4,6 @@ import com.sumatodev.social_chat_sdk.main.enums.ItemType;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /*
  * Created by troy379 on 04.04.17.
@@ -16,6 +14,7 @@ public class Message implements Serializable, LazyLoading {
     private String text;
     private long createdAt;
     private String fromUserId;
+    private String messageType;
     private ItemType itemType;
     private String imageUrl;
 
@@ -33,6 +32,7 @@ public class Message implements Serializable, LazyLoading {
 
     public void setText(String text) {
         this.text = text;
+        this.messageType = "text";
     }
 
     public void setCreatedAt(long createdAt) {
@@ -71,18 +71,11 @@ public class Message implements Serializable, LazyLoading {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+        this.messageType = "image";
     }
 
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<>();
-
-        result.put("id", id);
-        result.put("text", text);
-        result.put("createdAt", createdAt);
-        result.put("fromUserId", fromUserId);
-        result.put("imageUrl", imageUrl);
-
-        return result;
+    public String getMessageType() {
+        return messageType;
     }
 
     @Override

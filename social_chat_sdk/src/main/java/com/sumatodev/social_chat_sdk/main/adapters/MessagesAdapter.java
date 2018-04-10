@@ -6,7 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatHolder;
+import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatMyHolder;
+import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatUserHolder;
 import com.sumatodev.social_chat_sdk.main.adapters.holders.LoadViewHolder;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.views.activities.BaseActivity;
@@ -41,20 +42,39 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == MY_TEXT_VIEW) {
-            return new ChatHolder(inflater.inflate(R.layout.messages_my_textview, parent, false), onClickListener());
-        } else if (viewType == MY_IMAGE_VIEW) {
-            return new ChatHolder(inflater.inflate(R.layout.messages_my_imageview, parent, false), onClickListener());
+            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_textview, parent, false), onMyClick());
         } else if (viewType == USER_TEXT_VIEW) {
-            return new ChatHolder(inflater.inflate(R.layout.messages_user_textview, parent, false), onClickListener());
+            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_textview, parent, false), onUsersClick());
+        } else if (viewType == MY_IMAGE_VIEW) {
+            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_imageview, parent, false), onMyClick());
         } else if (viewType == USERS_IMAGE_VIEW) {
-            return new ChatHolder(inflater.inflate(R.layout.message_user_imageview, parent, false), onClickListener());
-        } else {
-            return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
+            return new ChatUserHolder(inflater.inflate(R.layout.message_user_imageview, parent, false), onUsersClick());
         }
+        return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
     }
 
-    private ChatHolder.OnClickListener onClickListener() {
-        return new ChatHolder.OnClickListener() {
+
+    private ChatMyHolder.OnClickListener onMyClick() {
+        return new ChatMyHolder.OnClickListener() {
+            @Override
+            public void onItemLongClick(int position, View view) {
+                selectedMessagePosition = position;
+                if (callback != null) {
+                    callback.onItemLongClick(position, view);
+                }
+            }
+
+            @Override
+            public void onImageClick(int position, View view) {
+                if (callback != null) {
+                    callback.onImageClick(getItemByPosition(position).getImageUrl(), view);
+                }
+            }
+        };
+    }
+
+    private ChatUserHolder.OnClickListener onUsersClick() {
+        return new ChatUserHolder.OnClickListener() {
             @Override
             public void onItemLongClick(int position, View view) {
                 selectedMessagePosition = position;
@@ -69,56 +89,62 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     callback.onUserImageClick(getItemByPosition(position).getFromUserId(), view);
                 }
             }
+
+            @Override
+            public void onImageClick(int position, View view) {
+                if (callback != null) {
+                    callback.onImageClick(getItemByPosition(position).getImageUrl(), view);
+                }
+            }
         };
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        switch (holder.getItemViewType()) {
-            case MY_TEXT_VIEW:
-                ((ChatHolder) holder).itemView.setLongClickable(true);
-                ((ChatHolder) holder).bindMyData(getItemByPosition(position));
-                break;
-            case MY_IMAGE_VIEW:
-                ((ChatHolder) holder).itemView.setLongClickable(true);
-                ((ChatHolder) holder).bindMyImageData(getItemByPosition(position));
-                break;
-            case USER_TEXT_VIEW:
-                ((ChatHolder) holder).itemView.setLongClickable(true);
-                ((ChatHolder) holder).bindUsersData(getItemByPosition(position));
-                break;
-            case USERS_IMAGE_VIEW:
-                ((ChatHolder) holder).itemView.setLongClickable(true);
-                ((ChatHolder) holder).bindUserImageData(getItemByPosition(position));
-                break;
-        }
-    }
-
-    @Override
-    public int getItemCount() {
-        return list == null ? 0 : list.size();
-    }
-
-    @Override
     public int getItemViewType(int position) {
-        String userKey = getItemByPosition(position).getFromUserId();
-        boolean isText = getItemByPosition(position).getText() != null;
-        boolean isImage = getItemByPosition(position).getImageUrl() != null;
-        if (userKey != null && userKey.equalsIgnoreCase(activity.getCurrent_uid())) {
-            if (isText) {
+        Message message = getItemByPosition(position);
+        if (message.getMessageType() != null) {
+            if (message.getMessageType().equals("text") && message.getFromUserId().equals(activity.getCurrent_uid())) {
                 return MY_TEXT_VIEW;
-            } else if (isImage) {
-                return MY_IMAGE_VIEW;
-            }
-        } else if (userKey != null && !userKey.equalsIgnoreCase(activity.getCurrent_uid())) {
-            if (isText) {
+            } else {
                 return USER_TEXT_VIEW;
-            } else if (isImage) {
+            }
+        } else if (message.getMessageType() != null) {
+            if (message.getMessageType().equals("image") && message.getFromUserId().equals(activity.getCurrent_uid())) {
+                return MY_IMAGE_VIEW;
+            } else {
                 return USERS_IMAGE_VIEW;
             }
         }
         return list.get(position).getItemType().getTypeCode();
+    }
 
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        Message message = list.get(position);
+        switch (holder.getItemViewType()) {
+            case MY_TEXT_VIEW:
+                ((ChatMyHolder) holder).itemView.setLongClickable(true);
+                ((ChatMyHolder) holder).bindTextData(message);
+                break;
+            case USER_TEXT_VIEW:
+                ((ChatUserHolder) holder).itemView.setLongClickable(true);
+                ((ChatUserHolder) holder).bindTextData(message);
+                break;
+            case MY_IMAGE_VIEW:
+                ((ChatMyHolder) holder).itemView.setLongClickable(true);
+                ((ChatMyHolder) holder).bindImageData(message);
+                break;
+            case USERS_IMAGE_VIEW:
+                ((ChatUserHolder) holder).itemView.setLongClickable(true);
+                ((ChatUserHolder) holder).bindImageData(message);
+                break;
+        }
+    }
+
+
+    @Override
+    public int getItemCount() {
+        return list == null ? 0 : list.size();
     }
 
     public void cleanSelectedPosition() {
@@ -136,6 +162,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void setList(List<Message> list) {
         this.list = list;
+        callback.onListChanged(list.size());
         notifyDataSetChanged();
     }
 
@@ -147,5 +174,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         void onItemLongClick(int position, View view);
 
         void onUserImageClick(String userKey, View view);
+
+        void onImageClick(String imageUrl, View view);
+
+        void onListChanged(int messageCounts);
     }
 }

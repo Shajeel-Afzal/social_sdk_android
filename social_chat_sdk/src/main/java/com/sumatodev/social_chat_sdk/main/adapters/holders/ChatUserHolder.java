@@ -14,12 +14,14 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.ChatAdapter;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.Message;
-import com.sumatodev.social_chat_sdk.main.model.Profile;
+import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 
 
 /**
@@ -38,13 +40,10 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
     private ImageView messageImage;
     private ProgressBar progressBar;
     private MessagesManager messagesManager;
-    private ChatAdapter.Callback callback;
 
 
-    public ChatUserHolder(View itemView, final ChatAdapter.Callback callback) {
+    public ChatUserHolder(View itemView, final OnClickListener onClickListener) {
         super(itemView);
-
-        this.callback = callback;
         this.context = itemView.getContext();
 
         userImage_c = itemView.findViewById(R.id.userImage_c);
@@ -58,100 +57,132 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
 
         messagesManager = MessagesManager.getInstance(context.getApplicationContext());
 
-        if (callback != null) {
-            textLayout.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) {
-                        callback.onLongItemClick(v, position);
-                        return true;
-                    }
-                    return false;
+
+        itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int position = getAdapterPosition();
+                if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                    onClickListener.onItemLongClick(position, v);
+                    return true;
                 }
-            });
-
-        }
-    }
-
-
-    public void bindData(final Message message) {
-
-        final String messageKey = message.getId();
-        if (messageKey != null) {
-
-            textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
-                    DateUtils.FORMAT_SHOW_TIME));
-
-
-            if (message.getText() != null) {
-                messageText.setVisibility(View.VISIBLE);
-                messageText.setText(message.getText());
+                return false;
             }
-
-            if (message.getImageUrl() != null) {
-                messageImage.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
-
-                Glide.with(context)
-                        .load(message.getImageUrl())
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
-                        .fitCenter()
-                        .listener(new RequestListener<String, GlideDrawable>() {
-                            @Override
-                            public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
-                                return false;
-                            }
-
-                            @Override
-                            public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
-                                progressBar.setVisibility(View.GONE);
-                                return false;
-                            }
-                        })
-                        .into(messageImage);
-
-                messageImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (callback != null) {
-                            callback.onImageClick(message.getImageUrl());
-                        }
-                    }
-                });
-            }
-
-            if (message.getFromUserId() != null) {
-                messagesManager.getProfileSingleValue(message.getFromUserId(), createProfileChangeListener(userImage_c));
-            }
+        });
 
 
+        if (userImage_c != null) {
             userImage_c.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (message.getFromUserId() != null) {
-                        callback.onAuthorClick(message.getFromUserId(), v);
+                    int position = getAdapterPosition();
+                    if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                        onClickListener.onUserImageClick(position, v);
+                    }
+                }
+            });
+        }
+
+        if (messageImage != null) {
+            messageImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (onClickListener != null && position != RecyclerView.NO_POSITION) {
+                        onClickListener.onImageClick(position, v);
                     }
                 }
             });
         }
     }
 
-    private OnObjectChangedListener<Profile> createProfileChangeListener(final ImageView authorImageView) {
-        return new OnObjectChangedListener<Profile>() {
+
+    public void bindTextData(final Message message) {
+
+        textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
+                DateUtils.FORMAT_SHOW_TIME));
+
+
+        if (message.getText() != null) {
+            messageText.setText(message.getText());
+        }
+
+        if (message.getFromUserId() != null) {
+            messagesManager.getUsersPublicProfile(context.getApplicationContext(), message.getFromUserId(),
+                    createProfileChangeListener(userImage_c));
+        }
+    }
+
+    public void bindImageData(Message message) {
+
+        textTime.setText(DateUtils.formatDateTime(context, (long) message.getCreatedAt(),
+                DateUtils.FORMAT_SHOW_TIME));
+
+
+        if (message.getImageUrl() != null) {
+            progressBar.setVisibility(View.VISIBLE);
+
+            Glide.with(context)
+                    .load(message.getImageUrl())
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .fitCenter()
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
+                            return false;
+                        }
+                    })
+                    .into(messageImage);
+        }
+
+        if (message.getFromUserId() != null) {
+            messagesManager.getUsersPublicProfile(context, message.getFromUserId(),
+                    createProfileChangeListener(userImage_c));
+        }
+
+    }
+
+    private OnObjectChangedListener<UsersPublic> createProfileChangeListener(final ImageView authorImageView) {
+        return new OnObjectChangedListener<UsersPublic>() {
             @Override
-            public void onObjectChanged(final Profile obj) {
+            public void onObjectChanged(final UsersPublic obj) {
                 if (obj.getPhotoUrl() != null) {
 
-                    Glide.with(context)
+                    Picasso.with(context)
                             .load(obj.getPhotoUrl())
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .centerCrop()
-                            .crossFade()
-                            .into(authorImageView);
+                            .networkPolicy(NetworkPolicy.OFFLINE)
+                            .into(authorImageView, new Callback() {
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Picasso.with(context)
+                                            .load(obj.getPhotoUrl())
+                                            .into(authorImageView);
+                                }
+                            });
                 }
             }
         };
     }
+
+
+    public interface OnClickListener {
+        void onItemLongClick(int position, View view);
+
+        void onUserImageClick(int position, View view);
+
+        void onImageClick(int position, View view);
+    }
+
 }

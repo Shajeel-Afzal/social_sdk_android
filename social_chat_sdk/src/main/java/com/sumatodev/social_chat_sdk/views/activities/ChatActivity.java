@@ -293,14 +293,39 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                     Toast.makeText(ChatActivity.this, userKey, Toast.LENGTH_SHORT).show();
                 }
             }
+
+            @Override
+            public void onImageClick(String imageUrl, View view) {
+                if (!imageUrl.isEmpty()) {
+                    openImageDetailActivity(imageUrl);
+                }
+            }
+
+            @Override
+            public void onListChanged(int messageCounts) {
+                if (messageCounts > 0) {
+                    mStatefulLayout.showContent();
+                } else {
+                    mStatefulLayout.showEmpty();
+                    mStatefulLayout.setEmptyText("Start Conversation");
+                }
+            }
         });
 
         recyclerView.setAdapter(messagesAdapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setReverseLayout(true);
         recyclerView.setLayoutManager(layoutManager);
 
         messagesManager.getChatList(userKey, messageOnDataChangedListener());
+
+        messagesAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                layoutManager.smoothScrollToPosition(recyclerView, null, messagesAdapter.getItemCount() - 1);
+            }
+        });
     }
 
     private void openImageDetailActivity(String image) {

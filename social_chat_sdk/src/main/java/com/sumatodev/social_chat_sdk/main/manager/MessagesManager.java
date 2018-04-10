@@ -24,6 +24,7 @@ import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
 import com.sumatodev.social_chat_sdk.main.model.UsersPublic;
 import com.sumatodev.social_chat_sdk.main.utils.ImageUtil;
 import com.sumatodev.social_chat_sdk.main.utils.LogUtil;
+import com.sumatodev.social_chat_sdk.main.utils.NotificationView;
 
 
 /**
@@ -66,11 +67,14 @@ public class MessagesManager extends FirebaseListenersManager {
             final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.MESSAGE, message.getId());
             UploadTask uploadTask = databaseHelper.uploadImage(inputMessage.getImageUrl(), imageTitle);
 
+            NotificationView.getInstance(context).setNotification(true, "Uploading Image");
             if (uploadTask != null) {
                 uploadTask.addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         onMessageSentListener.onMessageSent(false, e.getMessage());
+
+                        NotificationView.getInstance(context).setNotification(false, "Failed Uploading Image");
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -85,6 +89,7 @@ public class MessagesManager extends FirebaseListenersManager {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
+                                        NotificationView.getInstance(context).setNotification(false, "Uploading Image Successful");
                                         onMessageSentListener.onMessageSent(true, "successful");
                                     } else {
                                         onMessageSentListener.onMessageSent(false, task.getException().getMessage());
@@ -131,11 +136,11 @@ public class MessagesManager extends FirebaseListenersManager {
 //        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,
 //                listener, date);
 //        addListenerToMap(context, valueEventListener);
-        ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey,listener,date);
+        ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey, listener, date);
     }
 
-    public void getChatList(String userKey,OnDataChangedListener<Message> onMessageListChangedListener) {
-        ChatApplicationHelper.getDatabaseHelper().getChatList(userKey,onMessageListChangedListener);
+    public void getChatList(String userKey, OnDataChangedListener<Message> onMessageListChangedListener) {
+        ChatApplicationHelper.getDatabaseHelper().getChatList(userKey, onMessageListChangedListener);
     }
 
     public void removeMessage(String messageId, String userKey, final OnTaskCompleteListener onTaskCompleteListener) {

@@ -7,10 +7,8 @@
     android:gravity="top|start|center_vertical"
     android:orientation="horizontal"
     android:paddingBottom="5dp"
-    android:paddingEnd="20dp"
-    android:paddingLeft="20dp"
-    android:paddingRight="20dp"
-    android:paddingStart="20dp"
+    android:paddingLeft="@dimen/chat_padding"
+    android:paddingRight="@dimen/chat_padding"
     android:paddingTop="5dp">
 
     <FrameLayout
@@ -55,7 +53,6 @@
                 android:layout_height="150dp"
                 android:adjustViewBounds="true"
                 android:scaleType="centerCrop"
-                android:visibility="gone"
                 tools:ignore="ContentDescription" />
 
             <ProgressBar
