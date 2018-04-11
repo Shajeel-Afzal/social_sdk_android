@@ -338,7 +338,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void createNewPost(Intent data) {
         Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
         if (post != null) {
-            postManager.createOrUpdatePostWithImage(this, ProfileActivity.this, post);
+            postManager.createOrUpdatePostWithImage(this, post,ProfileActivity.this);
         }
 
     }

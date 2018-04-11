@@ -154,7 +154,7 @@ public class PostsAdapter extends BasePostsAdapter {
                 }
             });
         }
-        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getLink());
+        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
 
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:

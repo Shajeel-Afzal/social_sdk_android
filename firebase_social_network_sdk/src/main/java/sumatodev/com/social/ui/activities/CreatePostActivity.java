@@ -72,12 +72,12 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     public EditText thumbnailLink;
     public ThumbnailView thumbnail;
 
+    private Post post;
     protected PostManager postManager;
     protected boolean creatingPost = false;
     private Intent shareIntent;
     public LineColorPicker colorPicker;
     public int selectedColor;
-    private String shareUrl;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -88,7 +88,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
+        post = new Post();
         postManager = PostManager.getInstance(CreatePostActivity.this);
 
 
@@ -184,7 +184,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     void handleSendText(Intent intent) {
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
         if (sharedText != null) {
-            shareUrl = sharedText;
+            thumbnailLink.setText(sharedText);
             checkUrlThumbnail(sharedText);
         }
     }
@@ -209,8 +209,6 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
             thumbnailView.setVisibility(View.VISIBLE);
             imageButton.setVisibility(View.GONE);
-
-            thumbnailLink.setText(shareUrl);
 
             Link link = new Link(Regex.WEB_URL_PATTERN)
                     .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
@@ -298,7 +296,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
     protected void savePost(String title, String link) {
         showProgress(R.string.message_creating_post);
-        Post post = new Post();
+
         if (!title.isEmpty()) {
             post.setTitle(title);
         }
@@ -319,21 +317,31 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         post.setAuthorId(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-        if (Intent.ACTION_SEND.equals(shareIntent.getAction())) {
 
-            postManager.createOrUpdatePostWithImage(this, new OnPostCreatedListener() {
-                @Override
-                public void onPostSaved(boolean success) {
-                    Log.d(TAG, "post send successfully");
-                }
-            }, post);
+        String action = shareIntent.getAction();
+        String type = shareIntent.getType();
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            hideProgress();
+            if (type.startsWith("image/")) {
+                postManager.createOrUpdatePostWithImage(this, post, new OnPostCreatedListener() {
+                    @Override
+                    public void onPostSaved(boolean success) {
+                        Log.d(TAG, "post send successfully");
+                    }
+                });
+            } else if ("text/plain".equals(type)) {
+                postManager.createIntentPost(this, post, new OnPostCreatedListener() {
+                    @Override
+                    public void onPostSaved(boolean success) {
+                        Log.d(TAG, "post send successfully");
+                    }
+                });
+            }
             handleSharePost();
-
         } else {
             Intent intent = new Intent();
             setResult(RESULT_OK, intent.putExtra(POST_DATA_KEY, post));
             CreatePostActivity.this.finish();
-            hideProgress();
         }
     }
 
@@ -349,7 +357,8 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
         hideProgress();
 
         if (success) {
-            setResult(RESULT_OK);
+            Intent intent = new Intent();
+            setResult(RESULT_OK, intent.putExtra(POST_DATA_KEY, post));
             CreatePostActivity.this.finish();
             LogUtil.logDebug(TAG, "Post was created");
         } else {
@@ -376,10 +385,11 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     private boolean validate() {
         boolean valid = true;
         String title = titleEditText.getText().toString().trim();
+        String link = thumbnailLink.getText().toString().trim();
 
-        if (title.isEmpty() && imageUri == null && shareUrl.isEmpty()) {
+        if (title.isEmpty() && imageUri == null && link.isEmpty()) {
             valid = false;
-        } else if (!title.isEmpty() || imageUri != null && !shareUrl.isEmpty()) {
+        } else if (!title.isEmpty() || imageUri != null && !link.isEmpty()) {
             valid = true;
         }
 

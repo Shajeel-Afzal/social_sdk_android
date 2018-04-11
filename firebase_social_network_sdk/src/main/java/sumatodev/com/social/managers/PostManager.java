@@ -29,6 +29,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.UploadTask;
 
 import sumatodev.com.social.ApplicationHelper;
+import sumatodev.com.social.R;
 import sumatodev.com.social.enums.UploadImagePrefix;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
@@ -95,8 +96,8 @@ public class PostManager extends FirebaseListenersManager {
         ApplicationHelper.getDatabaseHelper().getSinglePost(postId, onPostChangedListener);
     }
 
-    public void createOrUpdatePostWithImage(final Context context, final OnPostCreatedListener onPostCreatedListener,
-                                            final Post post) {
+    public void createOrUpdatePostWithImage(final Context context, final Post post,
+                                            final OnPostCreatedListener onPostCreatedListener) {
         // Register observers to listen for when the download is done or if it fails
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         if (post.getId() == null) {
@@ -107,7 +108,7 @@ public class PostManager extends FirebaseListenersManager {
             final String imageTitle = ImageUtil.generateImageTitle(UploadImagePrefix.POST, post.getId());
             UploadTask uploadTask = databaseHelper.uploadImage(Uri.parse(post.getImagePath()), imageTitle);
 
-            NotificationView.getInstance(context).setNotification(true, "Uploading Post");
+            NotificationView.getInstance(context).setNotification(true, context.getString(R.string.uploading_post_string));
 
             if (uploadTask != null) {
                 uploadTask.addOnFailureListener(new OnFailureListener() {
@@ -116,7 +117,7 @@ public class PostManager extends FirebaseListenersManager {
                         // Handle unsuccessful uploads
                         onPostCreatedListener.onPostSaved(false);
 
-                        NotificationView.getInstance(context).setNotification(false, "Failed Uploading Post");
+                        NotificationView.getInstance(context).setNotification(false, context.getString(R.string.failed_uploading_post_string));
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -129,7 +130,7 @@ public class PostManager extends FirebaseListenersManager {
                         post.setImageTitle(imageTitle);
                         createOrUpdatePost(post);
 
-                        NotificationView.getInstance(context).setNotification(false, "Uploading Post Successful");
+                        NotificationView.getInstance(context).setNotification(false, context.getString(R.string.uploading_post_successful));
                         onPostCreatedListener.onPostSaved(true);
 
                     }
@@ -155,6 +156,31 @@ public class PostManager extends FirebaseListenersManager {
             }
 
         }
+    }
+
+    public void createIntentPost(final Context context, Post post, final OnPostCreatedListener onPostCreatedListener) {
+        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+
+        NotificationView.getInstance(context).setNotification(true,
+                context.getResources().getString(R.string.uploading_post_string));
+        if (post.getId() == null) {
+            post.setId(databaseHelper.generatePostId());
+        }
+        ApplicationHelper.getDatabaseHelper().createNewPost(post).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                NotificationView.getInstance(context).setNotification(false,
+                        context.getResources().getString(R.string.uploading_post_successful));
+                onPostCreatedListener.onPostSaved(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                NotificationView.getInstance(context).setNotification(false,
+                        context.getResources().getString(R.string.failed_uploading_post_string));
+                onPostCreatedListener.onPostSaved(true);
+            }
+        });
     }
 
     public Task<Void> removeImage(String imageTitle) {

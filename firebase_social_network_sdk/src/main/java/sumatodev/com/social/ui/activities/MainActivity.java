@@ -150,7 +150,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     protected void onResume() {
         super.onResume();
         updateNewPostCounter();
-
+        refreshPostList();
     }
 
 
@@ -232,9 +232,7 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     }
 
     private void createNewPost(Post post) {
-
-        postManager.createOrUpdatePostWithImage(this, MainActivity.this, post);
-
+        postManager.createOrUpdatePostWithImage(this, post, MainActivity.this);
     }
 
     @Override

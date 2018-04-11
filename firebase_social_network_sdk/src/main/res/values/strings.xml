@@ -258,5 +258,8 @@
     <string name="go_back">Go Back</string>
     <string name="go_forward">Go Forward</string>
     <string name="open_with">Open With</string>
+    <string name="uploading_post_string">Uploading Post</string>
+    <string name="failed_uploading_post_string">Failed Uploading Post</string>
+    <string name="uploading_post_successful">Uploading Post Successful</string>
 
 </resources>

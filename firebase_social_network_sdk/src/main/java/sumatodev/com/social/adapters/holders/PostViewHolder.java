@@ -172,6 +172,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
         if (post.getTitle() != null) {
+            textLayout.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
@@ -218,8 +219,6 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             textLayout.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
-        } else {
-            textLayout.setVisibility(View.GONE);
         }
 
         if (post.getLink() != null) {
@@ -282,6 +281,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
         if (post.getTitle() != null) {
+            textLayout.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
@@ -328,7 +328,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             postManager.isCurrentPostColored(post.getId(), isCurrentPostColored());
         }
 
-        textLayout.setOnClickListener(new View.OnClickListener() {
+        titleTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int position = getAdapterPosition();
@@ -396,6 +396,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
 
 
         if (post.getTitle() != null) {
+            textLayout.setVisibility(View.VISIBLE);
             String title = removeNewLinesDividers(post.getTitle());
             titleTextView.setText(title);
 
