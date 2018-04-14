@@ -18,8 +18,10 @@ package sumatodev.com.social.ui.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -94,6 +96,11 @@ public class BaseActivity extends AppCompatActivity {
 
     public void showProgress() {
         showProgress(R.string.loading);
+    }
+
+    public void openYoutubeLink(String link){
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+        startActivity(intent);
     }
 
     public void showProgress(int message) {

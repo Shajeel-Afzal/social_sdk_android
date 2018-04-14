@@ -23,17 +23,20 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
@@ -44,6 +47,7 @@ import android.text.TextWatcher;
 import android.transition.Transition;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -60,6 +64,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -164,6 +170,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private ActionMode mActionMode;
     private boolean isEnterTransitionFinished = false;
 
+    private PopupWindow mPopupWindow;
+//    private NamesAdapter suggestionAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -229,7 +238,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         initRecyclerView();
 
         postManager.getPost(this, postId, createOnPostChangeListener());
-
         postImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -240,6 +248,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                showNameSuggestions();
             }
 
             @Override
@@ -255,6 +264,12 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             @Override
             public void afterTextChanged(Editable editable) {
 
+                boolean valid = editable.toString().trim().length() > 0;
+                if (valid) {
+                    // mPopupWindow.showAsDropDown(commentEditText, 0, -125);
+
+//                    suggestionAdapter.getFilter().filter(editable.toString());
+                }
             }
         });
 
@@ -497,7 +512,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                         .setTextColor(Color.BLUE).setOnClickListener(new Link.OnClickListener() {
                             @Override
                             public void onClick(String s) {
-                                openUrlActivity(s);
+                                openYouTubeUrl(s);
                             }
                         });
 
@@ -509,7 +524,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 thumbnail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        openUrlActivity(post.getLink());
+                        openYouTubeUrl(post.getLink());
                     }
                 });
 
@@ -528,6 +543,11 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private void openUrlActivity(String linkUrl) {
         Intent intent = new Intent(PostDetailsActivity.this, LinkActivity.class);
         intent.putExtra(LinkActivity.URL_REF, linkUrl);
+        startActivity(intent);
+    }
+
+    private void openYouTubeUrl(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
     }
 
@@ -1105,6 +1125,50 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         }
 
     }
+
+    private void showNameSuggestions() {
+
+        View view = getLayoutInflater().inflate(R.layout.popup_listview, null);
+        mPopupWindow = new PopupWindow(view, ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.WRAP_CONTENT, true);
+
+        mPopupWindow.setTouchable(true);
+        mPopupWindow.setOutsideTouchable(true);
+        mPopupWindow.setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+
+        final ListView listView = view.findViewById(R.id.listView);
+
+        mPopupWindow.getContentView().setFocusableInTouchMode(true);
+        mPopupWindow.getContentView().setFocusable(true);
+        mPopupWindow.getContentView().setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_MENU && event.getRepeatCount() == 0
+                        && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (mPopupWindow.isShowing()) {
+                        mPopupWindow.dismiss();
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        //mPopupWindow1.showAtLocation(commentEditText, Gravity.BOTTOM, 0, 0);
+
+//        FriendsManager.getInstance(this).getFriendsList(this, getCurrentUser(), Consts.FOLLOWING_LIST_REF, new OnDataChangedListener<Friends>() {
+//            @Override
+//            public void onListChanged(List<Friends> list) {
+//
+//                if (!list.isEmpty()) {
+//                    suggestionAdapter = new NamesAdapter(getApplicationContext(), list);
+//                    listView.setAdapter(suggestionAdapter);
+//                }
+//            }
+//        });
+
+    }
+
 
     public void showFloatButtonRelatedSnackBar(int messageId) {
         showSnackBar(messageId);

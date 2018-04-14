@@ -4,16 +4,16 @@ package sumatodev.com.social.model;
  * Created by Ali on 01/03/2018.
  */
 
-public class Follow {
+public class Friends {
 
     private String id;
     private Long createdDate;
     private String type;
 
-    public Follow() {
+    public Friends() {
     }
 
-    public Follow(String id, Long createdDate, String type) {
+    public Friends(String id, Long createdDate, String type) {
         this.id = id;
         this.createdDate = createdDate;
         this.type = type;

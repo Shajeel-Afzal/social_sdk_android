@@ -44,6 +44,7 @@ import sumatodev.com.social.managers.listeners.OnProfileCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.ImageUtil;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.PreferencesUtil;
@@ -143,6 +144,11 @@ public class ProfileManager extends FirebaseListenersManager {
 
     public void getProfileSingleValue(String id, final OnObjectChangedListener<Profile> listener) {
         databaseHelper.getProfileSingleValue(id, listener);
+    }
+
+    public void getUserPublicValue(Context context, String userId, OnObjectChangedListener<UsersPublic> listener){
+        ValueEventListener valueEventListener = databaseHelper.getPublicProfile(userId, listener);
+        addListenerToMap(context, valueEventListener);
     }
 
     public void deleteAccount(OnTaskCompleteListener onTaskCompleteListener) {

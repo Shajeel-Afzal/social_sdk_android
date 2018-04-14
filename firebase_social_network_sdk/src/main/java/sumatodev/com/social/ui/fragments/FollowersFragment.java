@@ -1,9 +1,6 @@
 package sumatodev.com.social.ui.fragments;
 
 
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,8 +25,7 @@ import sumatodev.com.social.adapters.FollowAdapter;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.listeners.OnRequestItemListener;
 import sumatodev.com.social.managers.FirebaseUtils;
-import sumatodev.com.social.model.Follow;
-import sumatodev.com.social.ui.activities.ProfileActivity;
+import sumatodev.com.social.model.Friends;
 
 public class FollowersFragment extends BaseFragment implements OnRequestItemListener {
 
@@ -96,8 +92,8 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
 
         Query query = FirebaseUtils.getFriendsRef().child(userKey).child(Consts.FOLLOWERS_LIST_REF);
 
-        FirebaseRecyclerOptions<Follow> options = new FirebaseRecyclerOptions.Builder<Follow>()
-                .setQuery(query, Follow.class)
+        FirebaseRecyclerOptions<Friends> options = new FirebaseRecyclerOptions.Builder<Friends>()
+                .setQuery(query, Friends.class)
                 .build();
 
         followAdapter = new FollowAdapter(options);

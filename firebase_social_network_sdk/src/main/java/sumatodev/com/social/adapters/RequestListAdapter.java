@@ -12,25 +12,25 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.RequestsHolder;
 import sumatodev.com.social.listeners.OnRequestItemListener;
-import sumatodev.com.social.model.Follow;
+import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.utils.InternetStatus;
 
 /**
  * Created by Ali on 17/02/2018.
  */
 
-public class RequestListAdapter extends FirebaseRecyclerAdapter<Follow, RequestsHolder> {
+public class RequestListAdapter extends FirebaseRecyclerAdapter<Friends, RequestsHolder> {
 
     private static final String TAG = RequestListAdapter.class.getName();
     private OnRequestItemListener onRequestItemListener;
 
-    public RequestListAdapter(@NonNull FirebaseRecyclerOptions<Follow> options) {
+    public RequestListAdapter(@NonNull FirebaseRecyclerOptions<Friends> options) {
         super(options);
     }
 
 
     @Override
-    protected void onBindViewHolder(@NonNull RequestsHolder holder, int position, @NonNull final Follow model) {
+    protected void onBindViewHolder(@NonNull RequestsHolder holder, int position, @NonNull final Friends model) {
         if (model.getId() != null) {
             holder.setData(model.getId());
 

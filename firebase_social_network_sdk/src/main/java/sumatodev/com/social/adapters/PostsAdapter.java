@@ -133,6 +133,13 @@ public class PostsAdapter extends BasePostsAdapter {
                     callback.onLinkClick(linkUrl);
                 }
             }
+
+            @Override
+            public void openYoutubeLink(String link) {
+                if (!link.isEmpty()) {
+                    activity.openYoutubeLink(link);
+                }
+            }
         };
     }
 

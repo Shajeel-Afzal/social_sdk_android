@@ -35,7 +35,7 @@ import sumatodev.com.social.adapters.RequestListAdapter;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.listeners.OnRequestItemListener;
 import sumatodev.com.social.managers.FirebaseUtils;
-import sumatodev.com.social.model.Follow;
+import sumatodev.com.social.model.Friends;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -108,8 +108,8 @@ public class RequestListFragment extends BaseFragment implements OnRequestItemLi
 
         Query query = FirebaseUtils.getFriendsRef().child(currentUid).child(Consts.REQUEST_LIST_REF);
 
-        FirebaseRecyclerOptions<Follow> options = new FirebaseRecyclerOptions.Builder<Follow>()
-                .setQuery(query, Follow.class)
+        FirebaseRecyclerOptions<Friends> options = new FirebaseRecyclerOptions.Builder<Friends>()
+                .setQuery(query, Friends.class)
                 .build();
 
         listAdapter = new RequestListAdapter(options);
@@ -165,14 +165,14 @@ public class RequestListFragment extends BaseFragment implements OnRequestItemLi
                         if (mProcessClick) {
                             if (dataSnapshot.child(currentUid).child(Consts.REQUEST_LIST_REF).hasChild(userKey)) {
 
-                                Follow userModel = new Follow();
+                                Friends userModel = new Friends();
 
                                 userModel.setId(userKey);
                                 userModel.setCreatedDate(Calendar.getInstance().getTimeInMillis());
                                 userModel.setType("follower");
 
 
-                                Follow forFollowing = new Follow();
+                                Friends forFollowing = new Friends();
                                 forFollowing.setId(currentUid);
                                 forFollowing.setCreatedDate(Calendar.getInstance().getTimeInMillis());
                                 forFollowing.setType("following");

@@ -94,6 +94,11 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
             }
 
+            @Override
+            public void openYoutubeLink(String link) {
+
+            }
+
         };
     }
 

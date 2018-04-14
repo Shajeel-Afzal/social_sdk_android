@@ -81,13 +81,12 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.AccountStatus;
-import sumatodev.com.social.model.Follow;
+import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
-import sumatodev.com.social.utils.NotificationView;
 
 public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener,
         OnPostCreatedListener, View.OnClickListener {
@@ -719,7 +718,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             } else if (dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
                                 followBtn.setText("Following");
                             } else {
-                                followBtn.setText("Follow");
+                                followBtn.setText("Friends");
                             }
                         }
                         if (currentUserId != null && dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).hasChild(currentUserId)) {
@@ -811,7 +810,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                                 });
                         mProcessClick = false;
                     } else {
-                        Follow thread = new Follow();
+                        Friends thread = new Friends();
                         thread.setId(currentUserId);
                         thread.setCreatedDate(Calendar.getInstance().getTimeInMillis());
                         thread.setType("following");

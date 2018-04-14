@@ -233,7 +233,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                             if (onClickListener != null) {
                                 int position = getAdapterPosition();
                                 if (position != RecyclerView.NO_POSITION) {
-                                    onClickListener.onLinkClick(s);
+                                    onClickListener.openYoutubeLink(s);
                                 }
                             }
                         }
@@ -250,7 +250,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     if (onClickListener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            onClickListener.onLinkClick(post.getLink());
+                            onClickListener.openYoutubeLink(post.getLink());
                         }
                     }
                 }
@@ -531,5 +531,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         void onShareClick(int position, View view);
 
         void onLinkClick(String linkUrl);
+
+        void openYoutubeLink(String link);
     }
 }

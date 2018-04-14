@@ -75,6 +75,7 @@ import sumatodev.com.social.model.AccountStatus;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.CommentListResult;
 import sumatodev.com.social.model.CommentStatus;
+import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.Like;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
@@ -824,8 +825,8 @@ public class DatabaseHelper {
                             post.setPostStyle(new PostStyle((int) bg_color));
                         }
 
-                        if (mapObj.containsKey("link")){
-                            post.setLink((String)mapObj.get("link"));
+                        if (mapObj.containsKey("link")) {
+                            post.setLink((String) mapObj.get("link"));
                         }
                         if (mapObj.containsKey("commentStatus")) {
                             HashMap hashMap = (HashMap) mapObj.get("commentStatus");
@@ -896,6 +897,24 @@ public class DatabaseHelper {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "getProfile(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
+    }
+
+    public ValueEventListener getPublicProfile(String id, final OnObjectChangedListener<UsersPublic> listener) {
+        DatabaseReference databaseReference = getDatabaseReference().child("profiles").child(id);
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UsersPublic profile = dataSnapshot.getValue(UsersPublic.class);
+                listener.onObjectChanged(profile);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getPublicProfile(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
         activeListeners.put(valueEventListener, databaseReference);
@@ -1148,20 +1167,71 @@ public class DatabaseHelper {
                 LogUtil.logError(TAG, "hasCurrentUserLikeSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
-//        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                onObjectExistListener.onDataChanged(dataSnapshot.exists());
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-//
-//            }
-//        });
-//
-//        activeListeners.put(valueEventListener, databaseReference);
-//        return valueEventListener;
+    }
+
+    public ValueEventListener getFriendsList(String userKey, String listType, final OnDataChangedListener<Friends> onDataChangedListener) {
+
+        DatabaseReference reference = database.getReference(Consts.FRIENDS_REF)
+                .child(userKey).child(listType);
+
+        final List<Friends> list = new ArrayList<>();
+        ValueEventListener eventListener = reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "Friends List: " + dataSnapshot.getValue());
+                if (dataSnapshot.getValue() != null) {
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        Friends friends = child.getValue(Friends.class);
+                        list.add(friends);
+                    }
+
+                    Collections.sort(list, new Comparator<Friends>() {
+                        @Override
+                        public int compare(Friends o1, Friends o2) {
+                            return (o2.getCreatedDate()).compareTo(o1.getCreatedDate());
+                        }
+                    });
+
+                    onDataChangedListener.onListChanged(list);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        activeListeners.put(eventListener, reference);
+        return eventListener;
+    }
+
+    private void parceFriendsList(HashMap<String, Object> hashMap) {
+
+        List<Friends> list = new ArrayList<>();
+        if (hashMap != null) {
+            for (String key : hashMap.keySet()) {
+                Object object = hashMap.get(key);
+                if (object instanceof HashMap) {
+                    HashMap<String, Object> mapObj = (HashMap<String, Object>) object;
+
+                    Friends friends = new Friends();
+                    friends.setId((String) hashMap.get("id"));
+                    friends.setCreatedDate((Long) hashMap.get("createdDate"));
+                    friends.setType((String) hashMap.get("type"));
+
+                    list.add(friends);
+                }
+            }
+
+            Collections.sort(list, new Comparator<Friends>() {
+                @Override
+                public int compare(Friends o1, Friends o2) {
+                    return (o2.getCreatedDate()).compareTo(o1.getCreatedDate());
+                }
+            });
+        }
+
     }
 
     public void addComplainToPost(Post post) {

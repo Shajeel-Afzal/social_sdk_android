@@ -142,7 +142,8 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ExpandableTextView expandableTextView, final ImageView avatarImageView, final String comment) {
+    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final
+                                                                           ExpandableTextView expandableTextView, final ImageView avatarImageView, final String comment) {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(Profile obj) {
