@@ -43,4 +43,9 @@ public interface Mentionable {
      */
     void setMentionName(final String mentionName);
 
+
+    String getUserId();
+
+
+    void setUserId(String userId);
 }

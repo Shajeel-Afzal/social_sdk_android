@@ -24,12 +24,17 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -64,7 +69,7 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
 
     private static final String TAG = CommentViewHolder.class.getSimpleName();
     private final ImageView avatarImageView;
-    private final ExpandableTextView commentTextView;
+    private final TextView commentTextView;
     private final TextView dateTextView;
     private final ProfileManager profileManager;
     private Context context;
@@ -75,11 +80,13 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
     private CommentManager commentManager;
     private TextView authorName;
     private final int orange;
+    private OnClickListener clickListener;
 
     public CommentViewHolder(View itemView, final OnClickListener onClickListener) {
         super(itemView);
 
         this.context = itemView.getContext();
+        this.clickListener = onClickListener;
         profileManager = ProfileManager.getInstance(itemView.getContext().getApplicationContext());
         commentManager = CommentManager.getInstance(itemView.getContext().getApplicationContext());
         this.orange = ContextCompat.getColor(context, R.color.mentions_default_color);
@@ -190,17 +197,34 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
     /**
      * Highlights all the {@link Mentionable}s in the test {@link Comment}.
      */
-    private void highlightMentions(String commentText, ExpandableTextView commentTextView, final List<Mentionable> mentions) {
+    private void highlightMentions(String commentText, TextView commentTextView, final List<Mentionable> mentions) {
         if (commentText != null && mentions != null && !mentions.isEmpty()) {
             final Spannable spannable = new SpannableString(commentText);
 
-            for (Mentionable mention : mentions) {
+            for (final Mentionable mention : mentions) {
                 if (mention != null) {
                     final int start = mention.getMentionOffset();
                     final int end = start + mention.getMentionLength();
 
                     if (commentText.length() >= end) {
                         spannable.setSpan(new ForegroundColorSpan(orange), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                        spannable.setSpan(new ClickableSpan() {
+                            @Override
+                            public void onClick(View widget) {
+                                if (clickListener != null && mention.getUserId() != null) {
+                                    clickListener.onUserClick(mention.getUserId());
+                                }
+                            }
+
+                            @Override
+                            public void updateDrawState(TextPaint ds) {
+                                ds.setUnderlineText(false);
+                            }
+                        }, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+
+                        commentTextView.setMovementMethod(LinkMovementMethod.getInstance());
                         commentTextView.setText(spannable);
                     } else {
                         //Something went wrong.  The expected text that we're trying to highlight does not
@@ -209,6 +233,7 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
                     }
                 }
             }
+
         }
     }
 
@@ -228,5 +253,7 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         void onLikeClick(CommentLikeController likeController, int position);
 
         void onAuthorClick(int position, View view);
+
+        void onUserClick(String userId);
     }
 }

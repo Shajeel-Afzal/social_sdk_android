@@ -79,6 +79,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentViewHolder> {
                     callback.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
                 }
             }
+
+            @Override
+            public void onUserClick(String userId) {
+                if (callback != null) {
+                    callback.onAuthorClick(userId, null);
+                }
+            }
         };
     }
 

@@ -19,14 +19,18 @@ public class Mention implements Mentionable {
 
     private String mentionName;
 
+    private String userId;
+
     private int offset;
 
     private int length;
+
 
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
+
 
     @Override
     public int getMentionOffset() {
@@ -56,5 +60,15 @@ public class Mention implements Mentionable {
     @Override
     public void setMentionName(String mentionName) {
         this.mentionName = mentionName;
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
+    }
+
+    @Override
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

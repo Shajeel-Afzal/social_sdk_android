@@ -55,6 +55,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -1183,6 +1184,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                         if (user != null) {
                             final Mention mention = new Mention();
                             mention.setMentionName(user.getUsername());
+                            mention.setUserId(user.getId());
                             mentions.insertMention(mention);
                         }
 
