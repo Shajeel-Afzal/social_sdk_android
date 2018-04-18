@@ -7,24 +7,25 @@ import com.google.firebase.database.ValueEventListener;
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.model.Friends;
+import sumatodev.com.social.model.UsersPublic;
 
 /**
  * Created by Ali on 11/04/2018.
  */
 
-public class FriendsManager extends FirebaseListenersManager {
+public class UsersManager extends FirebaseListenersManager {
 
-    private static FriendsManager instance;
+    private static UsersManager instance;
     private Context context;
 
-    public static FriendsManager getInstance(Context context) {
+    public static UsersManager getInstance(Context context) {
         if (instance == null) {
-            instance = new FriendsManager(context);
+            instance = new UsersManager(context);
         }
         return instance;
     }
 
-    public FriendsManager(Context context) {
+    public UsersManager(Context context) {
         this.context = context;
     }
 
@@ -33,5 +34,11 @@ public class FriendsManager extends FirebaseListenersManager {
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         ValueEventListener eventListener = databaseHelper.getFriendsList(userKey, listType, onDataChangedListener);
         addListenerToMap(context, eventListener);
+    }
+
+    public void getUsersList(Context context, String searchString, OnDataChangedListener<UsersPublic> onDataChangedListener) {
+        DatabaseHelper reference = ApplicationHelper.getDatabaseHelper();
+        ValueEventListener valueEventListener = reference.getSearchList(searchString, onDataChangedListener);
+        addListenerToMap(context, valueEventListener);
     }
 }

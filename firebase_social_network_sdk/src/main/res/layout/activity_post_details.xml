@@ -16,10 +16,10 @@
         android:layout_alignParentTop="true">
 
         <LinearLayout
-            android:orientation="vertical"
             android:id="@+id/activity_post_details"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
 
             <LinearLayout
@@ -176,7 +176,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:visibility="gone"
-                    app:layoutManager="LinearLayoutManager"
                     tools:listitem="@layout/comment_list_item" />
 
                 <ProgressBar
@@ -205,6 +204,13 @@
         android:layout_height="4dp"
         android:layout_above="@+id/newCommentContainer"
         android:background="@drawable/top_shadow" />
+
+
+    <include
+        layout="@layout/users_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/newCommentContainer" />
 
     <LinearLayout
         android:id="@+id/newCommentContainer"

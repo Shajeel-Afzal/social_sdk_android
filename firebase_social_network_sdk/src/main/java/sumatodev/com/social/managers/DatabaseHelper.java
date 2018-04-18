@@ -36,6 +36,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
@@ -77,6 +78,7 @@ import sumatodev.com.social.model.CommentListResult;
 import sumatodev.com.social.model.CommentStatus;
 import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.Like;
+import sumatodev.com.social.model.Mention;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
 import sumatodev.com.social.model.PostStyle;
@@ -85,6 +87,7 @@ import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.FileUtil;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.PreferencesUtil;
+import sumatodev.com.social.views.mention.Mentionable;
 
 /**
  * Created by Kristina on 10/28/16.
@@ -302,22 +305,21 @@ public class DatabaseHelper {
         return desertRef.delete();
     }
 
-    public void createComment(String commentText, final String postId, final OnTaskCompleteListener onTaskCompleteListener) {
+    public void createComment(final Comment comment, final OnTaskCompleteListener onTaskCompleteListener) {
         try {
-            String authorId = firebaseAuth.getCurrentUser().getUid();
-            DatabaseReference mCommentsReference = database.getReference().child("post-comments/" + postId);
+//            String authorId = firebaseAuth.getCurrentUser().getUid();
+            DatabaseReference mCommentsReference = database.getReference().child("post-comments/" + comment.getPostId());
             String commentId = mCommentsReference.push().getKey();
-            Comment comment = new Comment();
-            comment.setText(commentText);
-            comment.setId(commentId);
-            comment.setPostId(postId);
-            comment.setAuthorId(authorId);
+
+            if (comment.getId() == null) {
+                comment.setId(commentId);
+            }
 
             mCommentsReference.child(commentId).setValue(comment, new DatabaseReference.CompletionListener() {
                 @Override
                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                     if (databaseError == null) {
-                        incrementCommentsCount(postId);
+                        incrementCommentsCount(comment.getPostId());
                     } else {
                         LogUtil.logError(TAG, databaseError.getMessage(), databaseError.toException());
                     }
@@ -988,7 +990,7 @@ public class DatabaseHelper {
                 Collections.sort(list, new Comparator<Comment>() {
                     @Override
                     public int compare(Comment lhs, Comment rhs) {
-                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
+                        return ((Long) rhs.getCreatedDate()).compareTo(lhs.getCreatedDate());
                     }
                 });
 
@@ -1011,22 +1013,45 @@ public class DatabaseHelper {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
         final List<Comment> list = new ArrayList<>();
 
-        databaseReference.addChildEventListener(new ChildEventListener() {
+        ChildEventListener childEventListener = databaseReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if (dataSnapshot != null) {
-                    Comment comment = dataSnapshot.getValue(Comment.class);
-                    list.add(comment);
-                }
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    if (hashMap != null) {
+                        Comment comment = new Comment();
+                        comment.setId((String) hashMap.get("id"));
+                        comment.setPostId((String) hashMap.get("postId"));
+                        comment.setAuthorId((String) hashMap.get("authorId"));
+                        comment.setText((String) hashMap.get("text"));
+                        comment.setLikesCount((long) hashMap.get("likesCount"));
+                        comment.setCreatedDate((long) hashMap.get("createdDate"));
 
-                Collections.sort(list, new Comparator<Comment>() {
-                    @Override
-                    public int compare(Comment lhs, Comment rhs) {
-                        return ((Long) rhs.getCreatedDate()).compareTo((Long) lhs.getCreatedDate());
+                        if (hashMap.containsKey("mentions")) {
+                            GenericTypeIndicator<List<Mention>> indicator = new GenericTypeIndicator<List<Mention>>() {
+                            };
+                            List<Mention> mentionList = dataSnapshot.child("mentions").getValue(indicator);
+                            if (mentionList != null) {
+                                List<Mentionable> mentionables = new ArrayList<Mentionable>(mentionList);
+                                comment.setMentions(mentionables);
+
+                                Log.d(TAG, "Mentions: " + mentionables);
+                            }
+                        }
+
+                        list.add(comment);
                     }
-                });
 
-                onDataChangedListener.onListChanged(list);
+
+                    Collections.sort(list, new Comparator<Comment>() {
+                        @Override
+                        public int compare(Comment lhs, Comment rhs) {
+                            return ((Long) rhs.getCreatedDate()).compareTo(lhs.getCreatedDate());
+                        }
+                    });
+
+                    onDataChangedListener.onListChanged(list);
+                }
             }
 
             @Override

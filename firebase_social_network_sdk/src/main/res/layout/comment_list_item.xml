@@ -17,13 +17,23 @@
         app:border_width="0dp"
         app:shadow="false" />
 
+    <TextView
+        android:id="@+id/authorName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="@dimen/large_intrinsic_padding"
+        android:layout_toEndOf="@+id/avatarImageView"
+        android:textColor="@color/highlight_text"
+        tools:ignore="RtlSymmetry" />
+
     <sumatodev.com.social.views.ExpandableTextView
         android:id="@+id/commentText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/authorName"
+        android:layout_marginStart="@dimen/large_intrinsic_padding"
         android:layout_toEndOf="@+id/avatarImageView"
-        android:paddingStart="@dimen/large_intrinsic_padding"
         expandableTextView:animDuration="200"
         expandableTextView:collapseText="@string/collapse_text_label"
         expandableTextView:expandText="@string/expand_text_label"
@@ -69,7 +79,9 @@
                 <TextView
                     android:id="@+id/dateTextView"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:padding="4dp"
                     android:text="day ago"
                     android:textAppearance="@style/TextAppearance.Second.Light" />
 
@@ -102,6 +114,5 @@
                 </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
-
     </sumatodev.com.social.views.ExpandableTextView>
 </RelativeLayout>

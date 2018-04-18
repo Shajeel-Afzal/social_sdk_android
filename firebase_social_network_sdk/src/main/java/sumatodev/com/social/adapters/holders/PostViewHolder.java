@@ -43,6 +43,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.klinker.android.link_builder.Link;
 import com.klinker.android.link_builder.LinkBuilder;
 import com.klinker.android.link_builder.TouchableMovementMethod;
+import com.squareup.picasso.Picasso;
 
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
@@ -499,11 +500,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             public void onObjectChanged(final Profile obj) {
                 if (obj.getPhotoUrl() != null) {
 
-                    Glide.with(context)
+                    Picasso.with(context)
                             .load(obj.getPhotoUrl())
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .centerCrop()
-                            .crossFade()
                             .into(authorImageView);
                 }
 

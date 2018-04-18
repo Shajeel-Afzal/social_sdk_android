@@ -22,6 +22,7 @@ import android.content.Context;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -35,6 +36,12 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.w3c.dom.Text;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.controllers.CommentLikeController;
 import sumatodev.com.social.managers.CommentManager;
@@ -43,9 +50,11 @@ import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Like;
+import sumatodev.com.social.model.Mention;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.views.ExpandableTextView;
+import sumatodev.com.social.views.mention.Mentionable;
 
 /**
  * Created by alexey on 10.05.17.
@@ -64,6 +73,8 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
     private ViewGroup commentLikeContainer;
     private CommentLikeController commentLikeController;
     private CommentManager commentManager;
+    private TextView authorName;
+    private final int orange;
 
     public CommentViewHolder(View itemView, final OnClickListener onClickListener) {
         super(itemView);
@@ -71,12 +82,14 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         this.context = itemView.getContext();
         profileManager = ProfileManager.getInstance(itemView.getContext().getApplicationContext());
         commentManager = CommentManager.getInstance(itemView.getContext().getApplicationContext());
+        this.orange = ContextCompat.getColor(context, R.color.mentions_default_color);
 
         avatarImageView = itemView.findViewById(R.id.avatarImageView);
         commentTextView = itemView.findViewById(R.id.commentText);
         dateTextView = itemView.findViewById(R.id.dateTextView);
         like_action = itemView.findViewById(R.id.likesImageView);
         likes_count = itemView.findViewById(R.id.likes_count);
+        authorName = itemView.findViewById(R.id.authorName);
         commentLikeContainer = itemView.findViewById(R.id.commentLikeContainer);
 
         if (onClickListener != null) {
@@ -122,11 +135,14 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
 
         final String authorId = comment.getAuthorId();
         if (authorId != null)
-            profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(commentTextView,
-                    avatarImageView, comment.getText()));
+            profileManager.getProfileSingleValue(authorId, createOnProfileChangeListener(avatarImageView, authorName));
 
         if (comment.getText() != null) {
             commentTextView.setText(comment.getText());
+
+            if (comment.getMentions() != null) {
+                highlightMentions(comment.getText(), commentTextView, comment.getMentions());
+            }
         }
 
         if (comment.getLikesCount() > 0) {
@@ -142,13 +158,14 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final
-                                                                           ExpandableTextView expandableTextView, final ImageView avatarImageView, final String comment) {
+    private OnObjectChangedListener<Profile> createOnProfileChangeListener(final ImageView avatarImageView,
+                                                                           final TextView authorName) {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(Profile obj) {
                 String userName = obj.getUsername();
-                fillComment(userName, comment, expandableTextView);
+                //fillComment(userName, comment, expandableTextView);
+                authorName.setText(userName);
 
                 if (obj.getPhotoUrl() != null) {
                     Glide.with(context)
@@ -169,6 +186,32 @@ public class CommentViewHolder extends RecyclerView.ViewHolder {
 
         commentTextView.setText(contentString);
     }
+
+    /**
+     * Highlights all the {@link Mentionable}s in the test {@link Comment}.
+     */
+    private void highlightMentions(String commentText, ExpandableTextView commentTextView, final List<Mentionable> mentions) {
+        if (commentText != null && mentions != null && !mentions.isEmpty()) {
+            final Spannable spannable = new SpannableString(commentText);
+
+            for (Mentionable mention : mentions) {
+                if (mention != null) {
+                    final int start = mention.getMentionOffset();
+                    final int end = start + mention.getMentionLength();
+
+                    if (commentText.length() >= end) {
+                        spannable.setSpan(new ForegroundColorSpan(orange), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        commentTextView.setText(spannable);
+                    } else {
+                        //Something went wrong.  The expected text that we're trying to highlight does not
+                        // match the actual text at that position.
+                        Log.w("Mentions Sample", "Mention lost. [" + mention + "]");
+                    }
+                }
+            }
+        }
+    }
+
 
     private OnObjectExistListener<Like> onObjectExistListener() {
         return new OnObjectExistListener<Like>() {

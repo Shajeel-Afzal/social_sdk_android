@@ -19,11 +19,11 @@ package sumatodev.com.social.ui.activities;
 
 import android.animation.Animator;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -36,7 +36,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
@@ -47,7 +46,6 @@ import android.text.TextWatcher;
 import android.transition.Transition;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,7 +63,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -85,19 +82,23 @@ import com.google.firebase.auth.FirebaseUser;
 import com.klinker.android.link_builder.Link;
 import com.klinker.android.link_builder.LinkBuilder;
 import com.klinker.android.link_builder.TouchableMovementMethod;
+import com.percolate.caffeine.ViewUtils;
 
 import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
+import sumatodev.com.social.adapters.UsersAdapter;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.listeners.CustomTransitionListener;
+import sumatodev.com.social.listeners.RecyclerItemClickListener;
 import sumatodev.com.social.managers.CommentManager;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
+import sumatodev.com.social.managers.UsersManager;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
@@ -105,14 +106,22 @@ import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.Comment;
 import sumatodev.com.social.model.Like;
+import sumatodev.com.social.model.Mention;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
+import sumatodev.com.social.model.UsersPublic;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Regex;
 import sumatodev.com.social.utils.Utils;
+import sumatodev.com.social.views.mention.Mentionable;
+import sumatodev.com.social.views.mention.Mentions;
+import sumatodev.com.social.views.mention.QueryListener;
+import sumatodev.com.social.views.mention.SuggestionsListener;
 
-public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback {
+import static java.sql.DriverManager.println;
+
+public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback, SuggestionsListener, QueryListener {
 
     public static final String POST_ID_EXTRA_KEY = "PostDetailsActivity.POST_ID_EXTRA_KEY";
     public static final String AUTHOR_ANIMATION_NEEDED_EXTRA_KEY = "PostDetailsActivity.AUTHOR_ANIMATION_NEEDED_EXTRA_KEY";
@@ -170,8 +179,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     private ActionMode mActionMode;
     private boolean isEnterTransitionFinished = false;
 
-    private PopupWindow mPopupWindow;
-//    private NamesAdapter suggestionAdapter;
+    private Mentions mentions;
+    private UsersAdapter usersAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -248,7 +257,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         commentEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                showNameSuggestions();
+
             }
 
             @Override
@@ -266,9 +275,13 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
                 boolean valid = editable.toString().trim().length() > 0;
                 if (valid) {
-                    // mPopupWindow.showAsDropDown(commentEditText, 0, -125);
-
-//                    suggestionAdapter.getFilter().filter(editable.toString());
+//                    String[] words = editable.toString().split("[ \\.]");
+//                    for (String word : words) {
+//                        if (word.length() > 0 && word.charAt(0) == '@') {
+//                            System.out.println(word);
+//                            showNameSuggestions(word);
+//                        }
+//                    }
                 }
             }
         });
@@ -320,6 +333,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
             supportPostponeEnterTransition();
         }
 
+        showNameSuggestions();
     }
 
     @Override
@@ -380,6 +394,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         });
         commentsRecyclerView.setAdapter(commentsAdapter);
         commentsRecyclerView.setNestedScrollingEnabled(false);
+        commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         commentsRecyclerView.addItemDecoration(new DividerItemDecoration(commentsRecyclerView.getContext(),
                 ((LinearLayoutManager) commentsRecyclerView.getLayoutManager()).getOrientation()));
 
@@ -782,8 +797,14 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
         String commentText = commentEditText.getText().toString();
 
+        Comment comment = new Comment();
+        comment.setText(commentText);
+        comment.setPostId(post.getId());
+        comment.setMentions(mentions.getInsertedMentions());
+        comment.setAuthorId(getCurrentUser());
+
         if (commentText.length() > 0 && isPostExist) {
-            commentManager.createOrUpdateComment(commentText, post.getId(), new OnTaskCompleteListener() {
+            commentManager.createOrUpdateComment(comment, new OnTaskCompleteListener() {
                 @Override
                 public void onTaskComplete(boolean success) {
                     if (success) {
@@ -792,6 +813,14 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                     }
                 }
             });
+            Log.d(TAG, "MentionList: " + mentions.getInsertedMentions());
+//            final List<Mentionable> mentionables = mentions.getInsertedMentions();
+//            for (Mentionable mention : mentionables) {
+//                Log.d(TAG, "Position of 1st Character in EditText " + mention.getMentionOffset());
+//                Log.d(TAG, "Text " + mention.getMentionName());
+//                Log.d(TAG, "Length " + mention.getMentionLength());
+//            }
+
             commentEditText.setText(null);
             commentEditText.clearFocus();
             hideKeyBoard();
@@ -1075,6 +1104,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         return hasImage;
     }
 
+
     private class ActionModeCallback implements ActionMode.Callback {
         Comment selectedComment;
         int position;
@@ -1128,47 +1158,77 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private void showNameSuggestions() {
 
-        View view = getLayoutInflater().inflate(R.layout.popup_listview, null);
-        mPopupWindow = new PopupWindow(view, ActionBar.LayoutParams.MATCH_PARENT,
-                ActionBar.LayoutParams.WRAP_CONTENT, true);
+        mentions = new Mentions.Builder(this, commentEditText)
+                .suggestionsListener(this)
+                .queryListener(this)
+                .build();
 
-        mPopupWindow.setTouchable(true);
-        mPopupWindow.setOutsideTouchable(true);
-        mPopupWindow.setBackgroundDrawable(new BitmapDrawable(getResources(), (Bitmap) null));
+        final RecyclerView mentionsList = findViewById(R.id.mentions_list);
+        mentionsList.setLayoutManager(new LinearLayoutManager(this));
+        mentionsList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        usersAdapter = new UsersAdapter(this);
+        mentionsList.setAdapter(usersAdapter);
 
-        final ListView listView = view.findViewById(R.id.listView);
+        // set on item click listener
+        mentionsList.addOnItemTouchListener(new RecyclerItemClickListener(this,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(final View view, final int position) {
+                        final UsersPublic user = usersAdapter.getItem(position);
+                        /*
+                         * We are creating a mentions object which implements the
+                         * <code>Mentionable</code> interface this allows the library to set the offset
+                         * and length of the mention.
+                         */
+                        if (user != null) {
+                            final Mention mention = new Mention();
+                            mention.setMentionName(user.getUsername());
+                            mentions.insertMention(mention);
+                        }
 
-        mPopupWindow.getContentView().setFocusableInTouchMode(true);
-        mPopupWindow.getContentView().setFocusable(true);
-        mPopupWindow.getContentView().setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_MENU && event.getRepeatCount() == 0
-                        && event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (mPopupWindow.isShowing()) {
-                        mPopupWindow.dismiss();
                     }
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        //mPopupWindow1.showAtLocation(commentEditText, Gravity.BOTTOM, 0, 0);
-
-//        FriendsManager.getInstance(this).getFriendsList(this, getCurrentUser(), Consts.FOLLOWING_LIST_REF, new OnDataChangedListener<Friends>() {
-//            @Override
-//            public void onListChanged(List<Friends> list) {
-//
-//                if (!list.isEmpty()) {
-//                    suggestionAdapter = new NamesAdapter(getApplicationContext(), list);
-//                    listView.setAdapter(suggestionAdapter);
-//                }
-//            }
-//        });
+                }));
 
     }
 
+
+    @Override
+    public void displaySuggestions(boolean display) {
+        if (display) {
+            ViewUtils.showView(this, R.id.mentions_list_layout);
+        } else {
+            ViewUtils.hideView(this, R.id.mentions_list_layout);
+        }
+    }
+
+    @Override
+    public void onQueryReceived(final String query) {
+
+        UsersManager.getInstance(this).getUsersList(this, query.toLowerCase(), new OnDataChangedListener<UsersPublic>() {
+            @Override
+            public void onListChanged(List<UsersPublic> list) {
+                if (!list.isEmpty()) {
+                    usersAdapter.clear();
+                    usersAdapter.setCurrentQuery(query);
+                    usersAdapter.addAll(list);
+                    showMentionsList(true);
+                } else {
+                    showMentionsList(false);
+                }
+            }
+        });
+    }
+
+    private void showMentionsList(boolean display) {
+        ViewUtils.showView(this, R.id.mentions_list_layout);
+        if (display) {
+            ViewUtils.showView(this, R.id.mentions_list);
+            ViewUtils.hideView(this, R.id.mentions_empty_view);
+        } else {
+            ViewUtils.hideView(this, R.id.mentions_list);
+            ViewUtils.showView(this, R.id.mentions_empty_view);
+        }
+    }
 
     public void showFloatButtonRelatedSnackBar(int messageId) {
         showSnackBar(messageId);

@@ -18,16 +18,12 @@ package sumatodev.com.social.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -36,8 +32,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -49,16 +43,9 @@ import com.klinker.android.link_builder.Link;
 import com.klinker.android.link_builder.LinkBuilder;
 import com.klinker.android.link_builder.TouchableMovementMethod;
 
-import java.util.List;
-
 import sumatodev.com.social.R;
-import sumatodev.com.social.adapters.NamesAdapter;
-import sumatodev.com.social.enums.Consts;
-import sumatodev.com.social.managers.FriendsManager;
 import sumatodev.com.social.managers.PostManager;
-import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
-import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostStyle;
 import sumatodev.com.social.utils.LogUtil;

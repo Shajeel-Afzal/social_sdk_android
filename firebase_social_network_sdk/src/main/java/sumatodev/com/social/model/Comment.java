@@ -17,14 +17,19 @@
 package sumatodev.com.social.model;
 
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import sumatodev.com.social.enums.ItemType;
 import sumatodev.com.social.utils.FormatterUtil;
+import sumatodev.com.social.views.mention.Mentionable;
 
 public class Comment implements Serializable, LazyLoading {
 
@@ -35,6 +40,13 @@ public class Comment implements Serializable, LazyLoading {
     private long likesCount;
     private long createdDate;
     private ItemType itemType;
+
+    private List<Mentionable> mentions;
+
+    @Override
+    public String toString() {
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+    }
 
 
     public Comment() {
@@ -97,6 +109,13 @@ public class Comment implements Serializable, LazyLoading {
         this.createdDate = createdDate;
     }
 
+    public List<Mentionable> getMentions() {
+        return mentions;
+    }
+
+    public void setMentions(List<Mentionable> mentions) {
+        this.mentions = mentions;
+    }
 
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -107,6 +126,7 @@ public class Comment implements Serializable, LazyLoading {
         result.put("authorId", authorId);
         result.put("likesCount", likesCount);
         result.put("createdDate", createdDate);
+        result.put("mentions", mentions);
 
         return result;
     }

@@ -134,7 +134,7 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
         return convertView;
     }
 
-    private class SuggestionsViewHolder {
+    public class SuggestionsViewHolder {
 
         TextView textView;
         CircleImageView imageView;
