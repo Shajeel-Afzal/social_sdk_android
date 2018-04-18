@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?android:selectableItemBackground"
     android:paddingBottom="@dimen/large_intrinsic_padding"
     android:paddingTop="@dimen/large_intrinsic_padding">
 
@@ -30,7 +31,6 @@
             android:id="@+id/authorName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sample_title"
             android:textColor="@color/highlight_text"
             tools:ignore="RtlSymmetry" />
 
@@ -39,8 +39,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/authorName"
-            android:maxLines="4"
-            android:text="@string/lipsum"
             tools:ignore="RtlSymmetry" />
 
         <LinearLayout

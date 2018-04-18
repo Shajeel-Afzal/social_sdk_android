@@ -85,6 +85,7 @@ import com.klinker.android.link_builder.LinkBuilder;
 import com.klinker.android.link_builder.TouchableMovementMethod;
 import com.percolate.caffeine.ViewUtils;
 
+import java.util.HashMap;
 import java.util.List;
 
 import sumatodev.com.social.R;
@@ -111,6 +112,7 @@ import sumatodev.com.social.model.Mention;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.model.UsersPublic;
+import sumatodev.com.social.ui.fragments.EditCommentFragment;
 import sumatodev.com.social.utils.AnimationUtils;
 import sumatodev.com.social.utils.FormatterUtil;
 import sumatodev.com.social.utils.Regex;
@@ -122,7 +124,8 @@ import sumatodev.com.social.views.mention.SuggestionsListener;
 
 import static java.sql.DriverManager.println;
 
-public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback, SuggestionsListener, QueryListener {
+public class PostDetailsActivity extends BaseActivity implements EditCommentDialog.CommentDialogCallback,
+        SuggestionsListener, QueryListener {
 
     public static final String POST_ID_EXTRA_KEY = "PostDetailsActivity.POST_ID_EXTRA_KEY";
     public static final String AUTHOR_ANIMATION_NEEDED_EXTRA_KEY = "PostDetailsActivity.AUTHOR_ANIMATION_NEEDED_EXTRA_KEY";
@@ -1069,12 +1072,29 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     }
 
     private void openEditCommentDialog(Comment comment) {
-        EditCommentDialog editCommentDialog = new EditCommentDialog();
+        EditCommentDialog editCommentFragment = new EditCommentDialog();
         Bundle args = new Bundle();
-        args.putString(EditCommentDialog.COMMENT_TEXT_KEY, comment.getText());
-        args.putString(EditCommentDialog.COMMENT_ID_KEY, comment.getId());
-        editCommentDialog.setArguments(args);
-        editCommentDialog.show(getFragmentManager(), EditCommentDialog.TAG);
+//        args.putString(EditCommentDialog.COMMENT_TEXT_KEY, comment.getText());
+//        args.putString(EditCommentDialog.COMMENT_ID_KEY, comment.getId());
+        args.putSerializable(EditCommentDialog.COMMENT_KEY, comment);
+
+        editCommentFragment.setArguments(args);
+        editCommentFragment.show(getFragmentManager(), EditCommentFragment.TAG);
+    }
+
+    @Override
+    public void onCommentChanged(HashMap<String, Object> hashMap) {
+        //updateComment(newText, commentId);
+        showProgress();
+        commentManager.updateSingleComment(postId, hashMap, new OnTaskCompleteListener() {
+            @Override
+            public void onTaskComplete(boolean success) {
+                commentsAdapter.updateComment();
+                hideProgress();
+                showSnackBar(R.string.message_comment_was_edited);
+            }
+        });
+
     }
 
     private void updateComment(String newText, String commentId) {
@@ -1087,11 +1107,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 showSnackBar(R.string.message_comment_was_edited);
             }
         });
-    }
-
-    @Override
-    public void onCommentChanged(String newText, String commentId) {
-        updateComment(newText, commentId);
     }
 
     private boolean hasImage(@NonNull ImageView view) {

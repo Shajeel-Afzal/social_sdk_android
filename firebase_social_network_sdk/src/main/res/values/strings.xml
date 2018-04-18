@@ -261,5 +261,6 @@
     <string name="uploading_post_string">Uploading Post</string>
     <string name="failed_uploading_post_string">Failed Uploading Post</string>
     <string name="uploading_post_successful">Uploading Post Successful</string>
+    <string name="update">Update</string>
 
 </resources>

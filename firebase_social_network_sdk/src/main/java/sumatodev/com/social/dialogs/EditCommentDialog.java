@@ -23,12 +23,31 @@ import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextPaint;
+import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.List;
 
 import sumatodev.com.social.R;
+import sumatodev.com.social.model.Comment;
+import sumatodev.com.social.views.mention.Mentionable;
+import sumatodev.com.social.views.mention.Mentions;
+import sumatodev.com.social.views.mention.QueryListener;
+import sumatodev.com.social.views.mention.SuggestionsListener;
 
 /**
  * Created by alexey on 12.05.17.
@@ -38,10 +57,13 @@ public class EditCommentDialog extends DialogFragment {
     public static final String TAG = EditCommentDialog.class.getSimpleName();
     public static final String COMMENT_TEXT_KEY = "EditCommentDialog.COMMENT_TEXT_KEY";
     public static final String COMMENT_ID_KEY = "EditCommentDialog.COMMENT_ID_KEY";
+    public static final String COMMENT_KEY = "EditCommentDialog.COMMENT_KEY";
 
     private CommentDialogCallback callback;
-    private String commentText;
-    private String commentId;
+    private Comment comment;
+    private Mentions mentions;
+    //    private String commentText;
+//    private String commentId;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,8 +73,9 @@ public class EditCommentDialog extends DialogFragment {
             throw new RuntimeException(getActivity().getTitle() + " should implements CommentDialogCallback");
         }
 
-        commentText = (String) getArguments().get(COMMENT_TEXT_KEY);
-        commentId = (String) getArguments().get(COMMENT_ID_KEY);
+//        commentText = (String) getArguments().get(COMMENT_TEXT_KEY);
+//        commentId = (String) getArguments().get(COMMENT_ID_KEY);
+        comment = (Comment) getArguments().getSerializable(COMMENT_KEY);
 
         super.onCreate(savedInstanceState);
     }
@@ -64,8 +87,26 @@ public class EditCommentDialog extends DialogFragment {
 
         final EditText editCommentEditText = view.findViewById(R.id.editCommentEditText);
 
-        if (commentText != null) {
-            editCommentEditText.setText(commentText);
+        if (comment.getText() != null) {
+            editCommentEditText.setText(comment.getText());
+            editCommentEditText.setSelection(editCommentEditText.getText().length());
+
+            mentions = new Mentions.Builder(getActivity(), editCommentEditText)
+                    .suggestionsListener(new SuggestionsListener() {
+                        @Override
+                        public void displaySuggestions(boolean display) {
+
+                        }
+                    })
+                    .queryListener(new QueryListener() {
+                        @Override
+                        public void onQueryReceived(String query) {
+
+                        }
+                    })
+                    .build();
+
+            mentions.addMentions(comment.getMentions());
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -77,8 +118,13 @@ public class EditCommentDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String newCommentText = editCommentEditText.getText().toString();
 
-                        if (!newCommentText.equals(commentText) && callback != null) {
-                            callback.onCommentChanged(newCommentText, commentId);
+                        if (!newCommentText.equals(comment.getText()) && callback != null) {
+
+                            HashMap<String, Object> hashMap = new HashMap<>();
+                            hashMap.put("id", comment.getId());
+                            hashMap.put("text", newCommentText);
+                            hashMap.put("mentions", mentions.getInsertedMentions());
+                            callback.onCommentChanged(hashMap);
                         }
 
                         dialog.cancel();
@@ -88,7 +134,8 @@ public class EditCommentDialog extends DialogFragment {
         return builder.create();
     }
 
+
     public interface CommentDialogCallback {
-        void onCommentChanged(String newText, String commentId);
+        void onCommentChanged(HashMap<String, Object> hashMap);
     }
 }

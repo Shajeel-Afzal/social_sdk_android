@@ -25,6 +25,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
@@ -97,6 +99,10 @@ public class CommentManager extends FirebaseListenersManager {
 
     public void updateComment(String commentId, String commentText, String postId, OnTaskCompleteListener onTaskCompleteListener) {
         ApplicationHelper.getDatabaseHelper().updateComment(commentId, commentText, postId, onTaskCompleteListener);
+    }
+
+    public void updateSingleComment(String postId, HashMap<String, Object> hashMap, OnTaskCompleteListener onTaskCompleteListener) {
+        ApplicationHelper.getDatabaseHelper().updateSingleComment(postId, hashMap, onTaskCompleteListener);
     }
 
     public void isCommentExist(String postId, String commentId, OnObjectExistListener<Comment> onObjectExistListener) {

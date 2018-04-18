@@ -376,6 +376,32 @@ public class DatabaseHelper {
         });
     }
 
+    public void updateSingleComment(String postId, HashMap<String, Object> hashMap, final OnTaskCompleteListener onTaskCompleteListener) {
+
+        String commentId = (String) hashMap.get("id");
+
+        DatabaseReference mCommentReference = database.getReference().child("post-comments")
+                .child(postId).child(commentId);
+
+        mCommentReference.updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                if (onTaskCompleteListener != null) {
+                    onTaskCompleteListener.onTaskComplete(true);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (onTaskCompleteListener != null) {
+                    onTaskCompleteListener.onTaskComplete(false);
+                }
+                LogUtil.logError(TAG, "updateComment", e);
+            }
+        });
+    }
+
+
     public void decrementCommentsCount(String postId, final OnTaskCompleteListener onTaskCompleteListener) {
         DatabaseReference postRef = database.getReference("posts/" + postId + "/commentsCount");
         postRef.runTransaction(new Transaction.Handler() {
@@ -760,16 +786,37 @@ public class DatabaseHelper {
     }
 
     public void getSingleComment(String postId, final String id, final OnCommentChangedListener onCommentChangedListener) {
-        DatabaseReference reference = getDatabaseReference().child(Consts.POST_COMMENTS_REF)
-                .child(postId).child(id);
+        DatabaseReference reference = getDatabaseReference().child(Consts.POST_COMMENTS_REF).child(postId).child(id);
+
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Comment comment = dataSnapshot.getValue(Comment.class);
-                if (comment != null) {
-                    comment.setId(id);
+                if (dataSnapshot != null) {
+                    HashMap hashMap = (HashMap) dataSnapshot.getValue();
+                    if (hashMap != null) {
+                        Comment comment = new Comment();
+                        comment.setId(id);
+                        comment.setPostId((String) hashMap.get("postId"));
+                        comment.setAuthorId((String) hashMap.get("authorId"));
+                        comment.setText((String) hashMap.get("text"));
+                        comment.setLikesCount((long) hashMap.get("likesCount"));
+                        comment.setCreatedDate((long) hashMap.get("createdDate"));
+
+                        if (hashMap.containsKey("mentions")) {
+                            GenericTypeIndicator<List<Mention>> indicator = new GenericTypeIndicator<List<Mention>>() {
+                            };
+                            List<Mention> mentionList = dataSnapshot.child("mentions").getValue(indicator);
+                            if (mentionList != null) {
+                                List<Mentionable> mentionables = new ArrayList<Mentionable>(mentionList);
+                                comment.setMentions(mentionables);
+
+                                Log.d(TAG, "Mentions: " + mentionables);
+                            }
+                        }
+
+                        onCommentChangedListener.onObjectChanged(comment);
+                    }
                 }
-                onCommentChangedListener.onObjectChanged(comment);
             }
 
             @Override
@@ -1012,8 +1059,7 @@ public class DatabaseHelper {
     public void getCommentList(String postId, final OnDataChangedListener<Comment> onDataChangedListener) {
         DatabaseReference databaseReference = database.getReference("post-comments").child(postId);
         final List<Comment> list = new ArrayList<>();
-
-        ChildEventListener childEventListener = databaseReference.addChildEventListener(new ChildEventListener() {
+        databaseReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 if (dataSnapshot != null) {
