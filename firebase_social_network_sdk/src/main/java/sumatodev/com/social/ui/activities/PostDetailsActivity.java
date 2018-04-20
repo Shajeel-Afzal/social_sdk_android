@@ -57,6 +57,7 @@ import android.view.ViewPropertyAnimator;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -64,6 +65,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
@@ -90,6 +92,8 @@ import java.util.List;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.CommentsAdapter;
+import sumatodev.com.social.adapters.NamesAdapter;
+import sumatodev.com.social.adapters.SearchAdapter;
 import sumatodev.com.social.adapters.UsersAdapter;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.dialogs.EditCommentDialog;
@@ -185,6 +189,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
     private Mentions mentions;
     private UsersAdapter usersAdapter;
+    private RelativeLayout parentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -203,6 +208,7 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
         incrementWatchersCount();
 
+        parentView = findViewById(R.id.parentView);
         titleTextView = findViewById(R.id.titleTextView);
         postImageView = findViewById(R.id.postImageView);
         progressBar = findViewById(R.id.progressBar);
@@ -559,11 +565,6 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         }
     }
 
-    private void openUrlActivity(String linkUrl) {
-        Intent intent = new Intent(PostDetailsActivity.this, LinkActivity.class);
-        intent.putExtra(LinkActivity.URL_REF, linkUrl);
-        startActivity(intent);
-    }
 
     private void openYouTubeUrl(String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -715,6 +716,11 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 commentsRecyclerView.setVisibility(View.VISIBLE);
                 warningCommentsTextView.setVisibility(View.GONE);
                 commentsAdapter.setList(list);
+            }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+
             }
         };
     }
@@ -1221,7 +1227,8 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
     @Override
     public void onQueryReceived(final String query) {
 
-        UsersManager.getInstance(this).getUsersList(this, query.toLowerCase(), new OnDataChangedListener<UsersPublic>() {
+        UsersManager.getInstance(this).getUsersList(this, query.toLowerCase(),
+                new OnDataChangedListener<UsersPublic>() {
             @Override
             public void onListChanged(List<UsersPublic> list) {
                 if (!list.isEmpty()) {
@@ -1232,6 +1239,11 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
                 } else {
                     showMentionsList(false);
                 }
+            }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+
             }
         });
     }

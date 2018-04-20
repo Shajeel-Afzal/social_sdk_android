@@ -21,6 +21,7 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private List<ThreadsModel> list = new ArrayList<>();
     private Callback callback;
+    public static int selectedItemPosition = -1;
 
 
     public ThreadAdapter() {
@@ -30,10 +31,27 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        return new ThreadsHolder(inflater.inflate(R.layout.message_threads_list, parent, false),
-                callback);
+        return new ThreadsHolder(inflater.inflate(R.layout.message_threads_list, parent, false), callBack());
     }
 
+    private ThreadsHolder.CallBack callBack() {
+        return new ThreadsHolder.CallBack() {
+            @Override
+            public void onItemClick(String userKey, View view) {
+                if (callback != null) {
+                    callback.onItemClick(userKey, view);
+                }
+            }
+
+            @Override
+            public void onItemLongClick(int position, View view) {
+                if (callback != null) {
+                    selectedItemPosition = position;
+                    callback.onItemLongClick(position, view);
+                }
+            }
+        };
+    }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
@@ -54,6 +72,18 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         callback.onListChanged(list.size());
         notifyDataSetChanged();
     }
+
+
+    public void cleanSelectedPosition() {
+        selectedItemPosition = -1;
+    }
+
+    public void removeItem() {
+        list.remove(selectedItemPosition);
+        callback.onListChanged(list.size());
+        notifyItemRemoved(selectedItemPosition);
+    }
+
 
     @Override
     public int getItemCount() {

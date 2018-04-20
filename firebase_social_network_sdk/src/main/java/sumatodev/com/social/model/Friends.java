@@ -1,5 +1,7 @@
 package sumatodev.com.social.model;
 
+import java.util.Date;
+
 /**
  * Created by Ali on 01/03/2018.
  */
@@ -16,6 +18,12 @@ public class Friends {
     public Friends(String id, Long createdDate, String type) {
         this.id = id;
         this.createdDate = createdDate;
+        this.type = type;
+    }
+
+    public Friends(String id, String type) {
+        this.createdDate = new Date().getTime();
+        this.id = id;
         this.type = type;
     }
 

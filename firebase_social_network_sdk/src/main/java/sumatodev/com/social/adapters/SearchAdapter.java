@@ -115,7 +115,7 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
         UsersPublic usersPublic = (UsersPublic) getItem(position);
 
         viewHolder.textView.setText(usersPublic.getUsername());
-        Picasso.with(context).load(usersPublic.getPhotoUrl())
+        Picasso.get().load(usersPublic.getPhotoUrl())
                 .into(viewHolder.imageView);
         if (usersPublic.getId() != null) {
             Glide.with(context).load(usersPublic.getPhotoUrl())

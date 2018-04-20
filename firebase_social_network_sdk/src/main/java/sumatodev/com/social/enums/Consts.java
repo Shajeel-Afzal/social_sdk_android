@@ -1,11 +1,20 @@
 package sumatodev.com.social.enums;
 
+import android.support.annotation.IntDef;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import static sumatodev.com.social.enums.Consts.FollowType.FOLLOWER;
+import static sumatodev.com.social.enums.Consts.FollowType.FOLLOWING;
+import static sumatodev.com.social.enums.Consts.FollowType.REQUESTED;
+
+
 /**
  * Created by Ali on 01/03/2018.
  */
 
 public class Consts {
-
 
     public static final String USER_KEY = "userKey";
     public static final String FRIENDS_REF = "friends";
@@ -21,4 +30,15 @@ public class Consts {
     public static final String ACCOUNT_DISABLED = "disabled";
     public static final String ACCOUNT_ACTIVE = "active";
     public static final String ACCOUNT_STATUS = "accountStatus";
+    public static final String FOLLOW_KEY = "follow";
+
+
+    @IntDef({FOLLOWER, FOLLOWING, REQUESTED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FollowType {
+        int FOLLOWER = 100;
+        int FOLLOWING = 200;
+        int REQUESTED = 300;
+    }
+
 }

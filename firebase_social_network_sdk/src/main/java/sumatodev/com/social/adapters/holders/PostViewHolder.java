@@ -369,6 +369,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
                             return false;
                         }
 
@@ -443,6 +444,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                     .listener(new RequestListener<String, GlideDrawable>() {
                         @Override
                         public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            progressBar.setVisibility(View.GONE);
                             return false;
                         }
 
@@ -500,8 +502,10 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             public void onObjectChanged(final Profile obj) {
                 if (obj.getPhotoUrl() != null) {
 
-                    Picasso.with(context)
+                    Picasso.get()
                             .load(obj.getPhotoUrl())
+                            .placeholder(R.drawable.user_thumbnail)
+                            .error(R.drawable.user_thumbnail)
                             .into(authorImageView);
                 }
 

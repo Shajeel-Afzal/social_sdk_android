@@ -305,12 +305,6 @@ public class EditPostActivity extends CreatePostActivity {
         }
     }
 
-    private void openUrlActivity(String linkUrl) {
-        Intent intent = new Intent(EditPostActivity.this, LinkActivity.class);
-        intent.putExtra(LinkActivity.URL_REF, linkUrl);
-        startActivity(intent);
-    }
-
     private void loadPostDetailsImage() {
         colorPicker.setVisibility(View.GONE);
         imageLayout.setVisibility(View.VISIBLE);

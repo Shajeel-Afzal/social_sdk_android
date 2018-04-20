@@ -143,7 +143,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                 }
                 if (obj.getPhotoUrl() != null) {
 
-                    Picasso.with(ChatActivity.this).load(obj.getPhotoUrl())
+                    Picasso.get().load(obj.getPhotoUrl())
                             .placeholder(R.drawable.imageview_user_thumb)
                             .transform(new RoundedCornersTransform())
                             .networkPolicy(NetworkPolicy.OFFLINE)
@@ -154,9 +154,9 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                                 }
 
                                 @Override
-                                public void onError() {
+                                public void onError(Exception e) {
 
-                                    Picasso.with(ChatActivity.this).load(obj.getPhotoUrl())
+                                    Picasso.get().load(obj.getPhotoUrl())
                                             .placeholder(R.drawable.imageview_user_thumb)
                                             .transform(new RoundedCornersTransform())
                                             .into(userImage_c);
@@ -356,6 +356,11 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                 recyclerView.setVisibility(View.VISIBLE);
                 messagesAdapter.setList(list);
                 messagesAdapter.cleanSelectedPosition();
+            }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+
             }
 
             @Override

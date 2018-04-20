@@ -143,6 +143,12 @@ public class BaseActivity extends AppCompatActivity {
         Snackbar snackbar = Snackbar.make(view, messageId, Snackbar.LENGTH_LONG);
         snackbar.show();
     }
+    public void openUrlActivity(String linkUrl) {
+        Intent intent = new Intent(BaseActivity.this, LinkActivity.class);
+        intent.putExtra(LinkActivity.URL_REF, linkUrl);
+        startActivity(intent);
+    }
+
 
     public void showWarningDialog(int messageId) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);

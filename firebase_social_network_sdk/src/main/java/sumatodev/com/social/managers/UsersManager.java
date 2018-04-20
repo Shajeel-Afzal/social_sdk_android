@@ -2,10 +2,13 @@ package sumatodev.com.social.managers;
 
 import android.content.Context;
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
+import sumatodev.com.social.enums.FollowStatus;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.managers.listeners.OnFollowStatusChanged;
 import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.UsersPublic;
 
@@ -29,8 +32,8 @@ public class UsersManager extends FirebaseListenersManager {
         this.context = context;
     }
 
-    public void getFriendsList(Context context, String userKey, String listType, OnDataChangedListener<Friends> onDataChangedListener) {
-
+    public void getFriendsList(Context context, String userKey, String listType,
+                               OnDataChangedListener<Friends> onDataChangedListener) {
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         ValueEventListener eventListener = databaseHelper.getFriendsList(userKey, listType, onDataChangedListener);
         addListenerToMap(context, eventListener);
@@ -40,5 +43,12 @@ public class UsersManager extends FirebaseListenersManager {
         DatabaseHelper reference = ApplicationHelper.getDatabaseHelper();
         ValueEventListener valueEventListener = reference.getSearchList(searchString, onDataChangedListener);
         addListenerToMap(context, valueEventListener);
+    }
+
+
+    public void getFollowStatus(Context context, String userKey, OnFollowStatusChanged onFollowStatusChanged) {
+        DatabaseHelper reference = ApplicationHelper.getDatabaseHelper();
+        ValueEventListener eventListener = reference.checkFollowStatus(userKey, onFollowStatusChanged);
+        addListenerToMap(context, eventListener);
     }
 }

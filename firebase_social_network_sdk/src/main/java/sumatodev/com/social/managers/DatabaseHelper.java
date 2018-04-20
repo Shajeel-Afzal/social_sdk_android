@@ -64,8 +64,10 @@ import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.Consts;
+import sumatodev.com.social.enums.FollowStatus;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.managers.listeners.OnFollowStatusChanged;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
@@ -724,12 +726,17 @@ public class DatabaseHelper {
         postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                PostListResult result = parsePostList((Map<String, Object>) dataSnapshot.getValue());
-                onDataChangedListener.onListChanged(result.getPosts());
+                if (dataSnapshot.getValue() != null) {
+                    PostListResult result = parsePostList((Map<String, Object>) dataSnapshot.getValue());
+                    onDataChangedListener.onListChanged(result.getPosts());
+                } else {
+                    onDataChangedListener.inEmpty(true, "empty");
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                onDataChangedListener.inEmpty(false, databaseError.getMessage());
                 LogUtil.logError(TAG, "getPostListByUser(), onCancelled", new Exception(databaseError.getMessage()));
             }
         });
@@ -934,6 +941,22 @@ public class DatabaseHelper {
         });
     }
 
+    public void getUserPublicProfile(String id, final OnObjectChangedListener<UsersPublic> listener) {
+        DatabaseReference databaseReference = getDatabaseReference().child(Consts.FIREBASE_PUBLIC_USERS).child(id);
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                UsersPublic profile = dataSnapshot.getValue(UsersPublic.class);
+                listener.onObjectChanged(profile);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logError(TAG, "getProfileSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
     public ValueEventListener getProfile(String id, final OnObjectChangedListener<Profile> listener) {
         DatabaseReference databaseReference = getDatabaseReference().child("profiles").child(id);
         ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
@@ -953,7 +976,7 @@ public class DatabaseHelper {
     }
 
     public ValueEventListener getPublicProfile(String id, final OnObjectChangedListener<UsersPublic> listener) {
-        DatabaseReference databaseReference = getDatabaseReference().child("profiles").child(id);
+        DatabaseReference databaseReference = getDatabaseReference().child(Consts.FIREBASE_PUBLIC_USERS).child(id);
         ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -1011,7 +1034,6 @@ public class DatabaseHelper {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "Account Status: " + dataSnapshot.getValue());
                 AccountStatus status = dataSnapshot.getValue(AccountStatus.class);
                 objectChangedListener.onObjectChanged(status);
             }
@@ -1264,12 +1286,14 @@ public class DatabaseHelper {
                     });
 
                     onDataChangedListener.onListChanged(list);
+                } else {
+                    onDataChangedListener.inEmpty(true, null);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                onDataChangedListener.inEmpty(false, databaseError.getMessage());
             }
         });
 
@@ -1336,6 +1360,81 @@ public class DatabaseHelper {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 LogUtil.logError(TAG, "isCommentExistSingleValue(), onCancelled", new Exception(databaseError.getMessage()));
+            }
+        });
+    }
+
+    public ValueEventListener checkFollowStatus(String userKey, final OnFollowStatusChanged onFollowStatusChanged) {
+        DatabaseReference databaseReference = database.getReference(Consts.FRIENDS_REF).child(userKey);
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child(Consts.FOLLOWERS_LIST_REF).hasChild(getCurrentUser())) {
+                    onFollowStatusChanged.isStatus(Consts.FOLLOWERS_LIST_REF);
+                    Log.d(TAG, "following");
+                } else if (dataSnapshot.child(Consts.REQUEST_LIST_REF).hasChild(getCurrentUser())) {
+                    onFollowStatusChanged.isStatus(Consts.REQUEST_LIST_REF);
+                    Log.d(TAG, "requested");
+                } else {
+                    onFollowStatusChanged.isStatus(Consts.FOLLOW_KEY);
+                    Log.d(TAG, "follow");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
+    }
+
+    public void updateFollowRequest(String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseReference reference = database.getReference(Consts.FRIENDS_REF).child(userKey)
+                .child(Consts.REQUEST_LIST_REF);
+        Friends friends = new Friends(getCurrentUser(), "request");
+        reference.child(getCurrentUser()).setValue(friends, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError == null) {
+                    onTaskCompleteListener.onTaskComplete(true);
+                } else {
+                    onTaskCompleteListener.onTaskComplete(false);
+                }
+            }
+        });
+    }
+
+    public void removeFollowRequest(String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseReference reference = database.getReference(Consts.FRIENDS_REF).child(userKey)
+                .child(Consts.REQUEST_LIST_REF);
+        reference.child(getCurrentUser()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onTaskCompleteListener.onTaskComplete(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onTaskCompleteListener.onTaskComplete(false);
+            }
+        });
+    }
+
+    public void removeFromFollowing(String userKey, final OnTaskCompleteListener onTaskCompleteListener) {
+        DatabaseReference reference = database.getReference(Consts.FRIENDS_REF).child(userKey)
+                .child(Consts.FOLLOWERS_LIST_REF);
+        reference.child(getCurrentUser()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                onTaskCompleteListener.onTaskComplete(true);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onTaskCompleteListener.onTaskComplete(false);
             }
         });
     }

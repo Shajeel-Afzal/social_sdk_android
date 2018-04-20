@@ -54,4 +54,5 @@
     <dimen name="buttons_radius">20dp</dimen>
     <dimen name="detail_width">80dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="global_keyline_s">16dp</dimen>
 </resources>

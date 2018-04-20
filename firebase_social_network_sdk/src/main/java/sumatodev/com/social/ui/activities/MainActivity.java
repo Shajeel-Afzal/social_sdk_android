@@ -143,6 +143,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                     mSearchView.setAdapter(searchAdapter);
                 }
             }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+
+            }
         };
     }
 
@@ -150,7 +155,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     protected void onResume() {
         super.onResume();
         updateNewPostCounter();
-        refreshPostList();
     }
 
 
@@ -352,12 +356,6 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 }
             });
         }
-    }
-
-    private void openUrlActivity(String linkUrl) {
-        Intent intent = new Intent(MainActivity.this, LinkActivity.class);
-        intent.putExtra(LinkActivity.URL_REF, linkUrl);
-        startActivity(intent);
     }
 
     private void openShareIntent(Post post) {

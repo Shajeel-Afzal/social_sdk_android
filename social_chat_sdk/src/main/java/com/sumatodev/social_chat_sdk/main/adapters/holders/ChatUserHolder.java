@@ -155,7 +155,7 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
             public void onObjectChanged(final UsersPublic obj) {
                 if (obj.getPhotoUrl() != null) {
 
-                    Picasso.with(context)
+                    Picasso.get()
                             .load(obj.getPhotoUrl())
                             .networkPolicy(NetworkPolicy.OFFLINE)
                             .into(authorImageView, new Callback() {
@@ -165,8 +165,8 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
                                 }
 
                                 @Override
-                                public void onError() {
-                                    Picasso.with(context)
+                                public void onError(Exception e) {
+                                    Picasso.get()
                                             .load(obj.getPhotoUrl())
                                             .into(authorImageView);
                                 }

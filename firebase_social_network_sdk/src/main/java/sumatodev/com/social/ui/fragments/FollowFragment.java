@@ -2,6 +2,7 @@ package sumatodev.com.social.ui.fragments;
 
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
@@ -13,39 +14,42 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
+import java.util.List;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.FollowAdapter;
 import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.listeners.OnRequestItemListener;
-import sumatodev.com.social.managers.FirebaseUtils;
+import sumatodev.com.social.managers.UsersManager;
+import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.model.Friends;
 
-public class FollowersFragment extends BaseFragment implements OnRequestItemListener {
+public class FollowFragment extends BaseFragment implements OnRequestItemListener {
 
-    private static final String TAG = FollowersFragment.class.getSimpleName();
+    private static final int TIME_OUT_LOADING_LIST = 3000;
+    private static final String TAG = FollowFragment.class.getSimpleName();
+    public static final String REF_TYPE = "REF_TYPE";
     private SimpleStatefulLayout mStatefulLayout;
     private RecyclerView recycleView;
 
+    private String requestType;
     private String userKey;
     private LinearLayoutManager layoutManager;
-    private FollowAdapter followAdapter;
+    private FollowAdapter frollowAdapter;
     private ActionBar actionBar;
+    private boolean loadingList = false;
 
-    public FollowersFragment() {
+
+    public FollowFragment() {
     }
 
-    public static FollowersFragment newInstance(String userId) {
+    public static FollowFragment newInstance(String userId, String type) {
 
         Bundle args = new Bundle();
         args.putString(Consts.USER_KEY, userId);
-        FollowersFragment fragment = new FollowersFragment();
+        args.putString(REF_TYPE, type);
+        FollowFragment fragment = new FollowFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,7 +59,7 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             userKey = getArguments().getString(Consts.USER_KEY);
-            Log.d(TAG, "followersKey" + userKey);
+            requestType = getArguments().getString(REF_TYPE);
         }
         actionBar = getActionBar();
     }
@@ -63,11 +67,10 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_request_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_following, container, false);
         findViews(view);
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Followers");
         }
         return view;
     }
@@ -81,50 +84,74 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupLinearLayout();
-        if (userKey != null && checkInternetConnection()) {
-            loadFollowersList();
+        if (userKey != null && requestType != null) {
+            if (hasInternetConnection()) {
+                loadFollowersList();
+            } else {
+                mStatefulLayout.showOffline();
+            }
         }
     }
 
     private void loadFollowersList() {
         mStatefulLayout.showProgress();
 
-
-        Query query = FirebaseUtils.getFriendsRef().child(userKey).child(Consts.FOLLOWERS_LIST_REF);
-
-        FirebaseRecyclerOptions<Friends> options = new FirebaseRecyclerOptions.Builder<Friends>()
-                .setQuery(query, Friends.class)
-                .build();
-
-        followAdapter = new FollowAdapter(options);
-        followAdapter.setOnRequestItemListener(this);
-        recycleView.setAdapter(followAdapter);
-
-        query.addValueEventListener(new ValueEventListener() {
+        frollowAdapter = new FollowAdapter();
+        frollowAdapter.setCallBack(new FollowAdapter.CallBack() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() == null) {
-                    mStatefulLayout.setEmptyText("empty");
-                    mStatefulLayout.showEmpty();
-                } else {
-                    mStatefulLayout.showContent();
-                }
+            public void onItemClick(String userKey, View view) {
+                openProfile(userKey, view);
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                switch (error.getCode()) {
-                    case DatabaseError.PERMISSION_DENIED:
-                        mStatefulLayout.setEmptyText("No Permission");
-                        mStatefulLayout.showEmpty();
-                        break;
-                    default:
-                        mStatefulLayout.showEmpty();
-                        mStatefulLayout.setEmptyText("something went wrong...");
-                }
+            public void onListChanged(int items) {
+                Log.d(TAG, "List Size: " + items);
             }
         });
+
+        recycleView.setAdapter(frollowAdapter);
+
+        if (requestType.equalsIgnoreCase(Consts.FOLLOWING_LIST_REF)) {
+            if (actionBar != null) {
+                actionBar.setTitle("Followings");
+            }
+            UsersManager.getInstance(getActivity()).getFriendsList(getActivity(), userKey,
+                    Consts.FOLLOWING_LIST_REF, friendsOnDataChangedListener());
+
+        } else if (requestType.equalsIgnoreCase(Consts.FOLLOWERS_LIST_REF)) {
+            if (actionBar != null) {
+                actionBar.setTitle("Followers");
+            }
+
+            UsersManager.getInstance(getActivity()).getFriendsList(getActivity(), userKey,
+                    Consts.FOLLOWERS_LIST_REF, friendsOnDataChangedListener());
+        }
     }
+
+
+    OnDataChangedListener<Friends> friendsOnDataChangedListener() {
+
+        return new OnDataChangedListener<Friends>() {
+            @Override
+            public void onListChanged(List<Friends> list) {
+                frollowAdapter.setList(list);
+                mStatefulLayout.showContent();
+
+            }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+                if (empty) {
+                    mStatefulLayout.showEmpty();
+                } else {
+                    mStatefulLayout.showEmpty();
+                    mStatefulLayout.setEmptyText(error);
+                }
+            }
+
+        };
+    }
+
 
     private void setupLinearLayout() {
         layoutManager = new LinearLayoutManager(getActivity());
@@ -134,22 +161,6 @@ public class FollowersFragment extends BaseFragment implements OnRequestItemList
         recycleView.setLayoutManager(layoutManager);
     }
 
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (checkInternetConnection()){
-            followAdapter.startListening();
-        }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (followAdapter != null) {
-            followAdapter.stopListening();
-        }
-    }
 
     @Override
     public void onItemClick(View view, String userKey) {

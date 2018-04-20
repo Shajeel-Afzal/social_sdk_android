@@ -52,7 +52,7 @@ public class RequestsHolder extends RecyclerView.ViewHolder {
                                 if (user != null) {
                                     userName.setText(capitalize(user.getUsername()));
 
-                                    Picasso.with(userImage.getContext()).load(user.getPhotoUrl())
+                                    Picasso.get().load(user.getPhotoUrl())
                                             .transform(new RoundedCornersTransform())
                                             .placeholder(R.drawable.imageview_user_thumb)
                                             .networkPolicy(NetworkPolicy.OFFLINE)
@@ -63,8 +63,8 @@ public class RequestsHolder extends RecyclerView.ViewHolder {
                                                 }
 
                                                 @Override
-                                                public void onError() {
-                                                    Picasso.with(userImage.getContext()).load(user.getPhotoUrl())
+                                                public void onError(Exception e) {
+                                                    Picasso.get().load(user.getPhotoUrl())
                                                             .placeholder(R.drawable.user_thumb)
                                                             .transform(new RoundedCornersTransform())
                                                             .into(userImage);

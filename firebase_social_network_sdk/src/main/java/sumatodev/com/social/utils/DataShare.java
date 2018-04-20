@@ -48,7 +48,7 @@ public class DataShare {
             }
 
             @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
+            public void onBitmapFailed(Exception e,Drawable errorDrawable) {
 
             }
 
@@ -59,7 +59,7 @@ public class DataShare {
 
         };
 
-        Picasso.with(context).load(url).into(loadtarget);
+        Picasso.get().load(url).into(loadtarget);
     }
 
     public Uri handleLoadedBitmap(Bitmap b) throws IOException {

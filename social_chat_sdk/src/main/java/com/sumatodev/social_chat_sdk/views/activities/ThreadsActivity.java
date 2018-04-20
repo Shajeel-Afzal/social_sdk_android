@@ -20,6 +20,7 @@ import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
+import com.sumatodev.social_chat_sdk.views.fragments.ThreadsFragment;
 
 import java.util.List;
 
@@ -41,24 +42,17 @@ public class ThreadsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_threads);
+        setContentView(R.layout.activity_frame);
 
-        findViews();
-        setupLinearLayout();
-        actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setTitle("Conversations");
+        if (getIntent() != null) {
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, ThreadsFragment.newInstance())
+                        .commit();
+            }
         }
-
-        messagesManager = MessagesManager.getInstance(this);
-        initRecyclerView();
     }
 
-    private void findViews() {
-        mStatefulLayout = findViewById(R.id.stateful_view);
-        recycleView = findViewById(R.id.recycler_view);
-    }
 
 
     private void initRecyclerView() {
@@ -113,6 +107,11 @@ public class ThreadsActivity extends BaseActivity {
                 if (!list.isEmpty()) {
                     threadAdapter.setList(list);
                 }
+            }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+
             }
 
             @Override

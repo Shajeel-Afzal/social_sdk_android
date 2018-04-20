@@ -6,13 +6,15 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <cz.kinst.jakub.view.SimpleStatefulLayout
         android:id="@+id/stateful_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/white"
-        app:emptyLayout="@layout/empty_layout">
+        app:emptyText="@string/custom_empty_text"
+        app:offlineText="@string/custom_offline_text"
+        app:state="offline"
+        app:stateTextAppearance="@style/TextAppearance.AppCompat.Caption">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"

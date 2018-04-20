@@ -46,7 +46,7 @@ public class UsersHolder extends RecyclerView.ViewHolder {
             rejectBtn.setVisibility(View.GONE);
 
             userName.setText(capitalize(model.getUsername()));
-            Picasso.with(userImage.getContext()).load(model.getPhotoUrl())
+            Picasso.get().load(model.getPhotoUrl())
                     .transform(new RoundedCornersTransform())
                     .placeholder(R.drawable.imageview_user_thumb)
                     .networkPolicy(NetworkPolicy.OFFLINE)
@@ -57,8 +57,8 @@ public class UsersHolder extends RecyclerView.ViewHolder {
                         }
 
                         @Override
-                        public void onError() {
-                            Picasso.with(userImage.getContext()).load(model.getPhotoUrl())
+                        public void onError(Exception e) {
+                            Picasso.get().load(model.getPhotoUrl())
                                     .placeholder(R.drawable.user_thumb)
                                     .transform(new RoundedCornersTransform())
                                     .into(userImage);

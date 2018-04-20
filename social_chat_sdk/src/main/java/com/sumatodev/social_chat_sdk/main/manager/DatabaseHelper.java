@@ -144,20 +144,21 @@ public class DatabaseHelper {
 
     public ValueEventListener getThreadsList(final OnDataChangedListener<ThreadsModel> onDataChangedListener) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
+        final List<ThreadsModel> list = new ArrayList<>();
         ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 if (dataSnapshot.getValue() != null) {
-                    List<ThreadsModel> list = new ArrayList<>();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         ThreadsModel model = new ThreadsModel(child.getKey());
                         list.add(model);
                     }
+
                     onDataChangedListener.onListChanged(list);
+                } else {
+                    onDataChangedListener.inEmpty(true, "empty");
                 }
-                // Map<String, Object> objectMap = (HashMap<String, Object>) dataSnapshot.getValue();
-                //onDataChangedListener.onListChanged(getThreads(objectMap));
+
             }
 
             @Override

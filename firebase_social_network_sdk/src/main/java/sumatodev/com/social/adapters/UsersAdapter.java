@@ -11,7 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
+import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
 
 import java.util.Locale;
 
@@ -20,7 +23,6 @@ import sumatodev.com.social.R;
 import sumatodev.com.social.model.UsersPublic;
 
 public class UsersAdapter extends RecyclerArrayAdapter<UsersPublic, UsersAdapter.UsersAdapterViewHolder> {
-
 
     /**
      * {@link Context}.
@@ -60,8 +62,9 @@ public class UsersAdapter extends RecyclerArrayAdapter<UsersPublic, UsersAdapter
         return new UsersAdapterViewHolder(view);
     }
 
+
     @Override
-    public void onBindViewHolder(UsersAdapterViewHolder holder, int position) {
+    public void onBindViewHolder(final UsersAdapterViewHolder holder, int position) {
 
         final UsersPublic mentionsUser = getItem(position);
 
@@ -70,13 +73,31 @@ public class UsersAdapter extends RecyclerArrayAdapter<UsersPublic, UsersAdapter
             highlightSearchQueryInUserName(holder.textView.getText());
             if (!TextUtils.isEmpty(mentionsUser.getPhotoUrl())) {
                 holder.imageView.setVisibility(View.VISIBLE);
-                Picasso.with(context)
-                        .load(mentionsUser.getPhotoUrl())
-                        .into(holder.imageView);
+
+                Picasso.get().load(mentionsUser.getPhotoUrl())
+                        .placeholder(com.sumatodev.social_chat_sdk.R.drawable.imageview_user_thumb)
+                        .transform(new RoundedCornersTransform())
+                        .networkPolicy(NetworkPolicy.OFFLINE)
+                        .into(holder.imageView, new Callback() {
+                            @Override
+                            public void onSuccess() {
+
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+
+                                Picasso.get().load(mentionsUser.getPhotoUrl())
+                                        .placeholder(com.sumatodev.social_chat_sdk.R.drawable.imageview_user_thumb)
+                                        .transform(new RoundedCornersTransform())
+                                        .into(holder.imageView);
+                            }
+                        });
             } else {
                 holder.imageView.setVisibility(View.GONE);
             }
         }
+
     }
 
     /**
@@ -107,6 +128,8 @@ public class UsersAdapter extends RecyclerArrayAdapter<UsersPublic, UsersAdapter
             super(convertView);
             textView = convertView.findViewById(R.id.textView);
             imageView = convertView.findViewById(R.id.imageView);
+
+
         }
     }
 }

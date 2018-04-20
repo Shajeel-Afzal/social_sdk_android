@@ -150,7 +150,7 @@ public class EditCommentFragment extends DialogFragment implements View.OnClickL
             public void onObjectChanged(UsersPublic obj) {
 
                 if (obj.getPhotoUrl() != null) {
-                    Picasso.with(getContext())
+                    Picasso.get()
                             .load(obj.getPhotoUrl())
                             .into(avatarImageView);
                 }

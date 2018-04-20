@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
@@ -37,10 +38,10 @@ public class ThreadsHolder extends RecyclerView.ViewHolder {
     private TextView notificationItems;
     private Context context;
     private MessagesManager messagesManager;
-    private ThreadAdapter.Callback callback;
+    private CallBack callback;
 
 
-    public ThreadsHolder(View itemView, final ThreadAdapter.Callback callback) {
+    public ThreadsHolder(View itemView, final CallBack callback) {
         super(itemView);
         this.context = itemView.getContext();
         this.callback = callback;
@@ -106,25 +107,27 @@ public class ThreadsHolder extends RecyclerView.ViewHolder {
                             status_m.setImageResource(R.drawable.offline_status);
                         }
                     }
-                    Picasso.with(context).load(obj.getPhotoUrl())
-                            .placeholder(R.drawable.imageview_user_thumb)
-                            .transform(new RoundedCornersTransform())
-                            .networkPolicy(NetworkPolicy.OFFLINE)
-                            .into(userImage_m, new Callback() {
-                                @Override
-                                public void onSuccess() {
+                    if (obj.getPhotoUrl() != null) {
+                        Picasso.get().load(obj.getPhotoUrl())
+                                .placeholder(R.drawable.imageview_user_thumb)
+                                .transform(new RoundedCornersTransform())
+                                .networkPolicy(NetworkPolicy.OFFLINE)
+                                .into(userImage_m, new Callback() {
+                                    @Override
+                                    public void onSuccess() {
 
-                                }
+                                    }
 
-                                @Override
-                                public void onError() {
+                                    @Override
+                                    public void onError(Exception e) {
 
-                                    Picasso.with(context).load(obj.getPhotoUrl())
-                                            .placeholder(R.drawable.imageview_user_thumb)
-                                            .transform(new RoundedCornersTransform())
-                                            .into(userImage_m);
-                                }
-                            });
+                                        Picasso.get().load(obj.getPhotoUrl())
+                                                .placeholder(R.drawable.imageview_user_thumb)
+                                                .transform(new RoundedCornersTransform())
+                                                .into(userImage_m);
+                                    }
+                                });
+                    }
 
                 }
             }
@@ -142,5 +145,11 @@ public class ThreadsHolder extends RecyclerView.ViewHolder {
                 }
             }
         };
+    }
+
+    public interface CallBack {
+        void onItemClick(String userKey, View view);
+
+        void onItemLongClick(int position, View view);
     }
 }

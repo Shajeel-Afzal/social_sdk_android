@@ -11,14 +11,17 @@
         android:id="@+id/stateful_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="20dp"
         android:background="@android:color/white"
-        app:emptyLayout="@layout/empty_layout">
+        app:emptyText="@string/custom_empty_text"
+        app:offlineText="@string/custom_offline_text"
+        app:state="empty"
+        app:stateTextAppearance="@style/TextAppearance.AppCompat.Caption">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycleView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:padding="10dp" />
 
 
     </cz.kinst.jakub.view.SimpleStatefulLayout>

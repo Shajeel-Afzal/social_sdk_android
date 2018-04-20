@@ -80,7 +80,7 @@ public class RequestListFragment extends BaseFragment implements OnRequestItemLi
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_request_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_following, container, false);
         findViews(view);
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);

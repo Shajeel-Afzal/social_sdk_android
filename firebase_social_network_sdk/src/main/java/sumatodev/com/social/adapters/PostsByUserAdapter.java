@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.LoadViewHolder;
@@ -52,7 +53,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW) {
+        if (viewType == TEXT_VIEW || viewType == TEXT_COLORED_VIEW || viewType == LINK_VIEW) {
             return new PostViewHolder(inflater.inflate(R.layout.post_type_text, parent, false), createOnClickListener());
         } else if (viewType == IMAGE_VIEW) {
             return new PostViewHolder(inflater.inflate(R.layout.post_type_image, parent, false), createOnClickListener());
@@ -81,7 +82,9 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
             @Override
             public void onAuthorClick(int position, View view) {
-
+                if (callBack != null) {
+                    callBack.onAuthorClick(getItemByPosition(position).getAuthorId(), view);
+                }
             }
 
             @Override
@@ -91,12 +94,16 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
             @Override
             public void onLinkClick(String linkUrl) {
-
+                if (callBack != null) {
+                    callBack.onLinkClick(linkUrl);
+                }
             }
 
             @Override
             public void openYoutubeLink(String link) {
-
+                if (!link.isEmpty()) {
+                    activity.openYoutubeLink(link);
+                }
             }
 
         };
@@ -109,16 +116,19 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
-                ((PostViewHolder) holder).bindTextPost(postList.get(position));
+                ((PostViewHolder) holder).bindTextPost(getItemByPosition(position));
                 break;
             case TEXT_COLORED_VIEW:
-                ((PostViewHolder) holder).bindColoredPost(postList.get(position));
+                ((PostViewHolder) holder).bindColoredPost(getItemByPosition(position));
+                break;
+            case LINK_VIEW:
+                ((PostViewHolder) holder).bindLink(getItemByPosition(position));
                 break;
             case IMAGE_VIEW:
-                ((PostViewHolder) holder).bindImagePost(postList.get(position));
+                ((PostViewHolder) holder).bindImagePost(getItemByPosition(position));
                 break;
             case TEXT_IMAGE_VIEW:
-                ((PostViewHolder) holder).bindTextImagePost(postList.get(position));
+                ((PostViewHolder) holder).bindTextImagePost(getItemByPosition(position));
                 break;
         }
     }
@@ -142,6 +152,13 @@ public class PostsByUserAdapter extends BasePostsAdapter {
                 setList(list);
                 callBack.onPostsListChanged(list.size());
             }
+
+            @Override
+            public void inEmpty(Boolean empty, String error) {
+                if (empty) {
+                    callBack.onPostsListChanged(0);
+                }
+            }
         };
 
         PostManager.getInstance(activity).getPostsListByUser(onPostsDataChangedListener, userId);
@@ -155,7 +172,12 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
     public interface CallBack {
         void onItemClick(Post post, View view);
+
         void onPostsListChanged(int postsCount);
+
+        void onAuthorClick(String authorId, View view);
+
+        void onLinkClick(String linkUrl);
 
         void onPostLoadingCanceled();
     }
