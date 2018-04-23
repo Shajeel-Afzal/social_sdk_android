@@ -110,7 +110,7 @@ public class ThreadsActivity extends BaseActivity {
             }
 
             @Override
-            public void inEmpty(Boolean empty, String error) {
+            public void inEmpty(Boolean empty) {
 
             }
 

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright 2015 Layer. All rights reserved.
+    
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+        
+          http://www.apache.org/licenses/LICENSE-2.0
+          
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.    
+-->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- ############################## -->
+    <!-- Default UI Component Styles -->
+    <!-- ############################## -->
+    <style name="FourPartItemsListView">
+        <item name="cellTitleTextColor">@color/xdk_ui_text_gray</item>
+        <item name="cellTitleTextTypeface">normal</item>
+        <item name="cellTitleTextStyle">normal</item>
+        <item name="cellTitleUnreadTextColor">@color/xdk_ui_text_black</item>
+        <item name="cellTitleUnreadTextTypeface">normal</item>
+        <item name="cellTitleUnreadTextStyle">bold</item>
+        <item name="cellSubtitleTextColor">@color/xdk_ui_text_gray</item>
+        <item name="cellSubtitleTextTypeface">normal</item>
+        <item name="cellSubtitleTextStyle">normal</item>
+        <item name="cellSubtitleUnreadTextColor">@color/xdk_ui_text_black</item>
+        <item name="cellSubtitleUnreadTextTypeface">normal</item>
+        <item name="cellSubtitleUnreadTextStyle">bold</item>
+        <item name="cellBackgroundColor">@android:color/transparent</item>
+        <item name="cellUnreadBackgroundColor">@android:color/transparent</item>
+        <item name="accessoryTextColor">@color/xdk_ui_text_gray</item>
+        <item name="accessoryTextTypeface">normal</item>
+        <item name="accessoryUnreadTextColor">@color/xdk_ui_text_black</item>
+        <item name="accessoryUnreadTextTypeface">normal</item>
+        <item name="avatarTextColor">@color/xdk_ui_text_black</item>
+        <item name="avatarBackgroundColor">@color/xdk_ui_avatar_background</item>
+        <item name="avatarBorderColor">@color/xdk_ui_avatar_border</item>
+    </style>
+
+    <!-- ########## -->
+    <!-- Compose Bar -->
+    <!-- ########## -->
+
+    <style name="ComposeBar">
+        <item name="android:maxLines">5</item>
+        <item name="inputTextColor">@color/xdk_ui_text_black</item>
+        <item name="inputTextTypeface">normal</item>
+        <item name="inputTextStyle">normal</item>
+        <item name="android:enabled">true</item>
+        <item name="inputUnderlineColor">@color/xdk_ui_color_primary_blue</item>
+        <item name="inputCursorColor">@color/xdk_ui_color_primary_blue</item>
+        <item name="attachmentSendersBackground">@drawable/xdk_ui_popup_background</item>
+    </style>
+
+    <style name="ComposeBarImageButton" parent="@style/Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_marginLeft">@dimen/xdk_ui_compose_bar_button_side_margin</item>
+        <item name="android:layout_marginRight">@dimen/xdk_ui_compose_bar_button_side_margin</item>
+        <item name="android:layout_width">@dimen/xdk_ui_compose_bar_image_button_height</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="tint">@drawable/xdk_ui_compose_bar_image_button_selector</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+
+    <!-- ########## -->
+    <!-- Messages   -->
+    <!-- ########## -->
+
+    <style name="Message.Button" parent="Widget.AppCompat.Button.Borderless.Colored">
+        <item name="android:background">@drawable/xdk_ui_message_button_background</item>
+        <item name="android:textColor">@color/xdk_ui_message_button_text_selector</item>
+        <item name="android:textSize">@dimen/xdk_ui_message_button_text_size</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:singleLine">false</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:padding">@dimen/xdk_ui_message_button_padding</item>
+    </style>
+    <style name="Message.Button.Choice"/>
+</resources>

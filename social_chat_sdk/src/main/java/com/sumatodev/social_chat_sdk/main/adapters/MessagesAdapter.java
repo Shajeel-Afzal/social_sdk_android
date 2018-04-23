@@ -162,7 +162,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public void setList(List<Message> list) {
         this.list = list;
-        callback.onListChanged(list.size());
         notifyDataSetChanged();
     }
 

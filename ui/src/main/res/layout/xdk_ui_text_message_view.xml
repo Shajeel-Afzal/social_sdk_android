@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <import type="com.layer.xdk.ui.message.text.TextMessageModel"/>
+
+        <variable
+            name="messageModel"
+            type="TextMessageModel"/>
+    </data>
+
+
+    <com.layer.xdk.ui.message.text.TextMessageView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/text_message_view_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:linksClickable="true"
+        android:maxWidth="@dimen/xdk_ui_text_message_view_max_width"
+        android:paddingBottom="@dimen/xdk_ui_margin_small"
+        android:paddingEnd="@dimen/xdk_ui_margin_large"
+        android:paddingLeft="@dimen/xdk_ui_margin_large"
+        android:paddingRight="@dimen/xdk_ui_margin_large"
+        android:paddingStart="@dimen/xdk_ui_margin_large"
+        android:paddingTop="@dimen/xdk_ui_margin_small"
+        android:text="@{messageModel.text}"
+        android:textColor="@{messageModel.textColor}"
+        android:textColorLink="@{messageModel.textColorLink}"
+        android:textSize="@dimen/xdk_ui_text_message_view_text_size"
+        app:messageModel="@{messageModel}"/>
+
+</layout>

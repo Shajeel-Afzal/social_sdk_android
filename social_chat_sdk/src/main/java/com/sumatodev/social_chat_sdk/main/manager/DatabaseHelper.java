@@ -25,7 +25,6 @@ import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
-import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.MessageListResult;
@@ -142,13 +141,37 @@ public class DatabaseHelper {
     }
 
 
+    public void getConversationsList(final OnDataChangedListener<ThreadsModel> onDataChangedListener) {
+        DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    List<ThreadsModel> list = new ArrayList<>();
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        ThreadsModel model = new ThreadsModel(child.getKey());
+                        list.add(model);
+                    }
+                    onDataChangedListener.onListChanged(list);
+                } else {
+                    onDataChangedListener.inEmpty(true);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onDataChangedListener.onCancel(context.getString(R.string.permission_denied_error));
+            }
+        });
+    }
+
     public ValueEventListener getThreadsList(final OnDataChangedListener<ThreadsModel> onDataChangedListener) {
         DatabaseReference reference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser());
-        final List<ThreadsModel> list = new ArrayList<>();
         ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
+                    final List<ThreadsModel> list = new ArrayList<>();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         ThreadsModel model = new ThreadsModel(child.getKey());
                         list.add(model);
@@ -156,7 +179,7 @@ public class DatabaseHelper {
 
                     onDataChangedListener.onListChanged(list);
                 } else {
-                    onDataChangedListener.inEmpty(true, "empty");
+                    onDataChangedListener.inEmpty(true);
                 }
 
             }
@@ -274,36 +297,39 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public void getMessageList(final String userKey, final OnMessageListChangedListener<Message> listener, final long date) {
+    public ValueEventListener getMessageList(final String userKey, final OnDataChangedListener<Message> listener) {
 
         DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
-
-        Query chatQuery;
-        if (date == 0) {
-            chatQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
-        } else {
-            chatQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
-        }
-
-        chatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
+        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                HashMap<String, Object> hashMap = (HashMap<String, Object>) dataSnapshot.getValue();
-                MessageListResult result = parceMessageList(hashMap);
+                if (dataSnapshot.getValue() != null) {
+                    List<Message> list = new ArrayList<>();
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        Message message = child.getValue(Message.class);
+                        list.add(message);
+                    }
 
-                if (result.getMessages().isEmpty() && result.isMoreDataAvailable()) {
-                    getMessageList(userKey, listener, result.getLastItemCreatedDate() - 1);
+                    Collections.sort(list, new Comparator<Message>() {
+                        @Override
+                        public int compare(Message o1, Message o2) {
+                            return ((Long) o2.getCreatedAt()).compareTo((Long) o1.getCreatedAt());
+                        }
+                    });
+
+                    listener.onListChanged(list);
                 } else {
-                    listener.onListChanged(parceMessageList(hashMap));
+                    listener.inEmpty(true);
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                LogUtil.logError(TAG, "getMessageList(), onCancelled", new Exception(databaseError.getMessage()));
-                listener.onCanceled(context.getString(R.string.permission_denied_error));
+                listener.onCancel(databaseError.getMessage());
             }
         });
+        activeListeners.put(valueEventListener, databaseReference);
+        return valueEventListener;
     }
 
     private MessageListResult parceMessageList(HashMap<String, Object> hashMap) {
@@ -444,4 +470,5 @@ public class DatabaseHelper {
 
         reference.setValue(new Status(status));
     }
+
 }

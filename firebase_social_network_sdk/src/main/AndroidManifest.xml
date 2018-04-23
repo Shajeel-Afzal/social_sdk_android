@@ -57,8 +57,7 @@
         <activity
             android:name=".ui.activities.ProfileActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_profile"
-            android:theme="@style/AppCompat.NoActionBar" />
+            android:label="@string/title_activity_profile" />
         <activity
             android:name=".ui.activities.EditProfileActivity"
             android:configChanges="orientation|screenSize"

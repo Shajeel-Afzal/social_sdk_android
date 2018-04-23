@@ -20,18 +20,15 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
-import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -60,17 +57,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.sumatodev.social_chat_sdk.views.activities.ChatActivity;
 import com.sumatodev.social_chat_sdk.views.activities.ThreadsActivity;
 
-import java.util.Calendar;
-import java.util.HashMap;
-
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
-import sumatodev.com.social.adapters.PostsAdapter;
 import sumatodev.com.social.adapters.PostsByUserAdapter;
 import sumatodev.com.social.controllers.FollowController;
 import sumatodev.com.social.enums.Consts;
@@ -79,19 +71,15 @@ import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.FirebaseUtils;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
-import sumatodev.com.social.managers.UsersManager;
-import sumatodev.com.social.managers.listeners.OnFollowStatusChanged;
 import sumatodev.com.social.managers.listeners.OnObjectChangedListener;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.managers.listeners.OnTaskCompleteListener;
 import sumatodev.com.social.model.AccountStatus;
-import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.Profile;
 import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.LogoutHelper;
-import sumatodev.com.social.utils.NotificationView;
 
 public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener,
         OnPostCreatedListener, View.OnClickListener {
@@ -111,9 +99,6 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private Button followBtn;
     private LinearLayout dataLayout;
     private Button messageBtn;
-
-    private Toolbar toolbar;
-    private TextView toolBar_title;
 
 
     private FirebaseAuth mAuth;
@@ -158,6 +143,13 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
         //supportPostponeEnterTransition();
 
+        if (hasInternetConnection()) {
+            if (userID != null) {
+                profileManager.checkAccountStatus(userID, onObjectChangedListener());
+            }
+        } else {
+            parentStatefulLayout.showOffline();
+        }
     }
 
     private void findViews() {
@@ -208,26 +200,15 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
 
     private void setupToolBar() {
-        toolbar = findViewById(R.id.toolbar);
-        toolBar_title = findViewById(R.id.toolBar_title);
-        setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
         }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (hasInternetConnection()) {
-            if (userID != null) {
-                profileManager.checkAccountStatus(userID, onObjectChangedListener());
-            }
-        } else {
-            parentStatefulLayout.showOffline();
-        }
     }
 
     private OnObjectChangedListener<AccountStatus> onObjectChangedListener() {
@@ -238,6 +219,10 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                     if (obj.profileStatus.equals(Consts.ACCOUNT_DISABLED)) {
                         parentStatefulLayout.showEmpty();
                         dataStatefulLayout.showEmpty();
+
+                        if (actionBar != null) {
+                            actionBar.setTitle(R.string.title_activity_profile);
+                        }
 
                     } else if (obj.profileStatus.equals(Consts.ACCOUNT_ACTIVE)) {
                         parentStatefulLayout.showContent();
@@ -496,7 +481,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
     private void fillUIFields(final Profile profile) {
         if (profile != null) {
             if (actionBar != null) {
-                toolBar_title.setText(profile.getUsername());
+                actionBar.setTitle(profile.getUsername());
             }
 
             if (profile.getPhotoUrl() != null) {

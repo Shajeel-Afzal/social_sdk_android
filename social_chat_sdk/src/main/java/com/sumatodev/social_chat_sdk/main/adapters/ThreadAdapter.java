@@ -21,10 +21,9 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private List<ThreadsModel> list = new ArrayList<>();
     private Callback callback;
-    public static int selectedItemPosition = -1;
-
 
     public ThreadAdapter() {
+
     }
 
 
@@ -46,7 +45,6 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             @Override
             public void onItemLongClick(int position, View view) {
                 if (callback != null) {
-                    selectedItemPosition = position;
                     callback.onItemLongClick(position, view);
                 }
             }
@@ -57,6 +55,11 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ((ThreadsHolder) holder).itemView.setLongClickable(true);
         ((ThreadsHolder) holder).bindData(getItemByPosition(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return list == null ? 0 : list.size();
     }
 
     public void setCallback(Callback callback) {
@@ -73,22 +76,6 @@ public class ThreadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         notifyDataSetChanged();
     }
 
-
-    public void cleanSelectedPosition() {
-        selectedItemPosition = -1;
-    }
-
-    public void removeItem() {
-        list.remove(selectedItemPosition);
-        callback.onListChanged(list.size());
-        notifyItemRemoved(selectedItemPosition);
-    }
-
-
-    @Override
-    public int getItemCount() {
-        return list == null ? 0 : list.size();
-    }
 
     public interface Callback {
         void onItemClick(String userKey, View view);

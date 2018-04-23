@@ -18,10 +18,16 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.Query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 import sumatodev.com.social.R;
+import sumatodev.com.social.adapters.PublicListAdapter;
 import sumatodev.com.social.adapters.holders.UsersHolder;
-import sumatodev.com.social.managers.FirebaseUtils;
+import sumatodev.com.social.managers.UsersManager;
+import sumatodev.com.social.managers.listeners.OnDataChangedListener;
+import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.UsersPublic;
 
 /**
@@ -33,8 +39,7 @@ public class UsersFragment extends BaseFragment {
     private static final String TAG = UsersFragment.class.getSimpleName();
     SimpleStatefulLayout mStatefulLayout;
     RecyclerView recycleView;
-
-    private FirebaseRecyclerAdapter<UsersPublic, UsersHolder> adapter;
+    public PublicListAdapter listAdapter;
 
     public UsersFragment() {
         // Required empty public constructor
@@ -67,40 +72,56 @@ public class UsersFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         setupLinearLayout();
 
+        if (hasInternetConnection()) {
+            loadUsers();
+        }
+    }
 
-        Query dataQuery = FirebaseUtils.getUserPublicInfoRef();
-        FirebaseRecyclerOptions<UsersPublic> options = new FirebaseRecyclerOptions.Builder<UsersPublic>()
-                .setQuery(dataQuery, UsersPublic.class)
-                .build();
+    private void loadUsers() {
+        mStatefulLayout.showProgress();
 
-        adapter = new FirebaseRecyclerAdapter<UsersPublic, UsersHolder>(options) {
+        listAdapter = new PublicListAdapter();
+        listAdapter.setCallBack(new PublicListAdapter.CallBack() {
             @Override
-            protected void onBindViewHolder(@NonNull final UsersHolder holder, @SuppressLint("RecyclerView") final int position,
-                                            @NonNull final UsersPublic model) {
-
-                holder.setData(model);
-                Log.d(TAG, "userKey " + model.getId());
-
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        openProfile(model.getId(), v);
-                    }
-                });
+            public void onItemClick(int position, View view) {
+                UsersPublic usersPublic = listAdapter.getItemByPosition(position);
+                openProfileActivity(usersPublic.getId());
             }
 
             @Override
-            public UsersHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                return new UsersHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.follow_request_list, parent, false));
+            public void onListChanged(int items) {
+                if (items == 0) {
+                    mStatefulLayout.showEmpty();
+                    mStatefulLayout.setEmptyText("No Users");
+                } else {
+                    mStatefulLayout.showContent();
+                }
+            }
+        });
+
+        recycleView.setAdapter(listAdapter);
+        UsersManager.getInstance(getActivity()).getAllUsersList(getActivity(), publicOnDataChangedListener());
+
+    }
+
+    private OnDataChangedListener<UsersPublic> publicOnDataChangedListener() {
+        return new OnDataChangedListener<UsersPublic>() {
+            @Override
+            public void onListChanged(List<UsersPublic> list) {
+                listAdapter.setList(list);
+                mStatefulLayout.showContent();
             }
 
             @Override
-            public int getItemCount() {
-                return super.getItemCount();
+            public void inEmpty(Boolean empty, String error) {
+                if (empty) {
+                    mStatefulLayout.showEmpty();
+                } else {
+                    mStatefulLayout.showEmpty();
+                    mStatefulLayout.setEmptyText(error);
+                }
             }
         };
-
-        recycleView.setAdapter(adapter);
     }
 
     private void setupLinearLayout() {
@@ -113,15 +134,4 @@ public class UsersFragment extends BaseFragment {
     }
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        adapter.startListening();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        adapter.stopListening();
-    }
 }

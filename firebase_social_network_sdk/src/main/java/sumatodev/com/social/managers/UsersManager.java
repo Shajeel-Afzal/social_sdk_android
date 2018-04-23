@@ -51,4 +51,10 @@ public class UsersManager extends FirebaseListenersManager {
         ValueEventListener eventListener = reference.checkFollowStatus(userKey, onFollowStatusChanged);
         addListenerToMap(context, eventListener);
     }
+
+    public void getAllUsersList(Context context,OnDataChangedListener<UsersPublic> onDataChangedListener){
+        DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
+        ValueEventListener eventListener = databaseHelper.getAllUsersList(onDataChangedListener);
+        addListenerToMap(context, eventListener);
+    }
 }

@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2015 Layer. All rights reserved.
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View"/>
+
+        <variable
+            name="viewHolderModel"
+            type="com.layer.xdk.ui.message.adapter.viewholder.DefaultMessageModelVHModel"/>
+    </data>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/xdk_ui_message_model_vh_avatar_padding"
+        android:layout_marginLeft="@dimen/xdk_ui_message_model_vh_avatar_padding"
+        android:layout_marginRight="@dimen/xdk_ui_message_model_vh_avatar_padding"
+        android:layout_marginStart="@dimen/xdk_ui_message_model_vh_avatar_padding"
+        android:layout_marginTop="@dimen/xdk_ui_message_model_vh_padding"
+        android:layout_marginBottom="@dimen/xdk_ui_message_model_vh_padding"
+        android:duplicateParentState="true">
+
+        <TextView
+            android:id="@+id/date_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="@dimen/xdk_ui_message_model_vh_time_group_padding"
+            android:paddingBottom="@dimen/xdk_ui_message_model_vh_time_group_padding_bottom"
+            android:text="@{viewHolderModel.dateTime}"
+            android:textColor="@color/xdk_ui_text_light_gray"
+            android:textSize="@dimen/xdk_ui_text_size_status"
+            android:visibility="@{viewHolderModel.shouldShowDateTimeForMessage ? View.VISIBLE : View.GONE}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Today 12:00 PM" tools:visibility="visible"/>
+
+        <TextView
+            android:id="@+id/senderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/xdk_ui_message_model_vh_sender_margin_bottom"
+            android:layout_marginLeft="@dimen/xdk_ui_message_item_sender_margin_left"
+            android:layout_marginStart="@dimen/xdk_ui_message_item_sender_margin_left"
+            android:text="@{viewHolderModel.senderName}"
+            android:textColor="@color/xdk_ui_text_light_gray"
+            android:textSize="@dimen/xdk_ui_text_size_status"
+            android:visibility="@{viewHolderModel.shouldShowDisplayName ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toEndOf="@+id/avatar"
+            app:layout_constraintTop_toBottomOf="@id/date_time"
+            tools:text="John Doe"
+            tools:visibility="visible"/>
+
+        <com.layer.xdk.ui.avatar.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/xdk_ui_avatar_width"
+            android:layout_height="@dimen/xdk_ui_avatar_height"
+            android:layout_marginBottom="@dimen/xdk_ui_message_model_vh_padding"
+            android:visibility="@{viewHolderModel.shouldDisplayAvatarSpace ? (viewHolderModel.avatarVisibility ? View.VISIBLE : View.INVISIBLE) : View.GONE}"
+            app:identityFormatter="@{viewHolderModel.identityFormatter}"
+            app:imageCacheWrapper="@{viewHolderModel.imageCacheWrapper}"
+            app:layout_constraintBottom_toTopOf="@+id/receipt"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/senderName"
+            app:layout_constraintVertical_bias="1.0"
+            app:participants="@{viewHolderModel.participants}"
+            tools:background="@color/xdk_ui_color_primary_blue"
+            tools:visibility="visible"/>
+
+        <com.layer.xdk.ui.presence.PresenceView
+            android:id="@+id/presence"
+            android:layout_width="@dimen/xdk_ui_avatar_presence_height"
+            android:layout_height="@dimen/xdk_ui_avatar_presence_height"
+            android:visibility="@{viewHolderModel.shouldDisplayAvatarSpace ? (viewHolderModel.presenceVisible ? View.VISIBLE : View.INVISIBLE) : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@id/avatar"
+            app:layout_constraintEnd_toEndOf="@id/avatar"
+            app:participants="@{viewHolderModel.participants}"
+            tools:background="@color/xdk_ui_text_black"
+            tools:visibility="visible"/>
+
+        <ViewStub
+            android:id="@+id/message_view_stub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/xdk_ui_margin_small"
+            android:layout_marginLeft="@dimen/xdk_ui_margin_small"
+            android:layout_marginRight="@dimen/xdk_ui_margin_small"
+            android:layout_marginStart="@dimen/xdk_ui_margin_small"
+            android:inflatedId="@id/message_view_stub"
+            android:minHeight="@dimen/xdk_ui_message_model_cell_min_height"
+            android:minWidth="@dimen/xdk_ui_message_model_cell_min_width"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toTopOf="@+id/receipt"
+            app:layout_constraintEnd_toStartOf="@+id/current_user_avatar"
+            app:layout_constraintStart_toEndOf="@+id/avatar"
+            app:layout_constraintTop_toBottomOf="@id/senderName"/>
+
+        <com.layer.xdk.ui.avatar.AvatarView
+            android:id="@+id/current_user_avatar"
+            android:layout_width="@dimen/xdk_ui_avatar_width"
+            android:layout_height="@dimen/xdk_ui_avatar_height"
+            android:layout_marginBottom="@dimen/xdk_ui_message_model_vh_padding"
+            android:layout_marginLeft="@dimen/xdk_ui_avatar_left_padding_message"
+            android:layout_marginStart="@dimen/xdk_ui_avatar_left_padding_message"
+            android:visibility="@{viewHolderModel.shouldShowAvatarForCurrentUser ? (viewHolderModel.shouldCurrentUserAvatarBeVisible ? View.VISIBLE : View.INVISIBLE) : View.GONE}"
+            app:identityFormatter="@{viewHolderModel.identityFormatter}"
+            app:imageCacheWrapper="@{viewHolderModel.imageCacheWrapper}"
+            app:layout_constraintBottom_toBottomOf="@id/avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/avatar"
+            app:participants="@{viewHolderModel.participants}"
+            tools:background="@color/xdk_ui_color_primary_blue"
+            tools:visibility="visible"/>
+
+        <com.layer.xdk.ui.presence.PresenceView
+            android:id="@+id/current_user_presence"
+            android:layout_width="@dimen/xdk_ui_avatar_presence_height"
+            android:layout_height="@dimen/xdk_ui_avatar_presence_height"
+            android:visibility="@{viewHolderModel.shouldShowAvatarForCurrentUser ? (viewHolderModel.shouldCurrentUserPresenceBeVisible ? View.VISIBLE : View.INVISIBLE) : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="@id/current_user_avatar"
+            app:layout_constraintEnd_toEndOf="@id/current_user_avatar"
+            app:participants="@{viewHolderModel.participants}"
+            tools:background="@color/xdk_ui_text_black"
+            tools:visibility="visible"/>
+
+        <TextView
+            android:id="@+id/receipt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/xdk_ui_message_model_vh_receipt_margin"
+            android:layout_marginRight="@dimen/xdk_ui_message_model_vh_receipt_margin"
+            android:text="@{viewHolderModel.readReceipt}"
+            android:textColor="@color/xdk_ui_text_light_gray"
+            android:textSize="@dimen/xdk_ui_text_size_status"
+            android:visibility="@{viewHolderModel.readReceiptVisible ? View.VISIBLE : View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Read by 1 participant"
+            tools:visibility="visible"/>
+
+    </android.support.constraint.ConstraintLayout>
+</layout>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/xdk_ui_margin_tiny"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/option_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="@dimen/xdk_ui_product_options_view_item_title_min_width"
+            android:textColor="@color/xdk_ui_product_option_item_view_title_text_color"
+            android:textSize="@dimen/xdk_ui_product_options_view_item_text_size"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/option_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/xdk_ui_product_option_item_view_text_color"
+            android:textSize="@dimen/xdk_ui_product_options_view_item_text_size"/>
+
+    </LinearLayout>
+</layout>

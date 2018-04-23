@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="xdk_ui_receipt_message_view_max_width">420dp</dimen>
+    <dimen name="xdk_ui_receipt_message_view_min_width">300dp</dimen>
+</resources>

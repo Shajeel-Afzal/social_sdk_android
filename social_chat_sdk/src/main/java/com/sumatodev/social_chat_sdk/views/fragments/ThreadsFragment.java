@@ -1,14 +1,12 @@
 package com.sumatodev.social_chat_sdk.views.fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.support.v7.view.ActionMode;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,7 +21,6 @@ import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
 import com.sumatodev.social_chat_sdk.views.activities.ChatActivity;
-import com.sumatodev.social_chat_sdk.views.activities.ThreadsActivity;
 
 import org.michaelbel.bottomsheet.BottomSheet;
 
@@ -33,8 +30,7 @@ import cz.kinst.jakub.view.SimpleStatefulLayout;
 
 public class ThreadsFragment extends BaseFragment {
 
-    private static final String USER_KEY = "ThreadsFragment.USER_KEY";
-    private static final int TIME_OUT_LOADING_LIST = 3000;
+
     private static final String TAG = ThreadsFragment.class.getSimpleName();
     private SimpleStatefulLayout mStatefulLayout;
     private RecyclerView recycleView;
@@ -43,6 +39,7 @@ public class ThreadsFragment extends BaseFragment {
     private LinearLayoutManager layoutManager;
     private ThreadAdapter threadAdapter;
     private MessagesManager messagesManager;
+    private Activity activity;
 
     public ThreadsFragment() {
     }
@@ -58,6 +55,9 @@ public class ThreadsFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getActivity() != null) {
+            activity = getActivity();
+        }
         actionBar = getActionBar();
         messagesManager = MessagesManager.getInstance(getActivity());
     }
@@ -119,8 +119,10 @@ public class ThreadsFragment extends BaseFragment {
             }
         });
 
+
         recycleView.setAdapter(threadAdapter);
-        messagesManager.getThreadsList(getActivity(), threadsModelOnDataChangedListener());
+        messagesManager.getThreadsList(activity, threadsModelOnDataChangedListener());
+
     }
 
 
@@ -135,12 +137,11 @@ public class ThreadsFragment extends BaseFragment {
             }
 
             @Override
-            public void inEmpty(Boolean empty, String error) {
+            public void inEmpty(Boolean empty) {
                 if (empty) {
                     mStatefulLayout.showEmpty();
                 } else {
                     mStatefulLayout.showEmpty();
-                    mStatefulLayout.setEmptyText(error);
                 }
             }
 
@@ -155,13 +156,13 @@ public class ThreadsFragment extends BaseFragment {
 
     private void showBottomMenu(final ThreadsModel model) {
 
-        BottomSheet.Builder builder = new BottomSheet.Builder(getActivity());
+        BottomSheet.Builder builder = new BottomSheet.Builder(activity);
         builder.setMenu(R.menu.threads_action_menu, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        removeConversation(model.getThreadKey());
+                        removeConversation(model);
                         break;
                     case 1:
                         dialog.dismiss();
@@ -172,14 +173,13 @@ public class ThreadsFragment extends BaseFragment {
 
     }
 
-    private void removeConversation(String threadKey) {
+    private void removeConversation(final ThreadsModel model) {
         showProgress(R.string.deleting_conversation);
 
-        messagesManager.removeConversation(threadKey, new OnTaskCompleteListener() {
+        messagesManager.removeConversation(model.getThreadKey(), new OnTaskCompleteListener() {
             @Override
             public void onTaskComplete(boolean success) {
                 if (success) {
-                    threadAdapter.removeItem();
                     hideProgress();
                 }
             }
@@ -187,10 +187,10 @@ public class ThreadsFragment extends BaseFragment {
     }
 
     private void setupLinearLayout() {
-        layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager = new LinearLayoutManager(activity);
         layoutManager.setReverseLayout(true);
         layoutManager.setStackFromEnd(true);
-        recycleView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
+        recycleView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         recycleView.setLayoutManager(layoutManager);
     }
 

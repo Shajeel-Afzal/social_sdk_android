@@ -11,7 +11,9 @@ import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import sumatodev.com.social.R;
+import sumatodev.com.social.adapters.PublicListAdapter;
 import sumatodev.com.social.model.UsersPublic;
+import sumatodev.com.social.ui.fragments.UsersFragment;
 import sumatodev.com.social.views.RoundedCornersTransform;
 
 /**
@@ -26,16 +28,29 @@ public class UsersHolder extends RecyclerView.ViewHolder {
     private ImageButton acceptBtn;
     private ImageButton rejectBtn;
 
-    public UsersHolder(View itemView) {
+    public UsersHolder(View itemView, PublicListAdapter.CallBack callBack) {
         super(itemView);
-        findViews(itemView);
+        findViews(itemView, callBack);
     }
 
-    private void findViews(View itemView) {
+    private void findViews(View itemView, final PublicListAdapter.CallBack callBack) {
         userImage = itemView.findViewById(R.id.userImage);
         userName = itemView.findViewById(R.id.userName);
         acceptBtn = itemView.findViewById(R.id.acceptBtn);
         rejectBtn = itemView.findViewById(R.id.rejectBtn);
+
+
+        if (callBack != null) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        callBack.onItemClick(position, v);
+                    }
+                }
+            });
+        }
 
     }
 

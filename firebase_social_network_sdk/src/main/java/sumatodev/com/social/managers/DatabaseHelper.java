@@ -1446,19 +1446,23 @@ public class DatabaseHelper {
         ValueEventListener valueEventListener = query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "Search Result: " + dataSnapshot.getValue());
-                List<UsersPublic> list = new ArrayList<>();
                 if (dataSnapshot.getValue() != null) {
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        UsersPublic usersPublic = child.getValue(UsersPublic.class);
-                        list.add(usersPublic);
+                    List<UsersPublic> list = new ArrayList<>();
+                    if (dataSnapshot.getValue() != null) {
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            UsersPublic usersPublic = child.getValue(UsersPublic.class);
+                            list.add(usersPublic);
+                        }
                     }
+                    onDataChangedListener.onListChanged(list);
+                } else {
+                    onDataChangedListener.inEmpty(true, "empty");
                 }
-                onDataChangedListener.onListChanged(list);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                onDataChangedListener.inEmpty(false, databaseError.getMessage());
             }
         });
 
@@ -1466,9 +1470,36 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
+    public ValueEventListener getAllUsersList(final OnDataChangedListener<UsersPublic> onDataChangedListener) {
+        DatabaseReference reference = database.getReference(Consts.FIREBASE_PUBLIC_USERS);
+        ValueEventListener valueEventListener = reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    List<UsersPublic> list = new ArrayList<>();
+                    if (dataSnapshot.getValue() != null) {
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            UsersPublic usersPublic = child.getValue(UsersPublic.class);
+                            list.add(usersPublic);
+                        }
+                    }
+                    onDataChangedListener.onListChanged(list);
+                } else {
+                    onDataChangedListener.inEmpty(true, "empty");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                onDataChangedListener.inEmpty(false, databaseError.getMessage());
+            }
+        });
+        activeListeners.put(valueEventListener, reference);
+        return valueEventListener;
+    }
+
     public void subscribeToNewPosts() {
         FirebaseMessaging.getInstance().subscribeToTopic("postsTopic");
     }
-
 
 }

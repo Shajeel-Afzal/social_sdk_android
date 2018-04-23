@@ -59,6 +59,7 @@ dependencies {
     compile 'id.zelory:compressor:2.1.0'
     compile 'com.theartofdev.edmodo:android-image-cropper:2.5.1'
     implementation 'org.michaelbel:bottomsheet:1.2.2'
+
 }
 // Bintray upload properties
 Properties properties = new Properties()

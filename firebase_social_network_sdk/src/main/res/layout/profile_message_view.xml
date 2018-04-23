@@ -37,7 +37,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="?attr/actionBarSize"
                     android:orientation="vertical"
                     app:layout_collapseMode="parallax"
                     app:layout_scrollFlags="scroll|enterAlways">
@@ -169,26 +168,6 @@
                         </LinearLayout>
                     </FrameLayout>
                 </LinearLayout>
-
-                <android.support.v7.widget.Toolbar
-                    android:id="@+id/toolbar"
-                    android:layout_width="match_parent"
-                    android:layout_height="?attr/actionBarSize"
-                    android:background="@color/primary"
-                    android:elevation="4dp"
-                    android:fitsSystemWindows="true"
-                    app:layout_collapseMode="pin"
-                    app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-
-                    <android.support.v7.widget.AppCompatTextView
-                        android:id="@+id/toolBar_title"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"
-                        android:textStyle="bold" />
-                </android.support.v7.widget.Toolbar>
             </android.support.design.widget.CollapsingToolbarLayout>
         </android.support.design.widget.AppBarLayout>
 
@@ -255,5 +234,6 @@
                     android:visibility="gone" />
             </RelativeLayout>
         </cz.kinst.jakub.view.SimpleStatefulLayout>
+
     </android.support.design.widget.CoordinatorLayout>
 </cz.kinst.jakub.view.SimpleStatefulLayout>
