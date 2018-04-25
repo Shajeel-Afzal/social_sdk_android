@@ -23,18 +23,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.adapters.MessagesAdapter;
-import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
@@ -49,7 +42,6 @@ import com.sumatodev.social_chat_sdk.main.utils.RoundedCornersTransform;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
@@ -77,12 +69,6 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
     private boolean attemptToLoadMessages = false;
 
     private LinearLayoutManager layoutManager;
-    ChildEventListener childEventListenerMain, childEventListenerPager;
-    private ArrayList<Message> messageArrayList = new ArrayList<>();
-    private ArrayList<Message> tempMessageArrayList = new ArrayList<>();
-    boolean loading = false;
-    long mTotalChildren = 0;
-    String mLastKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -304,186 +290,8 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
         recyclerView.setAdapter(messagesAdapter);
         recyclerView.setHasFixedSize(true);
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
 
-                if (messageArrayList.size() >= 15 &&
-                        !loading && layoutManager.findFirstVisibleItemPosition() == 0 && messageArrayList.size() < mTotalChildren) {
-
-                    loading = true;
-                    getMoreMessages();
-                }
-            }
-        });
-
-        messagesAdapter.notifyDataSetChanged();
-
-        recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
-                                       int oldTop, int oldRight, int oldBottom) {
-
-                if (bottom < oldBottom) {
-                    recyclerView.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            recyclerView.scrollToPosition(messageArrayList.size() - 1);
-                        }
-                    }, 5000);
-                }
-            }
-        });
-
-        loading = true;
-        getMessages();
     }
-
-    public void getMessages() {
-
-        FirebaseDatabase.getInstance().getReference().child(Consts.MESSAGES_REF)
-                .child(getCurrent_uid()).child(userKey).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e("childrenCount", String.valueOf(+dataSnapshot.getChildrenCount()));
-                mTotalChildren = dataSnapshot.getChildrenCount();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-        Query messageQuery = FirebaseDatabase.getInstance().getReference().child(Consts.MESSAGES_REF)
-                .child(getCurrent_uid()).child(userKey).limitToLast(15);
-
-        childEventListenerMain = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-
-                loading = true;
-                Message message = dataSnapshot.getValue(Message.class);
-                if (message != null) {
-
-                    messageArrayList.add(message);
-                    messagesAdapter.notifyDataSetChanged();
-                    mLastKey = messageArrayList.get(0).getId();
-                    recyclerView.scrollToPosition(messageArrayList.size() - 1);
-
-
-                    messagesAdapter.setList(messageArrayList);
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ChatActivity.this, "Problem loading more images...", Toast.LENGTH_LONG).show();
-            }
-        };
-
-        messageQuery.addChildEventListener(childEventListenerMain);
-
-        ValueEventListener messageChildSINGLEValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mStatefulLayout.showContent();
-                System.out.println("We're done loading messages " + dataSnapshot.getChildrenCount() + " items");
-                loading = false;
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        messageQuery.addListenerForSingleValueEvent(messageChildSINGLEValueEventListener);
-    }
-
-    public void getMoreMessages() {
-        tempMessageArrayList.clear();
-
-        Query messageQuery = FirebaseDatabase.getInstance().getReference().child(Consts.MESSAGES_REF)
-                .child(getCurrent_uid()).child(userKey)
-                .orderByKey().endAt(mLastKey).limitToLast(15);
-
-        childEventListenerPager = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                loading = true;
-                Message messageModel = dataSnapshot.getValue(Message.class);
-                if (messageModel != null) {
-                    tempMessageArrayList.add(messageModel);
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ChatActivity.this, "Problem loading more images...", Toast.LENGTH_LONG).show();
-            }
-        };
-
-        messageQuery.addChildEventListener(childEventListenerPager);
-
-        ValueEventListener messageChildSINGLEValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println("We're done loading messages " + dataSnapshot.getChildrenCount() + " items");
-
-                tempMessageArrayList.remove(tempMessageArrayList.size() - 1);
-
-                messageArrayList.addAll(0, tempMessageArrayList);
-                mLastKey = messageArrayList.get(0).getId();
-                messagesAdapter.notifyDataSetChanged();
-                //rvMessages.scrollToPosition(20);
-                layoutManager.scrollToPositionWithOffset(14, 0);
-                loading = false;
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-        messageQuery.addListenerForSingleValueEvent(messageChildSINGLEValueEventListener);
-    }
-
-
-
 
     private void openImageDetailActivity(String image) {
         Intent intent = new Intent(ChatActivity.this, ShowImageActivity.class);

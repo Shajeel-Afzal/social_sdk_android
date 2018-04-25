@@ -1,9 +1,9 @@
 package com.sumatodev.social_chat_sdk.main.model;
 
+import com.google.firebase.database.ServerValue;
 import com.sumatodev.social_chat_sdk.main.enums.ItemType;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /*
  * Created by troy379 on 04.04.17.
@@ -12,14 +12,15 @@ public class Message implements Serializable, LazyLoading {
 
     private String id;
     private String text;
-    private long createdAt;
+    private Object createdAt;
     private String fromUserId;
     private String messageType;
     private ItemType itemType;
     private String imageUrl;
 
+
     public Message() {
-        this.createdAt = new Date().getTime();
+        this.createdAt = ServerValue.TIMESTAMP;
         itemType = ItemType.ITEM;
     }
 
@@ -35,7 +36,7 @@ public class Message implements Serializable, LazyLoading {
         this.messageType = "text";
     }
 
-    public void setCreatedAt(long createdAt) {
+    public void setCreatedAt(Object createdAt) {
         this.createdAt = createdAt;
     }
 
@@ -85,6 +86,6 @@ public class Message implements Serializable, LazyLoading {
 
     @Override
     public void setItemType(ItemType itemType) {
-
+        this.itemType = itemType;
     }
 }

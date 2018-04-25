@@ -13,6 +13,7 @@ import com.google.firebase.storage.UploadTask;
 import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 import com.sumatodev.social_chat_sdk.main.enums.UploadImagePrefix;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
@@ -131,10 +132,10 @@ public class MessagesManager extends FirebaseListenersManager {
 
     }
 
-    public void getMessageList(Context context, String userKey, OnDataChangedListener<Message> listener) {
-        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey, listener);
-        addListenerToMap(context, valueEventListener);
-//        ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey, listener, date);
+    public void getMessageList(String userKey, OnMessageListChangedListener<Message> listener, long date) {
+//        ValueEventListener valueEventListener = ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey, listener);
+//        addListenerToMap(context, valueEventListener);
+        ChatApplicationHelper.getDatabaseHelper().getMessageList(userKey, listener, date);
     }
 
     public void getChatList(String userKey, OnDataChangedListener<Message> onMessageListChangedListener) {

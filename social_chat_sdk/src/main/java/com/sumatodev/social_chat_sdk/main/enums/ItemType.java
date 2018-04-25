@@ -17,7 +17,7 @@
 package com.sumatodev.social_chat_sdk.main.enums;
 
 public enum ItemType {
-    LOAD(10), ITEM(11);
+    LOAD(10), ITEM(11), TEXT(22), IMAGE(33),SENT(44),RECEIVE(55);
     private final int typeCode;
 
     ItemType(int typeCode) {

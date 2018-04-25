@@ -111,7 +111,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        //((PostViewHolder) holder).bindData(postList.get(position));
+        //((PostViewHolder) holder).bindData(messageList.get(position));
         Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
 
         switch (holder.getItemViewType()) {

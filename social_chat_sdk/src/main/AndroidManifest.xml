@@ -26,6 +26,7 @@
             android:name=".views.activities.ShowImageActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppCompat.Black.NoActionBar" />
+        <activity android:name=".views.fragments.ChatFragment"/>
     </application>
 
 </manifest>

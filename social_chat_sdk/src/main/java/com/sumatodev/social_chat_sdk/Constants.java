@@ -31,7 +31,7 @@ public class Constants {
     public static class Message {
         public static final int MAX_TEXT_LENGTH_IN_LIST = 300; //characters
         public static final int MAX_POST_TITLE_LENGTH = 255; //characters
-        public static final int MESSAGE_AMOUNT_ON_PAGE = 10;
+        public static final int MESSAGE_AMOUNT_ON_PAGE = 15;
     }
 
     public static class Database {

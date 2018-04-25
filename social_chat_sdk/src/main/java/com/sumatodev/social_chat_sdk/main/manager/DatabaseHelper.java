@@ -25,6 +25,7 @@ import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
 import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
 import com.sumatodev.social_chat_sdk.main.model.Message;
 import com.sumatodev.social_chat_sdk.main.model.MessageListResult;
@@ -52,9 +53,6 @@ import id.zelory.compressor.Compressor;
 public class DatabaseHelper {
 
     public static final String TAG = DatabaseHelper.class.getSimpleName();
-    private static final String network_error = "network error";
-    private static final String operation_failed = "operation failed";
-    private static final String sending_failed = "sending failed";
     private static DatabaseHelper instance;
 
     private Context context;
@@ -194,19 +192,6 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    private List<ThreadsModel> getThreads(Map<String, Object> objectMap) {
-        List<ThreadsModel> list = new ArrayList<>();
-        if (objectMap != null) {
-            for (String keys : objectMap.keySet()) {
-                ThreadsModel model = new ThreadsModel();
-                model.setThreadKey(keys);
-
-                list.add(model);
-            }
-        }
-        return list;
-    }
-
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
         StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
 
@@ -297,52 +282,51 @@ public class DatabaseHelper {
         return valueEventListener;
     }
 
-    public ValueEventListener getMessageList(final String userKey, final OnDataChangedListener<Message> listener) {
+    public void getMessageList(final String userKey, final OnMessageListChangedListener<Message> listene, long date) {
 
-        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser()).child(userKey);
-        ValueEventListener valueEventListener = databaseReference.addValueEventListener(new ValueEventListener() {
+        DatabaseReference databaseReference = database.getReference(Consts.MESSAGES_REF).child(getCurrentUser())
+                .child(userKey);
+
+        Query postsQuery;
+        if (date == 0) {
+            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).orderByChild("createdAt");
+        } else {
+            postsQuery = databaseReference.limitToLast(Constants.Message.MESSAGE_AMOUNT_ON_PAGE).endAt(date).orderByChild("createdAt");
+        }
+
+
+        postsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() != null) {
-                    List<Message> list = new ArrayList<>();
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        Message message = child.getValue(Message.class);
-                        list.add(message);
-                    }
+                Map<String, Object> objectMap = (Map<String, Object>) dataSnapshot.getValue();
+                MessageListResult result = parceMessageList(objectMap);
 
-                    Collections.sort(list, new Comparator<Message>() {
-                        @Override
-                        public int compare(Message o1, Message o2) {
-                            return ((Long) o2.getCreatedAt()).compareTo((Long) o1.getCreatedAt());
-                        }
-                    });
-
-                    listener.onListChanged(list);
+                if (result.getMessages().isEmpty() && result.isMoreDataAvailable()) {
+                    getMessageList(userKey, listene, result.getLastItemCreatedDate() - 1);
                 } else {
-                    listener.inEmpty(true);
+                    listene.onListChanged(parceMessageList(objectMap));
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                listener.onCancel(databaseError.getMessage());
+
             }
         });
-        activeListeners.put(valueEventListener, databaseReference);
-        return valueEventListener;
+
+
     }
 
-    private MessageListResult parceMessageList(HashMap<String, Object> hashMap) {
+    private MessageListResult parceMessageList(Map<String, Object> objectMap) {
         MessageListResult result = new MessageListResult();
         List<Message> list = new ArrayList<>();
         boolean isMoreDataAvailable = true;
         long lastItemCreatedDate = 0;
+        if (objectMap != null) {
+            isMoreDataAvailable = Constants.Message.MESSAGE_AMOUNT_ON_PAGE == objectMap.size();
 
-        if (hashMap != null) {
-            isMoreDataAvailable = Constants.Message.MESSAGE_AMOUNT_ON_PAGE == hashMap.size();
-
-            for (String key : hashMap.keySet()) {
-                Object obj = hashMap.get(key);
+            for (String key : objectMap.keySet()) {
+                Object obj = objectMap.get(key);
                 if (obj instanceof Map) {
                     Map<String, Object> mapObj = (Map<String, Object>) obj;
 
@@ -354,14 +338,18 @@ public class DatabaseHelper {
 
                     Message message = new Message();
                     message.setId(key);
+                    message.setCreatedAt(createdDate);
+                    message.setFromUserId((String) mapObj.get("fromUserId"));
+
                     if (mapObj.containsKey("text")) {
                         message.setText((String) mapObj.get("text"));
+//                        message.setItemType(ItemType.TEXT);
                     }
                     if (mapObj.containsKey("imageUrl")) {
                         message.setImageUrl((String) mapObj.get("imageUrl"));
+//                        message.setItemType(ItemType.IMAGE);
                     }
-                    message.setCreatedAt(createdDate);
-                    message.setFromUserId((String) mapObj.get("fromUserId"));
+
 
                     list.add(message);
                 }
@@ -369,8 +357,8 @@ public class DatabaseHelper {
 
             Collections.sort(list, new Comparator<Message>() {
                 @Override
-                public int compare(Message o1, Message o2) {
-                    return ((Long) o2.getCreatedAt()).compareTo((Long) o1.getCreatedAt());
+                public int compare(Message lhs, Message rhs) {
+                    return ((Long) rhs.getCreatedAt()).compareTo((long) lhs.getCreatedAt());
                 }
             });
 
@@ -378,8 +366,10 @@ public class DatabaseHelper {
             result.setLastItemCreatedDate(lastItemCreatedDate);
             result.setMoreDataAvailable(isMoreDataAvailable);
         }
+
         return result;
     }
+
 
     public void getChatList(String userKey, final OnDataChangedListener<Message> onMessageListChangedListener) {
 
