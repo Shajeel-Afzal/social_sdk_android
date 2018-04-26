@@ -20,6 +20,7 @@ import com.sumatodev.social_chat_sdk.main.listeners.OnDataChangedListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.ThreadsModel;
+import com.sumatodev.social_chat_sdk.views.activities.ChatActivity;
 
 import org.michaelbel.bottomsheet.BottomSheet;
 
@@ -195,8 +196,8 @@ public class ThreadsFragment extends BaseFragment {
 
 
     private void openChatActivity(String userKey) {
-        Intent intent = new Intent(getActivity(), ChatFragment.class);
-        intent.putExtra(ChatFragment.USER_KEY, userKey);
+        Intent intent = new Intent(getActivity(), ChatActivity.class);
+        intent.putExtra(ChatActivity.USER_KEY, userKey);
         startActivity(intent);
     }
 }

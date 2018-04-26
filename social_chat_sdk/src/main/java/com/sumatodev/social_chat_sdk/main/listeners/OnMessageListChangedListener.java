@@ -10,4 +10,6 @@ public interface OnMessageListChangedListener<Message> {
     void onListChanged(MessageListResult result);
 
     void onCanceled(String message);
+
+    void isEmpty(boolean isEmpty);
 }

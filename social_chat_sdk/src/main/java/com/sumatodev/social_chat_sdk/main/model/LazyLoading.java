@@ -18,8 +18,14 @@ package com.sumatodev.social_chat_sdk.main.model;
 
 
 import com.sumatodev.social_chat_sdk.main.enums.ItemType;
+import com.sumatodev.social_chat_sdk.main.enums.MessageType;
 
 public interface LazyLoading {
     ItemType getItemType();
+
+    MessageType getMessageType();
+
     void setItemType(ItemType itemType);
+
+    void setMessageType(MessageType messageType);
 }

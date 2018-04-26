@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <size android:width="@dimen/xdk_ui_cursor_width" />
-    <solid android:color="@color/xdk_ui_color_primary_blue"  />
-</shape>

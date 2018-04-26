@@ -2,6 +2,7 @@ package com.sumatodev.social_chat_sdk.main.model;
 
 import com.google.firebase.database.ServerValue;
 import com.sumatodev.social_chat_sdk.main.enums.ItemType;
+import com.sumatodev.social_chat_sdk.main.enums.MessageType;
 
 import java.io.Serializable;
 
@@ -14,26 +15,19 @@ public class Message implements Serializable, LazyLoading {
     private String text;
     private Object createdAt;
     private String fromUserId;
-    private String messageType;
     private ItemType itemType;
     private String imageUrl;
+    private MessageType messageType;
 
 
     public Message() {
         this.createdAt = ServerValue.TIMESTAMP;
-        itemType = ItemType.ITEM;
     }
 
-
-    public Message(ItemType itemType) {
-        this.itemType = itemType;
-        setId(itemType.toString());
-
-    }
 
     public void setText(String text) {
         this.text = text;
-        this.messageType = "text";
+        this.itemType = ItemType.TEXT;
     }
 
     public void setCreatedAt(Object createdAt) {
@@ -72,12 +66,9 @@ public class Message implements Serializable, LazyLoading {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-        this.messageType = "image";
+        this.itemType = ItemType.IMAGE;
     }
 
-    public String getMessageType() {
-        return messageType;
-    }
 
     @Override
     public ItemType getItemType() {
@@ -85,7 +76,17 @@ public class Message implements Serializable, LazyLoading {
     }
 
     @Override
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    @Override
     public void setItemType(ItemType itemType) {
         this.itemType = itemType;
+    }
+
+    @Override
+    public void setMessageType(MessageType messageType) {
+        this.messageType = messageType;
     }
 }

@@ -20,17 +20,14 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.text.format.DateUtils;
 
-import sumatodev.com.social.R;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
 import java.util.TimeZone;
 
-/**
- * Created by Kristina on 10/17/16.
- */
+import sumatodev.com.social.R;
+
 
 public class FormatterUtil {
 

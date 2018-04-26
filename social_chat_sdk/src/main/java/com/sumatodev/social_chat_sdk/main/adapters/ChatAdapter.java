@@ -1,16 +1,18 @@
 package com.sumatodev.social_chat_sdk.main.adapters;
 
 import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.sumatodev.social_chat_sdk.R;
-import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatHolder;
+import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatMyHolder;
+import com.sumatodev.social_chat_sdk.main.adapters.holders.ChatUserHolder;
 import com.sumatodev.social_chat_sdk.main.adapters.holders.LoadViewHolder;
 import com.sumatodev.social_chat_sdk.main.enums.ItemType;
+import com.sumatodev.social_chat_sdk.main.enums.MessageType;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageListChangedListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.Message;
@@ -28,40 +30,17 @@ public class ChatAdapter extends ChatBaseAdapter {
     private boolean isLoading = false;
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
-    private SwipeRefreshLayout swipeContainer;
     private BaseActivity mainActivity;
     private String userKey;
 
 
-    public ChatAdapter(final BaseActivity activity, SwipeRefreshLayout swipeContainer, String userKey) {
+    public ChatAdapter(final BaseActivity activity, String userKey) {
         super(activity);
         this.mainActivity = activity;
-        this.swipeContainer = swipeContainer;
         this.userKey = userKey;
-        initRefreshLayout();
         setHasStableIds(true);
     }
 
-    private void initRefreshLayout() {
-        if (swipeContainer != null) {
-            this.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    onRefreshAction();
-                }
-            });
-        }
-    }
-
-    private void onRefreshAction() {
-        if (activity.hasInternetConnection()) {
-            loadFirstPage();
-            cleanSelectedPostInformation();
-        } else {
-            swipeContainer.setRefreshing(false);
-            mainActivity.showSnackBar(R.string.internet_connection_failed);
-        }
-    }
 
     public void setCallback(Callback callback) {
         this.callback = callback;
@@ -72,8 +51,10 @@ public class ChatAdapter extends ChatBaseAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (viewType == ItemType.ITEM.getTypeCode()) {
-            return new ChatHolder(inflater.inflate(R.layout.messages_user_textview, parent, false));
+        if (viewType == MessageType.SENT.getMessageType()) {
+            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_textview, parent, false), null);
+        } else if (viewType == MessageType.RECEIVE.getMessageType()) {
+            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_textview, parent, false), null);
         } else {
             return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
         }
@@ -88,7 +69,7 @@ public class ChatAdapter extends ChatBaseAdapter {
                     //change adapter contents
                     if (activity.hasInternetConnection()) {
                         isLoading = true;
-                        messageList.add(new Message(ItemType.LOAD));
+//                        messageList.add(new Message(ItemType.LOAD));
                         notifyItemInserted(messageList.size());
                         loadNext(lastLoadedItemCreatedDate - 1);
                     } else {
@@ -100,8 +81,11 @@ public class ChatAdapter extends ChatBaseAdapter {
 
         }
 
-        if (getItemViewType(position) != ItemType.LOAD.getTypeCode()) {
-            ((ChatHolder) holder).bindTextData(messageList.get(position));
+        Log.d(TAG, "Item: " + position);
+        if (getItemViewType(position) == MessageType.SENT.getMessageType()) {
+            ((ChatMyHolder) holder).bindTextData(messageList.get(position));
+        } else if (getItemViewType(position) == MessageType.RECEIVE.getMessageType()) {
+            ((ChatUserHolder) holder).bindTextData(messageList.get(position));
         }
     }
 
@@ -135,7 +119,6 @@ public class ChatAdapter extends ChatBaseAdapter {
                 if (nextItemCreatedDate == 0) {
                     messageList.clear();
                     notifyDataSetChanged();
-                    swipeContainer.setRefreshing(false);
                 }
 
                 hideProgress();
@@ -157,9 +140,14 @@ public class ChatAdapter extends ChatBaseAdapter {
             public void onCanceled(String message) {
                 callback.onCanceled(message);
             }
+
+            @Override
+            public void isEmpty(boolean isEmpty) {
+                callback.isEmpty(isEmpty);
+            }
         };
 
-        MessagesManager.getInstance(activity).getMessageList(userKey, onMessageListChangedListener, nextItemCreatedDate);
+        MessagesManager.getInstance(activity).getMessageList(activity, userKey, onMessageListChangedListener, nextItemCreatedDate);
     }
 
 
@@ -188,5 +176,7 @@ public class ChatAdapter extends ChatBaseAdapter {
         void onAuthorClick(String authorId, View view);
 
         void onCanceled(String message);
+
+        void isEmpty(boolean isEmpty);
     }
 }

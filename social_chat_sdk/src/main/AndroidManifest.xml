@@ -16,7 +16,7 @@
         <activity android:name=".views.activities.BaseActivity" />
         <activity android:name=".views.activities.ThreadsActivity" />
         <activity
-            android:name=".views.activities.ChatActivity"
+            android:name=".views.activities.ChatAc"
             android:windowSoftInputMode="adjustPan" />
         <activity android:name=".views.activities.ImageActivity" />
         <activity
@@ -26,7 +26,7 @@
             android:name=".views.activities.ShowImageActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppCompat.Black.NoActionBar" />
-        <activity android:name=".views.fragments.ChatFragment"/>
+        <activity android:name=".views.activities.ChatActivity"/>
     </application>
 
 </manifest>

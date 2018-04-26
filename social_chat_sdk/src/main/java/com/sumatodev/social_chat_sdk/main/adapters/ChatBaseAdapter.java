@@ -12,6 +12,7 @@ public abstract class ChatBaseAdapter extends RecyclerView.Adapter {
 
     public static final String TAG = ChatBaseAdapter.class.getSimpleName();
 
+
     protected List<Message> messageList = new LinkedList<>();
     protected BaseActivity activity;
     protected int selectedMessagePosition = -1;
@@ -31,7 +32,7 @@ public abstract class ChatBaseAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        return messageList.get(position).getItemType().getTypeCode();
+        return messageList != null ? messageList.get(position).getMessageType().getMessageType() : 0;
     }
 
     protected Message getItemByPosition(int position) {
