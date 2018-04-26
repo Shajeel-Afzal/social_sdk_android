@@ -1,5 +1,7 @@
 package com.sumatodev.social_chat_sdk.views.activities;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.adapters.ChatAdapter;
 import com.sumatodev.social_chat_sdk.main.listeners.OnMessageSentListener;
 import com.sumatodev.social_chat_sdk.main.listeners.OnObjectChangedListener;
+import com.sumatodev.social_chat_sdk.main.listeners.OnTaskCompleteListener;
 import com.sumatodev.social_chat_sdk.main.manager.MessagesManager;
 import com.sumatodev.social_chat_sdk.main.model.InputMessage;
 import com.sumatodev.social_chat_sdk.main.model.Message;
@@ -37,7 +40,7 @@ import java.lang.reflect.Method;
 
 import cz.kinst.jakub.view.SimpleStatefulLayout;
 
-public class ChatActivity extends PickImageActivity implements MessageInput.InputListener, View.OnClickListener, MessageInput.AttachmentsListener {
+public class ChatActivity extends PickImageActivity implements MessageInput.InputListener, View.OnClickListener {
 
 
     private static final String TAG = ChatActivity.class.getSimpleName();
@@ -153,7 +156,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
     @Override
     public boolean onSubmit(CharSequence input) {
 
-        InputMessage inputMessage = new InputMessage(input.toString(), userKey);
+        InputMessage inputMessage = new InputMessage(input.toString().trim(), userKey);
         messagesManager.sendNewMessage(inputMessage, new OnMessageSentListener() {
             @Override
             public void onMessageSent(boolean success, String message) {
@@ -174,8 +177,9 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
         adapter = new ChatAdapter(ChatActivity.this, userKey);
         adapter.setCallback(new ChatAdapter.Callback() {
             @Override
-            public void onItemClick(Message post, View view) {
-
+            public void onItemLongClick(int position, View view) {
+                Message message = adapter.getMessageByPosition(position);
+                showItemsMenu(message, view);
             }
 
             @Override
@@ -185,7 +189,7 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
 
             @Override
             public void onAuthorClick(String authorId, View view) {
-
+                Toast.makeText(ChatActivity.this, "open Profile", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -217,10 +221,52 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
 
     }
 
-    @Override
-    public void onAddAttachments(View view) {
-        showMenu(view);
+    private void showItemsMenu(final Message message, View view) {
+
+        PopupMenu popupMenu = new PopupMenu(this, view);
+        popupMenu.getMenuInflater().inflate(R.menu.chat_actions_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id = item.getItemId();
+                if (id == R.id.action_delete) {
+                    removeMessage(message.getId());
+                    return true;
+                } else if (id == R.id.action_copy) {
+                    copySelectedMessage(message.getText());
+                    return true;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
     }
+
+    private void removeMessage(String messageId) {
+        showProgress(R.string.deleting_message);
+
+        messagesManager.removeMessage(messageId, userKey, new OnTaskCompleteListener() {
+            @Override
+            public void onTaskComplete(boolean success) {
+                if (success) {
+                    // messagesAdapter.removeMessage();
+                    hideProgress();
+                }
+            }
+        });
+    }
+
+    private void copySelectedMessage(String messageText) {
+        if (messageText != null) {
+            ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText("copied to clipboard", messageText);
+            if (clipboardManager != null) {
+                clipboardManager.setPrimaryClip(clipData);
+                Toast.makeText(getApplicationContext(), "copied to clipboard", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     private void showMenu(View view) {
 

@@ -8,8 +8,9 @@
     android:orientation="horizontal"
     android:paddingBottom="5dp"
     android:paddingLeft="@dimen/chat_padding"
-    android:paddingRight="@dimen/chat_padding"
-    android:paddingTop="5dp">
+    android:paddingRight="@dimen/chat_padding_end"
+    android:paddingTop="5dp"
+    tools:ignore="RtlHardcoded">
 
     <FrameLayout
         android:id="@+id/imagesLayout"

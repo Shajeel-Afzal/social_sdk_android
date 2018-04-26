@@ -52,12 +52,55 @@ public class ChatAdapter extends ChatBaseAdapter {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == MessageType.SENT.getMessageType()) {
-            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_textview, parent, false), null);
+            return new ChatMyHolder(inflater.inflate(R.layout.messages_my_textview, parent, false),
+                    onMyHolderClickListener());
         } else if (viewType == MessageType.RECEIVE.getMessageType()) {
-            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_textview, parent, false), null);
+            return new ChatUserHolder(inflater.inflate(R.layout.messages_user_textview, parent, false),
+                    onUserHolderClickListener());
         } else {
             return new LoadViewHolder(inflater.inflate(R.layout.loading_view, parent, false));
         }
+    }
+
+    private ChatMyHolder.OnClickListener onMyHolderClickListener() {
+        return new ChatMyHolder.OnClickListener() {
+            @Override
+            public void onItemLongClick(int position, View view) {
+                if (callback != null) {
+                    selectedMessagePosition = position;
+                    callback.onItemLongClick(position, view);
+                }
+            }
+
+            @Override
+            public void onImageClick(int position, View view) {
+
+            }
+        };
+    }
+
+    private ChatUserHolder.OnClickListener onUserHolderClickListener() {
+        return new ChatUserHolder.OnClickListener() {
+            @Override
+            public void onItemLongClick(int position, View view) {
+                if (callback != null) {
+                    selectedMessagePosition = position;
+                    callback.onItemLongClick(position, view);
+                }
+            }
+
+            @Override
+            public void onUserImageClick(int position, View view) {
+                if (callback != null) {
+                    callback.onAuthorClick(getItemByPosition(position).getFromUserId(), view);
+                }
+            }
+
+            @Override
+            public void onImageClick(int position, View view) {
+
+            }
+        };
     }
 
     @Override
@@ -83,8 +126,10 @@ public class ChatAdapter extends ChatBaseAdapter {
 
         Log.d(TAG, "Item: " + position);
         if (getItemViewType(position) == MessageType.SENT.getMessageType()) {
+            ((ChatMyHolder) holder).itemView.setLongClickable(true);
             ((ChatMyHolder) holder).bindTextData(messageList.get(position));
         } else if (getItemViewType(position) == MessageType.RECEIVE.getMessageType()) {
+            ((ChatUserHolder) holder).itemView.setLongClickable(true);
             ((ChatUserHolder) holder).bindTextData(messageList.get(position));
         }
     }
@@ -163,13 +208,17 @@ public class ChatAdapter extends ChatBaseAdapter {
         notifyItemRemoved(selectedMessagePosition);
     }
 
+    public Message getMessageByPosition(int position) {
+        return messageList.get(position);
+    }
+
     @Override
     public long getItemId(int position) {
         return getItemByPosition(position).getId().hashCode();
     }
 
     public interface Callback {
-        void onItemClick(Message post, View view);
+        void onItemLongClick(int position, View view);
 
         void onListLoadingFinished();
 

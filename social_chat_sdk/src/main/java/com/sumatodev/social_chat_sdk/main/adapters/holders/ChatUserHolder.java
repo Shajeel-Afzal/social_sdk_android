@@ -158,6 +158,8 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
                     Picasso.get()
                             .load(obj.getPhotoUrl())
                             .networkPolicy(NetworkPolicy.OFFLINE)
+                            .placeholder(R.drawable.user_thumbnail)
+                            .error(R.drawable.user_thumbnail)
                             .into(authorImageView, new Callback() {
                                 @Override
                                 public void onSuccess() {
@@ -168,6 +170,8 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
                                 public void onError(Exception e) {
                                     Picasso.get()
                                             .load(obj.getPhotoUrl())
+                                            .placeholder(R.drawable.user_thumbnail)
+                                            .error(R.drawable.user_thumbnail)
                                             .into(authorImageView);
                                 }
                             });

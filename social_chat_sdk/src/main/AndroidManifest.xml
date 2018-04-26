@@ -15,9 +15,7 @@
         <activity android:name=".views.activities.MainActivity" />
         <activity android:name=".views.activities.BaseActivity" />
         <activity android:name=".views.activities.ThreadsActivity" />
-        <activity
-            android:name=".views.activities.ChatAc"
-            android:windowSoftInputMode="adjustPan" />
+
         <activity android:name=".views.activities.ImageActivity" />
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
@@ -26,7 +24,7 @@
             android:name=".views.activities.ShowImageActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppCompat.Black.NoActionBar" />
-        <activity android:name=".views.activities.ChatActivity"/>
+        <activity android:name=".views.activities.ChatActivity" />
     </application>
 
 </manifest>

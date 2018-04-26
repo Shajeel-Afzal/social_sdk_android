@@ -6,9 +6,10 @@
     android:background="@android:color/transparent"
     android:gravity="top|end"
     android:paddingBottom="5dp"
-    android:paddingLeft="@dimen/chat_padding"
+    android:paddingLeft="@dimen/chat_padding_end"
     android:paddingRight="@dimen/chat_padding"
-    android:paddingTop="5dp">
+    android:paddingTop="5dp"
+    tools:ignore="RtlHardcoded">
 
     <LinearLayout
         android:id="@+id/textLayout"
