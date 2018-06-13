@@ -355,14 +355,12 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         if (post.getImagePath() != null) {
 
             String imageUrl = post.getImagePath();
-            int width = Utils.getDisplayWidth(context);
-            int height = (int) context.getResources().getDimension(R.dimen.post_detail_image_height);
 
             // Displayed and saved to cache image, as needs for post detail.
             Glide.with(context)
                     .load(imageUrl)
-                    .centerCrop()
-                    .override(width, height)
+                    .fitCenter()
+                    .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .crossFade()
                     .error(R.drawable.ic_stub)
