@@ -502,11 +502,20 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
             public void onObjectChanged(final Profile obj) {
                 if (obj.getPhotoUrl() != null) {
 
-                    Picasso.get()
-                            .load(obj.getPhotoUrl())
-                            .placeholder(R.drawable.user_thumbnail)
-                            .error(R.drawable.user_thumbnail)
-                            .into(authorImageView);
+                    try {
+                        Picasso.get()
+                                .load(obj.getPhotoUrl())
+                                .placeholder(R.drawable.user_thumbnail)
+                                .error(R.drawable.user_thumbnail)
+                                .into(authorImageView);
+                    } catch (Exception e) {
+                        Picasso.get()
+                                .load(R.drawable.user_thumbnail)
+                                .placeholder(R.drawable.user_thumbnail)
+                                .error(R.drawable.user_thumbnail)
+                                .into(authorImageView);
+                    }
+
                 }
 
                 authorName.setText(obj.getUsername());
