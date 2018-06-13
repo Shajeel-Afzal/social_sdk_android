@@ -23,6 +23,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -51,6 +52,8 @@ import sumatodev.com.social.utils.LogUtil;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = MyFirebaseMessagingService.class.getSimpleName();
+    private static final String NOTIFICATION_TITLE = "Title";
+    private static final String NOTIFICATION_BODY = "Body";
 
     private static int notificationId = 0;
 
@@ -70,7 +73,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (remoteMessage.getData() != null && remoteMessage.getData().get(ACTION_TYPE_KEY) != null) {
             handleRemoteMessage(remoteMessage);
         } else {
-            LogUtil.logError(TAG, "onMessageReceived()", new RuntimeException("FCM remoteMessage doesn't contains Action Type"));
+            String notificationTitle = remoteMessage.getData().get(NOTIFICATION_TITLE);
+            String notificationBody = remoteMessage.getData().get(NOTIFICATION_BODY);
+
+            Intent backIntent = new Intent(this, MainActivity.class);
+
+            sendTextNotification(notificationTitle, notificationBody, backIntent);
         }
     }
 
@@ -88,7 +96,19 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             case ACTION_TYPE_NEW_POST:
                 handleNewPostCreatedAction(remoteMessage);
                 break;
+            default:
+                handleOtherNotifications(remoteMessage);
+                break;
         }
+    }
+
+    private void handleOtherNotifications(RemoteMessage remoteMessage) {
+        String notificationTitle = remoteMessage.getData().get(NOTIFICATION_TITLE);
+        String notificationBody = remoteMessage.getData().get(NOTIFICATION_BODY);
+
+        Intent backIntent = new Intent(this, MainActivity.class);
+
+        sendTextNotification(notificationTitle, notificationBody, backIntent);
     }
 
     private void handleNewPostCreatedAction(RemoteMessage remoteMessage) {
@@ -136,6 +156,44 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendNotification(String notificationTitle, String notificationBody, Bitmap bitmap, Intent intent) {
         sendNotification(notificationTitle, notificationBody, bitmap, intent, null);
+    }
+
+    private void sendTextNotification(String title, String body, Intent intent) {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        PendingIntent pendingIntent;
+
+        pendingIntent = PendingIntent.getActivity(this, notificationId++, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String NOTIFICATION_CHANNEL_ID = "other_notification_channel";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Other Alerts", NotificationManager.IMPORTANCE_HIGH);
+
+            // Configure the notification channel.
+            notificationChannel.setDescription("Important alerts About the App & updates!");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
+            notificationChannel.enableVibration(true);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder)
+                new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                        .setAutoCancel(true)   //Automatically delete the notification
+                        .setWhen(System.currentTimeMillis())
+                        .setSmallIcon(R.drawable.ic_push_notification_small) //Notification icon
+                        .setContentIntent(pendingIntent)
+                        .setContentTitle(title)
+                        .setContentText(body)
+                        .setLargeIcon(BitmapFactory.decodeResource(this.getResources(), R.drawable.ic_push_notification_small))
+                        .setSound(defaultSoundUri);
+
+        notificationManager.notify(notificationId++ /* ID of notification */, notificationBuilder.build());
     }
 
     private void sendNotification(String notificationTitle, String notificationBody, Bitmap bitmap, Intent intent, Intent backIntent) {
