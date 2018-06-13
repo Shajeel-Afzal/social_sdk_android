@@ -19,6 +19,7 @@
     <item
         android:id="@+id/users"
         android:title="Users"
+        android:visible="false"
         app:showAsAction="never" />
 
     <item
