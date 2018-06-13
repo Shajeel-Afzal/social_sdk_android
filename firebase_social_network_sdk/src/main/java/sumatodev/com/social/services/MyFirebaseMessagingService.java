@@ -153,10 +153,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        String NOTIFICATION_CHANNEL_ID = "m_ch_id";
+        String NOTIFICATION_CHANNEL_ID = "like_notifications_channel";
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_HIGH);
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "Post or Comment Like Alerts", NotificationManager.IMPORTANCE_HIGH);
 
             // Configure the notification channel.
             notificationChannel.setDescription("Post Like!");
