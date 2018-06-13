@@ -143,6 +143,8 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
 
         //supportPostponeEnterTransition();
 
+        loadProfile();
+
         if (hasInternetConnection()) {
             if (userID != null) {
                 profileManager.checkAccountStatus(userID, onObjectChangedListener());
@@ -242,29 +244,27 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             mGoogleApiClient.connect();
                         }
                     }
+                } else {
+                    parentStatefulLayout.showContent();
+
+                    appbar.setVisibility(View.VISIBLE);
+
+                    dataLayout.setVisibility(View.VISIBLE);
+                    if (userID != null) {
+                        if (userID.equalsIgnoreCase(currentUserId)) {
+                            followBtn.setVisibility(View.GONE);
+                            messageBtn.setVisibility(View.GONE);
+                        }
+                        
+                    }
+
+                    loadProfile();
+                    loadPostsList();
+
+                    if (mGoogleApiClient != null) {
+                        mGoogleApiClient.connect();
+                    }
                 }
-//                else {
-//                    statefulAccountView.showContent();
-//
-//                    appbar.setVisibility(View.VISIBLE);
-//                    statefulLayout.setVisibility(View.VISIBLE);
-//
-//                    dataLayout.setVisibility(View.VISIBLE);
-//                    if (userID != null) {
-//                        if (userID.equalsIgnoreCase(currentUserId)) {
-//                            followBtn.setVisibility(View.GONE);
-//                            messageBtn.setVisibility(View.GONE);
-//                        }
-//                        checkFriendsStatus();
-//                    }
-//
-//                    loadProfile();
-//                    loadPostsList();
-//
-//                    if (mGoogleApiClient != null) {
-//                        mGoogleApiClient.connect();
-//                    }
-//                }
             }
         };
     }
