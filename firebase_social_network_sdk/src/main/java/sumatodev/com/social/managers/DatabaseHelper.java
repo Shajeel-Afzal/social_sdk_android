@@ -64,7 +64,6 @@ import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
 import sumatodev.com.social.enums.Consts;
-import sumatodev.com.social.enums.FollowStatus;
 import sumatodev.com.social.managers.listeners.OnCommentChangedListener;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnFollowStatusChanged;
@@ -302,7 +301,7 @@ public class DatabaseHelper {
     }
 
     public Task<Void> removeImage(String imageTitle) {
-        StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
+        StorageReference storageRef = storage.getReferenceFromUrl(ApplicationHelper.storageBucketLink);
         StorageReference desertRef = storageRef.child("images/" + imageTitle);
         return desertRef.delete();
     }

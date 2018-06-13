@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
-    <string name="storage_link">gs://fir-test-aa33f.appspot.com/</string>
     <string name="google_large_image_url_pattern">%1$s?sz=%2$d</string>
 </resources>

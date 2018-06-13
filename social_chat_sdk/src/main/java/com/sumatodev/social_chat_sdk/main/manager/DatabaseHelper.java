@@ -21,6 +21,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.sumatodev.social_chat_sdk.ChatApplicationHelper;
 import com.sumatodev.social_chat_sdk.Constants;
 import com.sumatodev.social_chat_sdk.R;
 import com.sumatodev.social_chat_sdk.main.enums.Consts;
@@ -195,7 +196,7 @@ public class DatabaseHelper {
     }
 
     public UploadTask uploadImage(Uri imageUri, String imageTitle) {
-        StorageReference storageRef = storage.getReferenceFromUrl(context.getResources().getString(R.string.storage_link));
+        StorageReference storageRef = storage.getReferenceFromUrl(ChatApplicationHelper.getFirebaseBucketUrl());
 
         StorageReference riversRef = storageRef.child("chat_image/" + imageTitle);
         // Create file metadata including the content type
