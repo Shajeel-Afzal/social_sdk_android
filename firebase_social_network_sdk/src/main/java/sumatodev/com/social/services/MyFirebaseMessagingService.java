@@ -17,13 +17,16 @@
 
 package sumatodev.com.social.services;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
 import com.bumptech.glide.Glide;
@@ -32,10 +35,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
 import sumatodev.com.social.Constants;
 import sumatodev.com.social.R;
-import sumatodev.com.social.ui.activities.MainActivity;
 import sumatodev.com.social.managers.PostManager;
+import sumatodev.com.social.ui.activities.MainActivity;
 import sumatodev.com.social.ui.activities.PostDetailsActivity;
 import sumatodev.com.social.utils.LogUtil;
 
@@ -139,26 +143,41 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         PendingIntent pendingIntent;
 
-        if(backIntent != null) {
+        if (backIntent != null) {
             backIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            Intent[] intents = new Intent[] {backIntent, intent};
+            Intent[] intents = new Intent[]{backIntent, intent};
             pendingIntent = PendingIntent.getActivities(this, notificationId++, intents, PendingIntent.FLAG_ONE_SHOT);
         } else {
             pendingIntent = PendingIntent.getActivity(this, notificationId++, intent, PendingIntent.FLAG_ONE_SHOT);
         }
 
-        Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                .setAutoCancel(true)   //Automatically delete the notification
-                .setSmallIcon(R.drawable.ic_push_notification_small) //Notification icon
-                .setContentIntent(pendingIntent)
-                .setContentTitle(notificationTitle)
-                .setContentText(notificationBody)
-                .setLargeIcon(bitmap)
-                .setSound(defaultSoundUri);
-
-
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String NOTIFICATION_CHANNEL_ID = "m_ch_id";
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_HIGH);
+
+            // Configure the notification channel.
+            notificationChannel.setDescription("Post Like!");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
+            notificationChannel.enableVibration(true);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder = (NotificationCompat.Builder)
+                new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                        .setAutoCancel(true)   //Automatically delete the notification
+                        .setWhen(System.currentTimeMillis())
+                        .setSmallIcon(R.drawable.ic_push_notification_small) //Notification icon
+                        .setContentIntent(pendingIntent)
+                        .setContentTitle(notificationTitle)
+                        .setContentText(notificationBody)
+                        .setLargeIcon(bitmap)
+                        .setSound(defaultSoundUri);
 
         notificationManager.notify(notificationId++ /* ID of notification */, notificationBuilder.build());
     }
