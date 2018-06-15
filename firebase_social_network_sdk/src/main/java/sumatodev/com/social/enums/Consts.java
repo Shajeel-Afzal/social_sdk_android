@@ -31,6 +31,7 @@ public class Consts {
     public static final String ACCOUNT_ACTIVE = "active";
     public static final String ACCOUNT_STATUS = "accountStatus";
     public static final String FOLLOW_KEY = "follow";
+    public static final String MAIN_ACTIVITY_TITLE = "title";
 
 
     @IntDef({FOLLOWER, FOLLOWING, REQUESTED})

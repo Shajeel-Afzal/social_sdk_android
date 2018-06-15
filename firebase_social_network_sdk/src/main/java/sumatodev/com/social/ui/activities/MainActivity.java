@@ -41,6 +41,7 @@ import java.util.List;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsAdapter;
 import sumatodev.com.social.adapters.SearchAdapter;
+import sumatodev.com.social.enums.Consts;
 import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.DatabaseHelper;
@@ -73,6 +74,12 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     private boolean counterAnimationInProgress = false;
 
 
+    public static void start(Context context, String title) {
+        Intent starter = new Intent(context, MainActivity.class);
+        starter.putExtra(Consts.MAIN_ACTIVITY_TITLE, title);
+        context.startActivity(starter);
+    }
+
     public static void start(Context context) {
         Intent starter = new Intent(context, MainActivity.class);
         context.startActivity(starter);
@@ -97,6 +104,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
                 updateNewPostCounter();
             }
         };
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if (getIntent().hasExtra(Consts.MAIN_ACTIVITY_TITLE))
+            getSupportActionBar().setTitle(getIntent().getStringExtra(Consts.MAIN_ACTIVITY_TITLE));
 
         postManager.setPostCounterWatcher(postCounterWatcher);
 
@@ -515,7 +527,11 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         int i = item.getItemId();
-        if (i == R.id.profile) {
+
+        if (i == android.R.id.home) {
+            finish();
+            return true;
+        } else if (i == R.id.profile) {
 
             if (checkInternetConnection()) {
                 ProfileStatus profileStatus = profileManager.checkProfile();
