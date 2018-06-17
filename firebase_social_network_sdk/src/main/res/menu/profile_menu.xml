@@ -27,12 +27,12 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/follow_requests"
-        android:title="Requests"
+        android:title="Follow Requests"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/threads"
-        android:title="Threads"
+        android:title="Messages"
         app:showAsAction="never" />
 
 </menu>
