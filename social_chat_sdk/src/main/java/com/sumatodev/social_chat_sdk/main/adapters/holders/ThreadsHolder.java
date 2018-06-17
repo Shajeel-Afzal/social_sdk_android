@@ -108,6 +108,9 @@ public class ThreadsHolder extends RecyclerView.ViewHolder {
                         }
                     }
                     if (obj.getPhotoUrl() != null) {
+                        if (obj.getPhotoUrl().isEmpty())
+                            return;
+
                         Picasso.get().load(obj.getPhotoUrl())
                                 .placeholder(R.drawable.imageview_user_thumb)
                                 .transform(new RoundedCornersTransform())
