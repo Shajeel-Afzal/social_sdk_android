@@ -679,6 +679,9 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(Profile obj) {
+                if (obj == null)
+                    return;
+
                 if (obj.getPhotoUrl() != null) {
                     Glide.with(PostDetailsActivity.this)
                             .load(obj.getPhotoUrl())
@@ -1229,23 +1232,23 @@ public class PostDetailsActivity extends BaseActivity implements EditCommentDial
 
         UsersManager.getInstance(this).getUsersList(this, query.toLowerCase(),
                 new OnDataChangedListener<UsersPublic>() {
-            @Override
-            public void onListChanged(List<UsersPublic> list) {
-                if (!list.isEmpty()) {
-                    usersAdapter.clear();
-                    usersAdapter.setCurrentQuery(query);
-                    usersAdapter.addAll(list);
-                    showMentionsList(true);
-                } else {
-                    showMentionsList(false);
-                }
-            }
+                    @Override
+                    public void onListChanged(List<UsersPublic> list) {
+                        if (!list.isEmpty()) {
+                            usersAdapter.clear();
+                            usersAdapter.setCurrentQuery(query);
+                            usersAdapter.addAll(list);
+                            showMentionsList(true);
+                        } else {
+                            showMentionsList(false);
+                        }
+                    }
 
-            @Override
-            public void inEmpty(Boolean empty, String error) {
+                    @Override
+                    public void inEmpty(Boolean empty, String error) {
 
-            }
-        });
+                    }
+                });
     }
 
     private void showMentionsList(boolean display) {

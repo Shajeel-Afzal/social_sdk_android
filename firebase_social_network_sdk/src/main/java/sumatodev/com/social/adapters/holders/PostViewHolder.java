@@ -498,7 +498,7 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
         return new OnObjectChangedListener<Profile>() {
             @Override
             public void onObjectChanged(final Profile obj) {
-                if (obj.getPhotoUrl() != null) {
+                if (obj != null && obj.getPhotoUrl() != null) {
 
                     try {
                         Picasso.get()
@@ -514,9 +514,8 @@ public class PostViewHolder extends RecyclerView.ViewHolder {
                                 .into(authorImageView);
                     }
 
+                    authorName.setText(obj.getUsername());
                 }
-
-                authorName.setText(obj.getUsername());
             }
         };
     }
