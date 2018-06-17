@@ -153,7 +153,7 @@ public class ChatUserHolder extends RecyclerView.ViewHolder {
         return new OnObjectChangedListener<UsersPublic>() {
             @Override
             public void onObjectChanged(final UsersPublic obj) {
-                if (obj.getPhotoUrl() != null) {
+                if (obj.getPhotoUrl() != null && !obj.getPhotoUrl().isEmpty()) {
 
                     Picasso.get()
                             .load(obj.getPhotoUrl())

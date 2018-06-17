@@ -69,7 +69,7 @@ public class FollowHolder extends RecyclerView.ViewHolder {
 
                     userName.setText(capitalize(obj.getUsername()));
 
-                    if (obj.getPhotoUrl() != null) {
+                    if (obj.getPhotoUrl() != null && !obj.getPhotoUrl().isEmpty()) {
                         Picasso.get().load(obj.getPhotoUrl())
                                 .transform(new RoundedCornersTransform())
                                 .placeholder(R.drawable.imageview_user_thumb)

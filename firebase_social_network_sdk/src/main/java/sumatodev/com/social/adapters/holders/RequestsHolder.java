@@ -52,6 +52,9 @@ public class RequestsHolder extends RecyclerView.ViewHolder {
                                 if (user != null) {
                                     userName.setText(capitalize(user.getUsername()));
 
+                                    if (user.getPhotoUrl().isEmpty())
+                                        return;
+                                    
                                     Picasso.get().load(user.getPhotoUrl())
                                             .transform(new RoundedCornersTransform())
                                             .placeholder(R.drawable.imageview_user_thumb)
