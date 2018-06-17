@@ -42,6 +42,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.klinker.android.link_builder.Link;
 import com.klinker.android.link_builder.LinkBuilder;
 import com.klinker.android.link_builder.TouchableMovementMethod;
+import com.percolate.caffeine.DialogUtils;
 
 import sumatodev.com.social.R;
 import sumatodev.com.social.managers.PostManager;
@@ -114,6 +115,10 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
 
         initPostBackgroundColor();
         initShareIntent();
+
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            DialogUtils.quickDialog(this, "You must be Logged In to Share!");
+        }
     }
 
     private void findViews() {
@@ -367,6 +372,7 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
             LogUtil.logDebug(TAG, "Failed to create a post");
         }
     }
+
     @Override
     public void onClick(View v) {
         if (v == submitBtn) {
