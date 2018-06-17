@@ -32,8 +32,7 @@
                 android:id="@+id/recycler_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:divider="@null"
-                android:paddingBottom="@dimen/intrinsic_padding" />
+                android:divider="@null" />
 
         </android.support.v4.widget.SwipeRefreshLayout>
 
