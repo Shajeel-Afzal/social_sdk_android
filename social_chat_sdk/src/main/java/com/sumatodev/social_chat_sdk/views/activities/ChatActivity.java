@@ -128,6 +128,8 @@ public class ChatActivity extends PickImageActivity implements MessageInput.Inpu
                     }
                 }
                 if (obj.getPhotoUrl() != null) {
+                    if (obj.getPhotoUrl().isEmpty())
+                        return;
 
                     Picasso.get().load(obj.getPhotoUrl())
                             .placeholder(R.drawable.imageview_user_thumb)
