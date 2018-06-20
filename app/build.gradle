@@ -51,3 +51,18 @@ task copyDependencies(type: Copy) {
     from configurations.compile
     into 'dependencies'
 }
+
+configurations.all {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        def requested = details.requested
+        if (requested.group == 'com.android.support') {
+            if (!requested.name.startsWith("multidex")) {
+                details.useVersion '27.1.1'
+            }
+        } else if (requested.group == "com.google.android.gms") {
+            details.useVersion '11.8.0'
+        } else if (requested.group == "com.google.firebase") {
+            details.useVersion '11.8.0'
+        }
+    }
+}
