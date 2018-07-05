@@ -300,6 +300,11 @@ public class CreatePostActivity extends PickImageActivity implements OnPostCreat
     }
 
     protected void savePost(String title, String link) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            DialogUtils.quickDialog(this, "");
+            return;
+        }
+
         showProgress(R.string.message_creating_post);
 
         if (!title.isEmpty()) {
