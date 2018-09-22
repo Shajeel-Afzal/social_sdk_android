@@ -177,7 +177,7 @@ public abstract class PickImageActivity extends BaseActivity {
         }
         if (requestCode == CropImage.PICK_IMAGE_PERMISSIONS_REQUEST_CODE) {
             if (imageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // required permissions granted, start crop image activity
+                // required permissions granted, start crop image context
                 LogUtil.logDebug(TAG, "PICK_IMAGE_PERMISSIONS granted");
 //                if (isImageFileValid(imageUri)) {
                 onImagePikedAction();

@@ -16,6 +16,7 @@
 
 package sumatodev.com.social.adapters;
 
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 
 import java.util.LinkedList;
@@ -24,7 +25,6 @@ import java.util.List;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.model.Post;
-import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.utils.LogUtil;
 
 public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -37,11 +37,11 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public static final int LINK_VIEW = 5;
 
     protected List<Post> postList = new LinkedList<>();
-    protected BaseActivity activity;
+    protected FragmentActivity context;
     protected int selectedPostPosition = -1;
 
-    public BasePostsAdapter(BaseActivity activity) {
-        this.activity = activity;
+    public BasePostsAdapter(FragmentActivity context) {
+        this.context = context;
     }
 
     protected void cleanSelectedPostInformation() {
@@ -96,7 +96,7 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
     public void updateSelectedPost() {
         if (selectedPostPosition != -1) {
             Post selectedPost = getItemByPosition(selectedPostPosition);
-            PostManager.getInstance(activity).getSinglePostValue(selectedPost.getId(), createOnPostChangeListener(selectedPostPosition));
+            PostManager.getInstance(context).getSinglePostValue(selectedPost.getId(), createOnPostChangeListener(selectedPostPosition));
         }
     }
 }

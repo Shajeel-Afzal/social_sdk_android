@@ -27,16 +27,16 @@ import android.graphics.PorterDuff;
 import android.view.animation.BounceInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
-import sumatodev.com.social.ui.activities.BaseActivity;
-import sumatodev.com.social.ui.activities.MainActivity;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Post;
+import sumatodev.com.social.utils.Utils;
 
 /**
  * Created by Kristina on 12/30/16.
@@ -199,8 +199,8 @@ public class LikeController {
     }
 
     public void initLike(boolean isLiked) {
-            likesImageView.setImageResource(isLiked ? R.drawable.ic_like_active : R.drawable.ic_like);
-            this.isLiked = isLiked;
+        likesImageView.setImageResource(isLiked ? R.drawable.ic_like_active : R.drawable.ic_like);
+        this.isLiked = isLiked;
     }
 
     private void updateLocalPostLikeCounter(Post post) {
@@ -211,34 +211,26 @@ public class LikeController {
         }
     }
 
-    public void handleLikeClickAction(final BaseActivity baseActivity, final Post post) {
-        PostManager.getInstance(baseActivity.getApplicationContext()).isPostExistSingleValue(post.getId(),
+    public void handleLikeClickAction(final Context context, final Post post) {
+        PostManager.getInstance(context).isPostExistSingleValue(post.getId(),
                 new OnObjectExistListener<Post>() {
-            @Override
-            public void onDataChanged(boolean exist) {
-                if (exist) {
-                    if (baseActivity.hasInternetConnection()) {
-                        doHandleLikeClickAction(baseActivity, post);
-                    } else {
-                        showWarningMessage(baseActivity, R.string.internet_connection_failed);
+                    @Override
+                    public void onDataChanged(boolean exist) {
+                        if (exist) {
+                            if (Utils.hasInternetConnection(context)) {
+                                doHandleLikeClickAction(context, post);
+                            } else {
+                                Toast.makeText(context, R.string.internet_connection_failed, Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Toast.makeText(context, R.string.message_post_was_removed, Toast.LENGTH_LONG).show();
+                        }
                     }
-                } else {
-                    showWarningMessage(baseActivity, R.string.message_post_was_removed);
-                }
-            }
-        });
+                });
     }
 
-    private void showWarningMessage(BaseActivity baseActivity, int messageId) {
-        if (baseActivity instanceof MainActivity) {
-            ((MainActivity) baseActivity).showFloatButtonRelatedSnackBar(messageId);
-        } else {
-            baseActivity.showSnackBar(messageId);
-        }
-    }
-
-    private void doHandleLikeClickAction(BaseActivity baseActivity, Post post) {
-        ProfileStatus profileStatus = ProfileManager.getInstance(baseActivity).checkProfile();
+    private void doHandleLikeClickAction(Context context, Post post) {
+        ProfileStatus profileStatus = ProfileManager.getInstance(context).checkProfile();
 
         if (profileStatus.equals(ProfileStatus.PROFILE_CREATED)) {
             if (isListView) {
@@ -247,7 +239,7 @@ public class LikeController {
                 likeClickAction(post.getLikesCount());
             }
         } else {
-            baseActivity.doAuthorization(profileStatus);
+            Utils.doAuthorization(profileStatus, context);
         }
     }
 }

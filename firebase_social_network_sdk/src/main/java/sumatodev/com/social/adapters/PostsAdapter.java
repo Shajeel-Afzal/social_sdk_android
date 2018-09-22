@@ -17,12 +17,15 @@
 
 package sumatodev.com.social.adapters;
 
+import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -35,8 +38,8 @@ import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnPostListChangedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.model.PostListResult;
-import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.utils.PreferencesUtil;
+import sumatodev.com.social.utils.Utils;
 
 /**
  * Created by Kristina on 10/31/16.
@@ -50,9 +53,9 @@ public class PostsAdapter extends BasePostsAdapter {
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
     private SwipeRefreshLayout swipeContainer;
-    private BaseActivity mainActivity;
+    private Context mainActivity;
 
-    public PostsAdapter(final BaseActivity activity, SwipeRefreshLayout swipeContainer) {
+    public PostsAdapter(final FragmentActivity activity, SwipeRefreshLayout swipeContainer) {
         super(activity);
         this.mainActivity = activity;
         this.swipeContainer = swipeContainer;
@@ -72,12 +75,12 @@ public class PostsAdapter extends BasePostsAdapter {
     }
 
     private void onRefreshAction() {
-        if (activity.hasInternetConnection()) {
+        if (Utils.hasInternetConnection(context)) {
             loadFirstPage();
             cleanSelectedPostInformation();
         } else {
             swipeContainer.setRefreshing(false);
-            mainActivity.showSnackBar(R.string.internet_connection_failed);
+            Toast.makeText(mainActivity, R.string.internet_connection_failed, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -112,7 +115,7 @@ public class PostsAdapter extends BasePostsAdapter {
             @Override
             public void onLikeClick(LikeController likeController, int position) {
                 Post post = getItemByPosition(position);
-                likeController.handleLikeClickAction(activity, post);
+                likeController.handleLikeClickAction(context, post);
             }
 
             @Override
@@ -137,7 +140,7 @@ public class PostsAdapter extends BasePostsAdapter {
             @Override
             public void openYoutubeLink(String link) {
                 if (!link.isEmpty()) {
-                    activity.openYoutubeLink(link);
+                    Utils.openYoutubeLink(link, context);
                 }
             }
         };
@@ -146,17 +149,17 @@ public class PostsAdapter extends BasePostsAdapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (position >= getItemCount() - 1 && isMoreDataAvailable && !isLoading) {
-            android.os.Handler mHandler = activity.getWindow().getDecorView().getHandler();
+            android.os.Handler mHandler = context.getWindow().getDecorView().getHandler();
             mHandler.post(new Runnable() {
                 public void run() {
                     //change adapter contents
-                    if (activity.hasInternetConnection()) {
+                    if (Utils.hasInternetConnection(context)) {
                         isLoading = true;
                         postList.add(new Post(ItemType.LOAD));
                         notifyItemInserted(postList.size());
                         loadNext(lastLoadedItemCreatedDate - 1);
                     } else {
-                        mainActivity.showSnackBar(R.string.internet_connection_failed);
+                        Toast.makeText(mainActivity, R.string.internet_connection_failed, Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -197,8 +200,8 @@ public class PostsAdapter extends BasePostsAdapter {
 
     private void loadNext(final long nextItemCreatedDate) {
 
-        if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity) && !activity.hasInternetConnection()) {
-            mainActivity.showSnackBar(R.string.internet_connection_failed);
+        if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity) && !Utils.hasInternetConnection(context)) {
+            Toast.makeText(mainActivity, R.string.internet_connection_failed, Toast.LENGTH_LONG).show();
             hideProgress();
             callback.onListLoadingFinished();
             return;
@@ -238,7 +241,7 @@ public class PostsAdapter extends BasePostsAdapter {
             }
         };
 
-        PostManager.getInstance(activity).getPostsList(onPostsDataChangedListener, nextItemCreatedDate);
+        PostManager.getInstance(context).getPostsList(onPostsDataChangedListener, nextItemCreatedDate);
 
     }
 

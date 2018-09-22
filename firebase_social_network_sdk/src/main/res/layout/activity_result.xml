@@ -8,6 +8,6 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This activity is called by notification" />
+        android:text="This context is called by notification" />
 
 </LinearLayout>

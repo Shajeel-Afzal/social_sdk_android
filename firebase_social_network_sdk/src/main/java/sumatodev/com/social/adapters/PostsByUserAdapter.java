@@ -23,16 +23,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.List;
+
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.holders.LoadViewHolder;
-import sumatodev.com.social.ui.activities.BaseActivity;
 import sumatodev.com.social.adapters.holders.PostViewHolder;
 import sumatodev.com.social.controllers.LikeController;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.model.Post;
-
-import java.util.List;
+import sumatodev.com.social.ui.activities.BaseActivity;
+import sumatodev.com.social.utils.Utils;
 
 
 public class PostsByUserAdapter extends BasePostsAdapter {
@@ -77,7 +78,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
             @Override
             public void onLikeClick(LikeController likeController, int position) {
                 Post post = getItemByPosition(position);
-                likeController.handleLikeClickAction(activity, post);
+                likeController.handleLikeClickAction(context, post);
             }
 
             @Override
@@ -102,7 +103,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
             @Override
             public void openYoutubeLink(String link) {
                 if (!link.isEmpty()) {
-                    activity.openYoutubeLink(link);
+                    Utils.openYoutubeLink(link, context);
                 }
             }
 
@@ -140,8 +141,8 @@ public class PostsByUserAdapter extends BasePostsAdapter {
     }
 
     public void loadPosts() {
-        if (!activity.hasInternetConnection()) {
-            activity.showSnackBar(R.string.internet_connection_failed);
+        if (!Utils.hasInternetConnection(context)) {
+            Toast.makeText(context, R.string.internet_connection_failed, Toast.LENGTH_LONG).show();
             callBack.onPostLoadingCanceled();
             return;
         }
@@ -161,7 +162,7 @@ public class PostsByUserAdapter extends BasePostsAdapter {
             }
         };
 
-        PostManager.getInstance(activity).getPostsListByUser(onPostsDataChangedListener, userId);
+        PostManager.getInstance(context).getPostsListByUser(onPostsDataChangedListener, userId);
     }
 
     public void removeSelectedPost() {
