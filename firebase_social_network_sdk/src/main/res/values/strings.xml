@@ -142,7 +142,7 @@
     <string name="title_edit_comment">Edit comment</string>
 
     <!--Firebase errors-->
-    <string name="permission_denied_error">Please check your rules to access the Firebase Realtime Database</string>
+    <string name="permission_denied_error">Some error occurred. Please try later.</string>
 
 
     <string name="unknown_response">Unexpected onActivityResult response code</string>

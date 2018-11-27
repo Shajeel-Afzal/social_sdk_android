@@ -54,7 +54,6 @@ public class ThreadsActivity extends BaseActivity {
     }
 
 
-
     private void initRecyclerView() {
         mStatefulLayout.showProgress();
 
@@ -75,7 +74,7 @@ public class ThreadsActivity extends BaseActivity {
             public void onListChanged(int threadsCount) {
                 if (threadsCount == 0) {
                     mStatefulLayout.showEmpty();
-                    mStatefulLayout.setEmptyText("Empty Conversations");
+                    mStatefulLayout.setEmptyText(R.string.no_conversation_started_yet);
                 } else {
                     mStatefulLayout.showContent();
                 }
