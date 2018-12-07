@@ -55,4 +55,7 @@
     <dimen name="detail_width">80dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="global_keyline_s">16dp</dimen>
+
+    <bool name="is_tablet">false</bool>
+    <bool name="is_820_tablet">false</bool>
 </resources>
