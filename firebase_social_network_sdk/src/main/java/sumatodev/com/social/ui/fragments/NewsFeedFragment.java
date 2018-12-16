@@ -30,21 +30,28 @@ import sumatodev.com.social.ApplicationHelper;
 import sumatodev.com.social.R;
 import sumatodev.com.social.adapters.PostsAdapter;
 import sumatodev.com.social.adapters.SearchAdapter;
+import sumatodev.com.social.enums.PostStatus;
 import sumatodev.com.social.enums.ProfileStatus;
 import sumatodev.com.social.managers.PostManager;
 import sumatodev.com.social.managers.ProfileManager;
 import sumatodev.com.social.managers.listeners.OnObjectExistListener;
+import sumatodev.com.social.managers.listeners.OnPostCreatedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.ui.activities.CreatePostActivity;
 import sumatodev.com.social.ui.activities.PostDetailsActivity;
 import sumatodev.com.social.ui.activities.ProfileActivity;
 import sumatodev.com.social.utils.AnimationUtils;
+import sumatodev.com.social.utils.LogUtil;
 import sumatodev.com.social.utils.Utils;
+
+import static android.app.Activity.RESULT_OK;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NewsFeedFragment extends Fragment {
+public class NewsFeedFragment extends BaseFragment implements OnPostCreatedListener {
+
+    private static final String TAG = NewsFeedFragment.class.getSimpleName();
 
     private PostsAdapter postsAdapter;
     private RecyclerView recyclerView;
@@ -209,6 +216,48 @@ public class NewsFeedFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case ProfileActivity.CREATE_POST_FROM_PROFILE_REQUEST:
+                    if (data != null) {
+                        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+                        if (post != null) {
+                            createNewPost(post);
+                        }
+                    }
+                    break;
+                case CreatePostActivity.CREATE_NEW_POST_REQUEST:
+                    if (data != null) {
+                        Post post = (Post) data.getSerializableExtra(CreatePostActivity.POST_DATA_KEY);
+                        if (post != null) {
+                            createNewPost(post);
+                        }
+                    }
+                    break;
+
+                case PostDetailsActivity.UPDATE_POST_REQUEST:
+                    if (data != null) {
+                        PostStatus postStatus = (PostStatus) data.getSerializableExtra(PostDetailsActivity.POST_STATUS_EXTRA_KEY);
+                        if (postStatus.equals(PostStatus.REMOVED)) {
+                            postsAdapter.removeSelectedPost();
+                            showFloatButtonRelatedSnackBar(R.string.message_post_was_removed);
+                        } else if (postStatus.equals(PostStatus.UPDATED)) {
+                            postsAdapter.updateSelectedPost();
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    private void createNewPost(Post post) {
+        postManager.createOrUpdatePostWithImage(getContext(), post, this);
+    }
+
     private void openCreatePostActivity() {
         Intent intent = new Intent(getActivity(), CreatePostActivity.class);
         startActivityForResult(intent, CreatePostActivity.CREATE_NEW_POST_REQUEST);
@@ -320,12 +369,12 @@ public class NewsFeedFragment extends Fragment {
         }
     }
 
-    private void openProfileActivity(String userId) {
+    public void openProfileActivity(String userId) {
         openProfileActivity(userId, null);
     }
 
     @SuppressLint("RestrictedApi")
-    private void openProfileActivity(String userId, View view) {
+    public void openProfileActivity(String userId, View view) {
 
 
         Intent intent = new Intent(getActivity(), ProfileActivity.class);
@@ -359,4 +408,16 @@ public class NewsFeedFragment extends Fragment {
     }
 
 
+    @Override
+    public void onPostSaved(boolean success) {
+        hideProgress();
+        if (success) {
+            refreshPostList();
+            //showFloatButtonRelatedSnackBar(R.string.message_post_was_created);
+            LogUtil.logDebug(TAG, "Post was created");
+        } else {
+            showSnackBar(R.string.error_fail_create_post);
+            LogUtil.logDebug(TAG, "Failed to create a post");
+        }
+    }
 }
