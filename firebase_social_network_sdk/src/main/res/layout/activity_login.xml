@@ -8,7 +8,6 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/login_bg_gradient"
         android:scaleType="centerCrop" />
 
     <LinearLayout
@@ -21,11 +20,11 @@
         android:orientation="vertical">
 
         <TextView
+            style="@style/TextAppearance.MainTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/login_screen_title_margin"
-            android:text="@string/app_name"
-            style="@style/TextAppearance.MainTitle" />
+            android:text="@string/app_name" />
 
         <RelativeLayout
             android:id="@+id/facebookSignInButton"

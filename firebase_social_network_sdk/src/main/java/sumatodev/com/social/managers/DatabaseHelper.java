@@ -122,7 +122,6 @@ public class DatabaseHelper {
 
     public void init() {
         database = FirebaseDatabase.getInstance();
-        database.setPersistenceEnabled(true);
         storage = FirebaseStorage.getInstance();
 
 //        Sets the maximum time to retry upload operations if a failure occurs.

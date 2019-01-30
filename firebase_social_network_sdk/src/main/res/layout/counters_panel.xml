@@ -20,7 +20,7 @@
             android:id="@+id/watcherImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_watchers"
+            app:srcCompat="@drawable/ic_remove_red_eye_grey_600_24dp"
             tools:ignore="VectorDrawableCompat" />
 
         <TextView
@@ -70,7 +70,7 @@
             android:id="@+id/commentsCountImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_comments" />
+            app:srcCompat="@drawable/ic_insert_comment_black_24dp" />
 
         <TextView
             android:id="@+id/commentsCountTextView"
@@ -95,7 +95,7 @@
             android:id="@+id/dateImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/ic_time" />
+            app:srcCompat="@drawable/ic_access_time_black_18dp" />
 
         <TextView
             android:id="@+id/dateTextView"
@@ -107,14 +107,14 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingBottom="@dimen/intrinsic_padding"
         android:paddingRight="@dimen/intrinsic_padding"
-        android:paddingTop="@dimen/intrinsic_padding">
+        android:paddingTop="@dimen/intrinsic_padding"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/postShare"
