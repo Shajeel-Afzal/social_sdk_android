@@ -19,10 +19,15 @@ package sumatodev.com.social.adapters;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.util.LinkedList;
 import java.util.List;
 
 import sumatodev.com.social.managers.PostManager;
+import sumatodev.com.social.managers.UsersManager;
+import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.managers.listeners.OnPostChangedListener;
 import sumatodev.com.social.model.Post;
 import sumatodev.com.social.utils.LogUtil;
@@ -38,10 +43,17 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
 
     protected List<Post> postList = new LinkedList<>();
     protected FragmentActivity context;
+    protected boolean isLoading = false;
     protected int selectedPostPosition = -1;
+    protected String currentUid;
 
     public BasePostsAdapter(FragmentActivity context) {
         this.context = context;
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            currentUid = firebaseUser.getUid();
+        }
+
     }
 
     protected void cleanSelectedPostInformation() {
@@ -97,6 +109,24 @@ public abstract class BasePostsAdapter extends RecyclerView.Adapter<RecyclerView
         if (selectedPostPosition != -1) {
             Post selectedPost = getItemByPosition(selectedPostPosition);
             PostManager.getInstance(context).getSinglePostValue(selectedPost.getId(), createOnPostChangeListener(selectedPostPosition));
+        }
+    }
+
+
+    void isPostValid(List<Post> list) {
+        for (final Post post : list) {
+            if (post.getAuthorId() != null && currentUid != null) {
+                UsersManager.getInstance(context).isUserFollowing(post.getAuthorId(), currentUid, new OnObjectExistListener() {
+                    @Override
+                    public void onDataChanged(boolean exist) {
+                        if (exist) {
+                            postList.add(post);
+                            notifyItemInserted(postList.size());
+                            isLoading = false;
+                        }
+                    }
+                });
+            }
         }
     }
 }

@@ -650,8 +650,7 @@ public class ProfileActivity extends BaseActivity implements GoogleApiClient.OnC
                             long totalFollowers = dataSnapshot.child(userID).child(Consts.FOLLOWERS_LIST_REF).getChildrenCount();
                             long totalFollowings = dataSnapshot.child(userID).child(Consts.FOLLOWING_LIST_REF).getChildrenCount();
 
-                            String followers = getResources().getQuantityString(R.plurals.user_follower_format,
-                                    (int) totalFollowers, totalFollowers);
+                            String followers = getResources().getQuantityString(R.plurals.user_follower_format, (int) totalFollowers, totalFollowers);
                             userFollowers.setText(buildCounterSpannable(followers, (int) totalFollowers));
 
                             String following = getResources().getQuantityString(R.plurals.user_following_format, (int) totalFollowings,

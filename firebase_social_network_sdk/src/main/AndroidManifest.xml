@@ -87,6 +87,9 @@
         <activity android:name=".ui.activities.FollowersActivity" />
         <activity android:name=".ui.activities.FollowingActivity" />
         <activity android:name=".ui.activities.LinkActivity" />
+        <activity
+            android:name=".ui.activities.UsersPostActivity"
+            android:label="@string/title_users_post_activity" />
     </application>
 
 </manifest>

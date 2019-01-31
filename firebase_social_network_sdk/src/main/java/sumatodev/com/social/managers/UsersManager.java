@@ -2,13 +2,12 @@ package sumatodev.com.social.managers;
 
 import android.content.Context;
 
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
 import sumatodev.com.social.ApplicationHelper;
-import sumatodev.com.social.enums.FollowStatus;
 import sumatodev.com.social.managers.listeners.OnDataChangedListener;
 import sumatodev.com.social.managers.listeners.OnFollowStatusChanged;
+import sumatodev.com.social.managers.listeners.OnObjectExistListener;
 import sumatodev.com.social.model.Friends;
 import sumatodev.com.social.model.UsersPublic;
 
@@ -52,9 +51,13 @@ public class UsersManager extends FirebaseListenersManager {
         addListenerToMap(context, eventListener);
     }
 
-    public void getAllUsersList(Context context,OnDataChangedListener<UsersPublic> onDataChangedListener){
+    public void getAllUsersList(Context context, OnDataChangedListener<UsersPublic> onDataChangedListener) {
         DatabaseHelper databaseHelper = ApplicationHelper.getDatabaseHelper();
         ValueEventListener eventListener = databaseHelper.getAllUsersList(onDataChangedListener);
         addListenerToMap(context, eventListener);
+    }
+
+    public void isUserFollowing(String authorId, String currentUid, OnObjectExistListener onObjectExistListener) {
+        ApplicationHelper.getDatabaseHelper().isUserFollowing(authorId,currentUid, onObjectExistListener);
     }
 }

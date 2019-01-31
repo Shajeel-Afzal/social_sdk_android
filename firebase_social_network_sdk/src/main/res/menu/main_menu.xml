@@ -27,5 +27,9 @@
         android:title="Invite Friends"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/usersPost"
+        android:title="Users Post"
+        app:showAsAction="never" />
 </menu>
 

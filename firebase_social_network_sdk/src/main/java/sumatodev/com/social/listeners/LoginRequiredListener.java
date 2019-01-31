@@ -6,6 +6,6 @@ package sumatodev.com.social.listeners;
 
 public interface LoginRequiredListener {
 
-    public void loginRequired();
+    void loginRequired();
 
 }

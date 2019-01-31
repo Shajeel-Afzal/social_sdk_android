@@ -71,6 +71,7 @@
                 android:layout_height="wrap_content"
                 android:onClick="loginLaterClick"
                 android:text="@string/login_later" />
+
         </LinearLayout>
 
     </LinearLayout>

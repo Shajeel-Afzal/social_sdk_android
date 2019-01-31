@@ -857,7 +857,6 @@ public class DatabaseHelper {
                         lastItemCreatedDate = createdDate;
                     }
 
-
                     if (!hasComplain) {
                         Post post = new Post();
                         post.setId(key);
@@ -916,12 +915,14 @@ public class DatabaseHelper {
         return result;
     }
 
+
     private boolean isPostValid(Map<String, Object> post) {
         return post.containsKey("title")
                 || post.containsKey("link")
                 || post.containsKey("imagePath")
                 && post.containsKey("authorId");
     }
+
 
     public void getProfileSingleValue(String id, final OnObjectChangedListener<Profile> listener) {
         DatabaseReference databaseReference = getDatabaseReference().child("profiles").child(id);
@@ -1494,6 +1495,23 @@ public class DatabaseHelper {
         });
         activeListeners.put(valueEventListener, reference);
         return valueEventListener;
+    }
+
+    public void isUserFollowing(final String authorId, final String currentUid, final OnObjectExistListener onObjectExistListener) {
+        DatabaseReference reference = database.getReference(Consts.FRIENDS_REF).child(currentUid)
+                .child(Consts.FOLLOWING_LIST_REF).child(authorId);
+        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                LogUtil.logDebug(TAG, "isUserFollowing: " + dataSnapshot.exists());
+                onObjectExistListener.onDataChanged(dataSnapshot.exists() || currentUid.equals(authorId));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                LogUtil.logDebug(TAG, "isUserFollowing  Error: " + databaseError.getMessage());
+            }
+        });
     }
 
     public void subscribeToNewPosts() {

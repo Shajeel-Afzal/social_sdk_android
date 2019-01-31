@@ -551,6 +551,9 @@ public class MainActivity extends BaseActivity implements OnPostCreatedListener 
         } else if (i == R.id.action_invite) {
             sendInvitation();
             return true;
+        } else if (i == R.id.usersPost) {
+            startActivity(new Intent(MainActivity.this, UsersPostActivity.class));
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }

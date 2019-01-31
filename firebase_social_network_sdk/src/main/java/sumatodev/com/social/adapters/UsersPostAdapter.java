@@ -1,20 +1,3 @@
-/*
- *  Copyright 2017 Rozdoum
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package sumatodev.com.social.adapters;
 
 import android.content.Context;
@@ -22,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,46 +24,17 @@ import sumatodev.com.social.model.PostListResult;
 import sumatodev.com.social.utils.PreferencesUtil;
 import sumatodev.com.social.utils.Utils;
 
-/**
- * Created by Kristina on 10/31/16.
- */
-
-public class PostsAdapter extends BasePostsAdapter {
-    public static final String TAG = PostsAdapter.class.getSimpleName();
+public class UsersPostAdapter extends BasePostsAdapter {
 
     private Callback callback;
     private boolean isMoreDataAvailable = true;
     private long lastLoadedItemCreatedDate;
-    private SwipeRefreshLayout swipeContainer;
     private Context mainActivity;
 
-    public PostsAdapter(final FragmentActivity activity, SwipeRefreshLayout swipeContainer) {
-        super(activity);
-        this.mainActivity = activity;
-        this.swipeContainer = swipeContainer;
-        initRefreshLayout();
+    public UsersPostAdapter(FragmentActivity context) {
+        super(context);
+        this.mainActivity = context;
         setHasStableIds(true);
-    }
-
-    private void initRefreshLayout() {
-        if (swipeContainer != null) {
-            this.swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    onRefreshAction();
-                }
-            });
-        }
-    }
-
-    private void onRefreshAction() {
-        if (Utils.hasInternetConnection(context)) {
-            loadFirstPage();
-            cleanSelectedPostInformation();
-        } else {
-            swipeContainer.setRefreshing(false);
-            Toast.makeText(mainActivity, R.string.internet_connection_failed, Toast.LENGTH_SHORT).show();
-        }
     }
 
     public void setCallback(Callback callback) {
@@ -148,7 +101,8 @@ public class PostsAdapter extends BasePostsAdapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        ///isPostValid(getItemByPosition(position));
         if (position >= getItemCount() - 1 && isMoreDataAvailable && !isLoading) {
             android.os.Handler mHandler = context.getWindow().getDecorView().getHandler();
             mHandler.post(new Runnable() {
@@ -165,7 +119,6 @@ public class PostsAdapter extends BasePostsAdapter {
                 }
             });
         }
-        Log.d(TAG, "index: " + position + " id: " + getItemByPosition(position).getId());
 
         switch (holder.getItemViewType()) {
             case TEXT_VIEW:
@@ -187,21 +140,14 @@ public class PostsAdapter extends BasePostsAdapter {
 
     }
 
-    private void addList(List<Post> list) {
-        this.postList.addAll(list);
-        callback.onPostsListChanged(list.size());
-        notifyDataSetChanged();
-        isLoading = false;
-    }
 
     public void loadFirstPage() {
         loadNext(0);
-        PostManager.getInstance(mainActivity.getApplicationContext()).clearNewPostsCounter();
     }
 
     private void loadNext(final long nextItemCreatedDate) {
 
-        if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity) && !Utils.hasInternetConnection(context)) {
+        if (!PreferencesUtil.isUserPostWasLoadedAtLeastOnce(mainActivity) && !Utils.hasInternetConnection(context)) {
             Toast.makeText(mainActivity, R.string.internet_connection_failed, Toast.LENGTH_LONG).show();
             hideProgress();
             callback.onListLoadingFinished();
@@ -218,16 +164,15 @@ public class PostsAdapter extends BasePostsAdapter {
                 if (nextItemCreatedDate == 0) {
                     postList.clear();
                     notifyDataSetChanged();
-                    swipeContainer.setRefreshing(false);
                 }
 
                 hideProgress();
 
                 if (!list.isEmpty()) {
-                    addList(list);
+                    isPostValid(list);
 
-                    if (!PreferencesUtil.isPostWasLoadedAtLeastOnce(mainActivity)) {
-                        PreferencesUtil.setPostWasLoadedAtLeastOnce(mainActivity, true);
+                    if (!PreferencesUtil.isUserPostWasLoadedAtLeastOnce(mainActivity)) {
+                        PreferencesUtil.setUserPostWasLoadedAtLeastOnce(mainActivity, true);
                     }
                 } else {
                     isLoading = false;

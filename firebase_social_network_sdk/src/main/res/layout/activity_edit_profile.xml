@@ -1,11 +1,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:padding="@dimen/intrinsic_padding"
-    tools:context="com.rozdoum.socialcomponents.activities.CreateProfileActivity">
+    android:padding="@dimen/intrinsic_padding">
 
     <ScrollView
         android:id="@+id/regForm"
